@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: exam-backup
+  datasource:
+    url: jdbc:postgresql://localhost:5432/exam_backup
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+
+server:
+  port: 8080
+  servlet:
+    context-path: /exam-backup
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
