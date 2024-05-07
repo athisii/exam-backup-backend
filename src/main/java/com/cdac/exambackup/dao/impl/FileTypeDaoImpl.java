@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -31,5 +33,10 @@ public class FileTypeDaoImpl extends AbstractBaseDao<FileType, Long> implements 
     @Override
     public Class<FileType> getEntityClass() {
         return FileType.class;
+    }
+
+    @Override
+    public List<FileType> findByCodeOrName(Integer code, String name) {
+        return fileTypeRepository.findByCodeOrNameIgnoreCase(code, name);
     }
 }

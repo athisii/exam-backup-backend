@@ -22,14 +22,22 @@ import java.util.Map;
 @Schema(description = "List Request based on applied filters")
 public class ListRequest {
     @Schema(description = "offset of request", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Builder.Default
     int start = 0;
+
     @Schema(description = "limit of request", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Builder.Default
     int length = 20;
+
     @Schema(description = "search keyword")
     String searchTag;
     @Schema(description = "sort property")
+
+    @Builder.Default
     String sortBy = "id";
     @Schema(description = "sort order")
+
+    @Builder.Default
     String sortOrder = "asc";
     @Schema(description = "Filters")
     Map<String, List<Object>> filters;

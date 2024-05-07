@@ -31,4 +31,9 @@ public class UserDaoImpl extends AbstractBaseDao<User, Long> implements UserDao 
     public Class<User> getEntityClass() {
         return User.class;
     }
+
+    @Override
+    public User findByUserId(String userId) {
+        return this.userRepository.findFirstByUserId(userId);
+    }
 }

@@ -12,4 +12,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
+    ExamCentre findFirstByCodeIgnoreCase(String code);
 }

@@ -3,10 +3,7 @@ package com.cdac.exambackup.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
@@ -17,15 +14,20 @@ import java.util.Date;
  * @since 5/4/24
  */
 
-@Getter
-@Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
+
 @Table(name = "app_user")
 @Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User extends AuditModel {
-    @NotBlank
-    @Column(unique = true, nullable = false, length = 20)
+    @Column(nullable = false, unique = true, length = 20)
     String userId; // exam-centre-code or admin-id
+
+    @OneToOne
+    ExamCentre examCentre;
 
     @Column(length = 50)
     String name;
@@ -40,10 +42,7 @@ public class User extends AuditModel {
     @Column(nullable = false)
     String password;
 
-    @JsonFormat(
-            shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd HH:mm a"
-    )
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
     @Temporal(TemporalType.TIMESTAMP)
     Date passExpiryDate;
 
@@ -51,10 +50,7 @@ public class User extends AuditModel {
 
     boolean locked;
 
-    @JsonFormat(
-            shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd HH:mm a"
-    )
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
     @Temporal(TemporalType.TIMESTAMP)
     Date unlockTime;
 

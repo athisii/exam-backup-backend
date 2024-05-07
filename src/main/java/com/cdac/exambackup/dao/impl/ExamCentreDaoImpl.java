@@ -32,4 +32,9 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     public Class<ExamCentre> getEntityClass() {
         return ExamCentre.class;
     }
+
+    @Override
+    public ExamCentre findByCode(String code) {
+        return this.examCentreRepository.findFirstByCodeIgnoreCase(code);
+    }
 }

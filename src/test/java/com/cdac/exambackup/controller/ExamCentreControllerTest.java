@@ -1,6 +1,7 @@
 package com.cdac.exambackup.controller;
 
-import com.cdac.exambackup.entity.Role;
+import com.cdac.exambackup.entity.ExamCentre;
+import com.cdac.exambackup.entity.Region;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -17,13 +18,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class RoleControllerTest {
+class ExamCentreControllerTest {
     @Autowired
     MockMvc mockMvc;
+
     @Autowired
     ObjectMapper objectMapper;
 
@@ -31,7 +32,7 @@ class RoleControllerTest {
     @Test
     @Order(1)
     void shouldReturnData_forValidId() throws Exception {
-        mockMvc.perform(get("/roles/{id}", 1))
+        mockMvc.perform(get("/exam-centres/{id}", 1))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -39,7 +40,7 @@ class RoleControllerTest {
     @Test
     @Order(2)
     void shouldFail_forInvalidId() throws Exception {
-        mockMvc.perform(get("/roles/{id}", 7))
+        mockMvc.perform(get("/exam-centres/{id}", 7))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -47,8 +48,10 @@ class RoleControllerTest {
     @Test
     @Order(3)
     void shouldCreate_forValidData() throws Exception {
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(new Role(5, "new")))
+        var region = new Region();
+        region.setId(1L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(new ExamCentre("7", "EC7", region, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -57,8 +60,8 @@ class RoleControllerTest {
     @Test
     @Order(4)
     void shouldNotCreate_forInvalidData() throws Exception {
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(new Role(0, " ")))
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(new ExamCentre(" ", " ", null, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -67,8 +70,20 @@ class RoleControllerTest {
     @Test
     @Order(5)
     void shouldNotCreate_forValidCodeAndInvalidName() throws Exception {
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(new Role(5, null)))
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(new ExamCentre("10", null, null, null, null)))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @Order(5)
+    void shouldNotCreate_forValidCodeAndValidNameAnsInvalidRegionId() throws Exception {
+        var region = new Region();
+        region.setId(20L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(new ExamCentre("10", "valid name", region, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -78,7 +93,7 @@ class RoleControllerTest {
     @Order(6)
     void shouldNotCreate_forValidNameAndInvalidCode() throws Exception {
         mockMvc.perform(post("/file-types/create")
-                        .content(objectMapper.writeValueAsString(new Role(null, "valid name")))
+                        .content(objectMapper.writeValueAsString(new ExamCentre(null, "valid name", null, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -87,8 +102,8 @@ class RoleControllerTest {
     @Test
     @Order(7)
     void shouldNotCreate_forAlreadyExistedCode() throws Exception {
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(new Role(1, "new role name")))
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(new ExamCentre("1", "new role name", null, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -96,21 +111,23 @@ class RoleControllerTest {
 
     @Test
     @Order(8)
-    void shouldNotCreate_forAlreadyExistedName() throws Exception {
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(new Role(8, "admin")))
+    void shouldCreate_forAlreadyExistedName() throws Exception {
+        var region = new Region();
+        region.setId(3L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(new ExamCentre("20", "EC1", region, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
     }
 
     @Test
     @Order(9)
     void shouldUpdate_forValidDataAndValidId() throws Exception {
-        var role = new Role(1, "both fields valid");
-        role.setId(1L);
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(role))
+        var examCentre = new ExamCentre("1", "new EC1", null, null, null);
+        examCentre.setId(1L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(examCentre))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -119,10 +136,10 @@ class RoleControllerTest {
     @Test
     @Order(10)
     void shouldUpdate_forValidNameAndValidId() throws Exception {
-        var role = new Role(null, "only name valid");
-        role.setId(1L);
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(role))
+        var examCentre = new ExamCentre(null, "Valid Name EC1", null, null, null);
+        examCentre.setId(1L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(examCentre))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -131,12 +148,27 @@ class RoleControllerTest {
     @Test
     @Order(11)
     void shouldNotUpdate_forValidDataAndInvalidId() throws Exception {
-        var role = new Role(1, "incorrect id");
-        role.setId(6L);
-        mockMvc.perform(post("/roles/create")
-                        .content(objectMapper.writeValueAsString(role))
+        var examCentre = new ExamCentre("50", "incorrect id", null, null, null);
+        examCentre.setId(50L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(examCentre))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @Order(11)
+    void shouldNotUpdate_forInvalidRegionIdValidIdData() throws Exception {
+        var region = new Region();
+        region.setId(10L);
+        var examCentre = new ExamCentre("50", "incorrect region id", region, null, null);
+        examCentre.setId(50L);
+        mockMvc.perform(post("/exam-centres/create")
+                        .content(objectMapper.writeValueAsString(examCentre))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
 }

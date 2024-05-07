@@ -23,7 +23,6 @@ public class BeanConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = JsonMapper.builder()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-//                .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
                 .propertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE) // to change property naming automatically
                 .build();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

@@ -10,4 +10,5 @@ import com.cdac.exambackup.entity.ExamCentre;
 
 
 public interface ExamCentreDao extends BaseDao<ExamCentre, Long> {
+    ExamCentre findByCode(String code);
 }

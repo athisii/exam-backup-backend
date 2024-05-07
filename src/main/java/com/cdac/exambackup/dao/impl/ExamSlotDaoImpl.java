@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -31,5 +33,10 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
     @Override
     public Class<ExamSlot> getEntityClass() {
         return ExamSlot.class;
+    }
+
+    @Override
+    public List<ExamSlot> findByCodeOrName(Integer code, String name) {
+        return this.examSlotRepository.findByCodeOrNameIgnoreCase(code, name);
     }
 }

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -31,5 +33,10 @@ public class RegionDaoImpl extends AbstractBaseDao<Region, Long> implements Regi
     @Override
     public Class<Region> getEntityClass() {
         return Region.class;
+    }
+
+    @Override
+    public List<Region> findByCodeOrName(Integer code, String name) {
+        return this.regionRepository.findByCodeOrNameIgnoreCase(code, name);
     }
 }

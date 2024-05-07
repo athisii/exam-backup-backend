@@ -2,10 +2,7 @@ package com.cdac.exambackup.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
@@ -19,13 +16,13 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExamCentre extends AuditModel {
-    @NotBlank
     @Column(nullable = false, unique = true, length = 20)
     String code;
 
-    @NotBlank
     @Column(nullable = false, length = 50)
     String name;
 
@@ -36,4 +33,8 @@ public class ExamCentre extends AuditModel {
     @JsonIgnore //  allow only for custom query for performance reason
     @OneToMany(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ExamFile> examFiles;
+
+    @JsonIgnore // not necessarily needed to return user details when ExamCentre is requested.
+    @OneToOne(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
+    User user;
 }

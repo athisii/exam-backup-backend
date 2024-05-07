@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -31,5 +33,15 @@ public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao 
     @Override
     public Class<Role> getEntityClass() {
         return Role.class;
+    }
+
+    @Override
+    public List<Role> findByCodeOrName(Integer code, String name) {
+        return this.roleRepository.findByCodeOrNameIgnoreCase(code, name);
+    }
+
+    @Override
+    public Role findByName(String name) {
+        return this.roleRepository.findFirstByNameIgnoreCase(name);
     }
 }

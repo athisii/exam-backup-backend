@@ -4,6 +4,8 @@ import com.cdac.exambackup.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -12,4 +14,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
+    List<Role> findByCodeOrNameIgnoreCase(Integer code, String name);
+
+    Role findFirstByNameIgnoreCase(String name);
 }

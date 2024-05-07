@@ -93,7 +93,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(GenericException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> handleGenericException(GenericException ex) {
         log.info("**Generic exception occurred: {}", ex.getMessage());
         return new ResponseDto<>(ex.getMessage(), false);

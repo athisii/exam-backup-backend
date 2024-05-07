@@ -9,4 +9,5 @@ import com.cdac.exambackup.entity.Role;
  */
 
 public interface RoleService extends BaseService<Role, Long> {
+
 }

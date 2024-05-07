@@ -2,6 +2,8 @@ package com.cdac.exambackup.dao;
 
 import com.cdac.exambackup.entity.FileType;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -9,4 +11,5 @@ import com.cdac.exambackup.entity.FileType;
  */
 
 public interface FileTypeDao extends BaseDao<FileType, Long> {
+    List<FileType> findByCodeOrName(Integer code, String name);
 }

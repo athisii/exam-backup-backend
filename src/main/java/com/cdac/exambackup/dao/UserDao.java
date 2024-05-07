@@ -9,5 +9,5 @@ import com.cdac.exambackup.entity.User;
  */
 
 public interface UserDao extends BaseDao<User, Long> {
-
+    User findByUserId(String userId);
 }
