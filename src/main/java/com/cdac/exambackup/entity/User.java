@@ -35,7 +35,7 @@ public class User extends AuditModel {
     @Column(length = 50)
     String email;
 
-    @Column(length = 14)
+    @Column(length = 20)
     String mobileNumber; // +0918132813456
 
     @JsonIgnore
@@ -57,5 +57,6 @@ public class User extends AuditModel {
     boolean firstLogin = true; // to reset on first login
 
     @ManyToOne
+    @JsonIgnore
     Role role;
 }

@@ -4,10 +4,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/exam_backup
-#    username: ${DB_USERNAME}
-    username: athisii
-#    password: ${DB_PASSWORD}
-    password: athisiiekhe
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: create-drop

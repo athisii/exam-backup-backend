@@ -3,12 +3,16 @@ package com.cdac.exambackup.service.impl;
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.UserDao;
 import com.cdac.exambackup.entity.User;
+import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.service.UserService;
+import com.cdac.exambackup.util.Util;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author athisii
@@ -25,5 +29,36 @@ public class UserServiceImpl extends AbstractBaseService<User, Long> implements 
 
     public UserServiceImpl(BaseDao<User, Long> baseDao) {
         super(baseDao);
+    }
+
+    @Transactional
+    @Override
+    public User save(User userDto) {
+        User daoUser = null;
+        if (userDto.getId() != null) {
+            daoUser = userDao.findById(userDto.getId());
+        }
+        if (userDto.getUserId() != null) {
+            daoUser = userDao.findByUserId(userDto.getUserId());
+        }
+        if (daoUser == null) {
+            throw new EntityNotFoundException("User with not found.");
+        }
+        if (Boolean.FALSE.equals(daoUser.getActive())) {
+            throw new EntityNotFoundException("ExamCentre with id: " + daoUser.getId() + " is not active. Must activate first.");
+        }
+        if (userDto.getMobileNumber() != null) {
+            if (!Util.validateMobileNumber(userDto.getMobileNumber())) {
+                throw new GenericException("Malformed mobile number.");
+            }
+            daoUser.setMobileNumber(userDto.getMobileNumber());
+        }
+        if (userDto.getEmail() != null) {
+            if (!Util.validateEmail(userDto.getEmail())) {
+                throw new GenericException("Malformed email address.");
+            }
+            daoUser.setEmail(userDto.getEmail());
+        }
+        return userDao.save(daoUser);
     }
 }

@@ -67,6 +67,9 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
         if (daoExamSlot == null) {
             throw new EntityNotFoundException("ExamSlot with id: " + examSlotDto.getId() + " not found.");
         }
+        if (Boolean.FALSE.equals(daoExamSlot.getActive())) {
+            throw new EntityNotFoundException("ExamSlot with id: " + daoExamSlot.getId() + " is not active. Must activate first.");
+        }
 
         // if both values are invalid, one should be valid
         if ((examSlotDto.getCode() == null && examSlotDto.getName() == null) || (examSlotDto.getCode() != null && examSlotDto.getCode() <= 0 && examSlotDto.getName() != null && examSlotDto.getName().isBlank())) {

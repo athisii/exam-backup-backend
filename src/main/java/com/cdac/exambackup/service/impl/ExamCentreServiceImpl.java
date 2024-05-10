@@ -7,6 +7,7 @@ import com.cdac.exambackup.entity.Role;
 import com.cdac.exambackup.entity.User;
 import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.service.ExamCentreService;
+import com.cdac.exambackup.util.Util;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -85,6 +86,18 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             user.setName(examCentreDto.getName());
             user.setUserId(examCentreDto.getCode());
 
+            if (examCentreDto.getUser().getMobileNumber() != null) {
+                if (!Util.validateMobileNumber(examCentreDto.getUser().getMobileNumber())) {
+                    throw new GenericException("Malformed mobile number.");
+                }
+                user.setMobileNumber(examCentreDto.getUser().getMobileNumber());
+            }
+            if (examCentreDto.getUser().getEmail() != null) {
+                if (!Util.validateEmail(examCentreDto.getUser().getEmail())) {
+                    throw new GenericException("Malformed email address.");
+                }
+                user.setEmail(examCentreDto.getUser().getEmail());
+            }
             // TODO: need to encrypt with BCryptEncoder
             // will do after Spring Security added.
             user.setPassword(examCentreDto.getCode()); // need to used BCryptEncoder
@@ -118,6 +131,9 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         ExamCentre daoExamCentre = examCentreDao.findById(examCentreDto.getId());
         if (daoExamCentre == null) {
             throw new EntityNotFoundException("ExamCentre with id: " + examCentreDto.getId() + " not found.");
+        }
+        if (Boolean.FALSE.equals(daoExamCentre.getActive())) {
+            throw new EntityNotFoundException("ExamCentre with id: " + examCentreDto.getId() + " is not active. Must activate first.");
         }
 
         String oldExamCode = daoExamCentre.getCode();

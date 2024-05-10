@@ -67,6 +67,9 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
         if (daoRole == null) {
             throw new EntityNotFoundException("Role with id: " + roleDto.getId() + " not found.");
         }
+        if (Boolean.FALSE.equals(daoRole.getActive())) {
+            throw new EntityNotFoundException("Role with id: " + daoRole.getId() + " is not active. Must activate first.");
+        }
 
         // if both values are invalid, one should be valid
         if ((roleDto.getCode() == null && roleDto.getName() == null) || (roleDto.getCode() != null && roleDto.getCode() <= 0 && roleDto.getName() != null && roleDto.getName().isBlank())) {

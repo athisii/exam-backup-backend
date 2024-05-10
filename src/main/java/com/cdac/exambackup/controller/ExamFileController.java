@@ -4,6 +4,8 @@ import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamFile;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamFileService;
+import com.cdac.exambackup.util.JsonNodeUtil;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -40,6 +42,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     public ResponseDto<?> create(@RequestBody @Valid ExamFile entity) {
         // TODO:: log user id?
         log.info("Create request for the entity by userId: ");
-        return new ResponseDto<>("Your data has been saved successfully", this.examFileService.save(entity).getId());
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
+        return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examFileService.save(entity)));
     }
 }

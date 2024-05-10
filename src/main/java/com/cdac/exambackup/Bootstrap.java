@@ -148,7 +148,7 @@ public class Bootstrap implements CommandLineRunner {
                 user.setPassword("password");
                 user.setEmail(name + "@email.com");
                 user.setRole(roleService.getById(Integer.toUnsignedLong(3))); // user `USER`
-                user.setMobileNumber("(+91813281764" + code);
+                user.setMobileNumber("+91813281764" + code);
                 user.setExamCentre(examCentre);
                 examCentre.setUser(user);
             });

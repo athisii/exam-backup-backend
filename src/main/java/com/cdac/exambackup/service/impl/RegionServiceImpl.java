@@ -67,6 +67,9 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         if (daoRegion == null) {
             throw new EntityNotFoundException("Region with id: " + regionDto.getId() + " not found.");
         }
+        if (Boolean.FALSE.equals(daoRegion.getActive())) {
+            throw new EntityNotFoundException("Region with id: " + daoRegion.getId() + " is not active. Must activate first.");
+        }
 
         // if both values are invalid, one should be valid
         if ((regionDto.getCode() == null && regionDto.getName() == null) || (regionDto.getCode() != null && regionDto.getCode() <= 0 && regionDto.getName() != null && regionDto.getName().isBlank())) {

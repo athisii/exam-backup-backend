@@ -4,6 +4,8 @@ import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.Role;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.RoleService;
+import com.cdac.exambackup.util.JsonNodeUtil;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -37,9 +39,8 @@ public class RoleController extends AbstractBaseController<Role, Long> {
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody @Valid Role role) {
-        // TODO:: log user id?
         log.info("Create request for the entity by userId: ");
-        return new ResponseDto<>("Your data has been saved successfully", this.roleService.save(role).getId());
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
+        return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.roleService.save(role)));
     }
-
 }

@@ -67,6 +67,9 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
         if (daoFileType == null) {
             throw new EntityNotFoundException("FileType with id: " + fileTypeDto.getId() + " not found.");
         }
+        if (Boolean.FALSE.equals(daoFileType.getActive())) {
+            throw new EntityNotFoundException("FileType with id: " + daoFileType.getId() + " is not active. Must activate first.");
+        }
 
         // if both values are invalid, one should be valid
         if ((fileTypeDto.getCode() == null && fileTypeDto.getName() == null) || (fileTypeDto.getCode() != null && fileTypeDto.getCode() <= 0 && fileTypeDto.getName() != null && fileTypeDto.getName().isBlank())) {

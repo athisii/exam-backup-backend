@@ -77,18 +77,32 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
             throw new GenericException("Please provide all the required ids.");
         }
 
+        // check exam centre exists and is active
         ExamCentre daoExamCentre = examCentreDao.findById(examFileDto.getExamCentre().getId());
         if (daoExamCentre == null) {
             throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getId() + " not found");
         }
+        if (Boolean.FALSE.equals(daoExamCentre.getActive())) {
+            throw new EntityNotFoundException("ExamCentre with id: " + daoExamCentre.getId() + " is not active. Must activate first.");
+        }
+        // check exam slot exists and is active
         ExamSlot daoExamSlot = examSlotDao.findById(examFileDto.getExamSlot().getId());
         if (daoExamSlot == null) {
             throw new EntityNotFoundException("ExamSlot with id: " + examFileDto.getExamSlot().getId() + " not found");
         }
+        if (Boolean.FALSE.equals(daoExamSlot.getActive())) {
+            throw new EntityNotFoundException("ExamSlot with id: " + daoExamSlot.getId() + " is not active. Must activate first.");
+        }
+
+        // check file type exists and is active
         FileType daoFileType = fileTypeDao.findById(examFileDto.getFileType().getId());
         if (daoFileType == null) {
             throw new EntityNotFoundException("FileType with id: " + examFileDto.getFileType().getId() + " not found");
         }
+        if (Boolean.FALSE.equals(daoFileType.getActive())) {
+            throw new EntityNotFoundException("FileType with id: " + daoFileType.getId() + " is not active. Must activate first.");
+        }
+
         String regionCode = daoExamCentre.getRegion().getCode() + "";
         // to avoid issues while creating folder.
         String replacedExamCentreCode = daoExamCentre.getCode().replaceAll("[^a-zA-Z0-9]", "_");

@@ -4,6 +4,8 @@ import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamCentreService;
+import com.cdac.exambackup.util.JsonNodeUtil;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -38,6 +40,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @Override
     public ResponseDto<?> create(@RequestBody @Valid ExamCentre examCentre) {
         log.info("Create Request for the entity in abstract controller.");
-        return new ResponseDto<>("Your data has been saved successfully", this.examCentreService.save(examCentre).getId());
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
+        return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
     }
 }
