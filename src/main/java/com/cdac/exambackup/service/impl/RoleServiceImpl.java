@@ -49,7 +49,7 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
         if (roleDto.getId() == null) {
             // if both values are invalid, throw exception
             if (roleDto.getCode() == null || roleDto.getCode() <= 0 || roleDto.getName() == null || roleDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty");
+                throw new GenericException("Both 'code' and 'name' cannot be null or empty.");
             }
             List<Role> daoRoles = roleDao.findByCodeOrName(roleDto.getCode(), roleDto.getName().trim());
             if (!daoRoles.isEmpty()) {
@@ -83,7 +83,7 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
             daoOtherRoles = roleDao.findByCodeOrName(roleDto.getCode(), roleDto.getName().trim());
         }
         // check if it's the different object
-        if ((daoOtherRoles != null && daoOtherRoles.size() > 1) || daoOtherRoles != null && !daoOtherRoles.isEmpty() && daoRole != daoOtherRoles.getFirst()) {
+        if ((daoOtherRoles != null && daoOtherRoles.size() > 1) || daoOtherRoles != null && !daoOtherRoles.isEmpty() && !daoRole.getId().equals(daoOtherRoles.getFirst().getId())) {
             throw new GenericException("Same 'code' or 'name' already exists");
         }
 

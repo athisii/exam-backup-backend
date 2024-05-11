@@ -2,6 +2,8 @@ package com.cdac.exambackup.service;
 
 import com.cdac.exambackup.entity.SearchConfig;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -9,5 +11,5 @@ import com.cdac.exambackup.entity.SearchConfig;
  */
 
 public interface SearchConfigService extends BaseService<SearchConfig, Long> {
-    void dump();
+    void dump(List<SearchConfig> searchConfigs);
 }

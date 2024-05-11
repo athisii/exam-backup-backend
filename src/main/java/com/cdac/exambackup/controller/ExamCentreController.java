@@ -1,5 +1,6 @@
 package com.cdac.exambackup.controller;
 
+import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.service.BaseService;
@@ -12,10 +13,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author athisii
@@ -29,17 +27,41 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/exam-centres")
 public class ExamCentreController extends AbstractBaseController<ExamCentre, Long> {
+    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "region", "active", "createdDate", "modifiedDate");
+
     @Autowired
     ExamCentreService examCentreService;
+
 
     public ExamCentreController(BaseService<ExamCentre, Long> baseService) {
         super(baseService);
     }
 
-    @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     @Override
+    @GetMapping(value = {"/{id}"}, produces = {"application/json"})
+    public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
+        log.info("Find Request for the ExamCentre entity in the controller with id: {}", id);
+        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getById(id)));
+    }
+
+    @Override
+    @GetMapping(produces = {"application/json"})
+    public ResponseDto<?> getAll() {
+        log.info("GetAll Request for the ExamCentre entity in the controller");
+        return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getAll()));
+    }
+
+    @Override
+    @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
+    public ResponseDto<?> list(@RequestBody @Valid ListRequest listRequest) {
+        log.info("List Request for the ExamCentre entity in the controller");
+        return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.list(listRequest)));
+    }
+
+    @Override
+    @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody @Valid ExamCentre examCentre) {
-        log.info("Create Request for the entity in abstract controller.");
+        log.info("Create Request for the ExamCentre entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
     }

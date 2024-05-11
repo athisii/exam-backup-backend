@@ -84,8 +84,15 @@ public class Bootstrap implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        if (searchConfigService.count() < 1) {
-            searchConfigService.dump();
+        if (searchConfigService.count() == 0L) {
+            List<SearchConfig> searchConfigs = new ArrayList<>();
+            searchConfigs.add(new SearchConfig("Role", "name,code"));
+            searchConfigs.add(new SearchConfig("Region", "name,code"));
+            searchConfigs.add(new SearchConfig("ExamSlot", "name,code"));
+            searchConfigs.add(new SearchConfig("FileType", "name,code"));
+            searchConfigs.add(new SearchConfig("ExamCentre", "name,code"));
+            searchConfigs.add(new SearchConfig("User", "userId,name,email,mobileNumber"));
+            searchConfigService.dump(searchConfigs);
         }
 
         if (roleService.count() == 0L) {

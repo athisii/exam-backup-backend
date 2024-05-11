@@ -1,6 +1,5 @@
 package com.cdac.exambackup.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -30,7 +29,6 @@ public class ExamCentre extends AuditModel {
     Region region;
 
 
-    @JsonIgnore //  allow only for custom query for performance reason
     @OneToMany(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ExamFile> examFiles;
 

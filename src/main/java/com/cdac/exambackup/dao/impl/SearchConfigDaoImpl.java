@@ -31,4 +31,9 @@ public class SearchConfigDaoImpl extends AbstractBaseDao<SearchConfig, Long> imp
     public Class<SearchConfig> getEntityClass() {
         return SearchConfig.class;
     }
+
+    @Override
+    public SearchConfig findByEntityName(String name) {
+        return searchConfigRepository.findFirstByEntityName(name);
+    }
 }

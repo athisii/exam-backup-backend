@@ -4,7 +4,6 @@ import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.AuditModel;
 import com.cdac.exambackup.service.BaseService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -45,7 +44,7 @@ public abstract class AbstractBaseController<E extends AuditModel, K extends Ser
 
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     @Operation(summary = "Get Entity", description = "Loads a single entity from Database corresponds to passed Id")
-    public ResponseDto<?> get(@Schema(name = "id", description = "Entity Id of type Long", type = "Long", defaultValue = "1") @PathVariable("id") @Valid K id) throws JsonProcessingException {
+    public ResponseDto<?> get(@Schema(name = "id", description = "Entity Id of type Long", type = "Long", defaultValue = "1") @PathVariable("id") @Valid K id) {
         E e = this.baseService.getById(id);
         log.info("Find Request for the entity in abstract controller -> {}", id);
         return new ResponseDto<>("Data fetched Successfully", e);

@@ -83,7 +83,7 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
             daoOtherRegions = regionDao.findByCodeOrName(regionDto.getCode(), regionDto.getName().trim());
         }
         // check if it's the different object
-        if ((daoOtherRegions != null && daoOtherRegions.size() > 1) || daoOtherRegions != null && !daoOtherRegions.isEmpty() && daoRegion != daoOtherRegions.getFirst()) {
+        if ((daoOtherRegions != null && daoOtherRegions.size() > 1) || daoOtherRegions != null && !daoOtherRegions.isEmpty() && !daoRegion.getId().equals(daoOtherRegions.getFirst().getId())) {
             throw new GenericException("Same 'code' or 'name' already exists");
         }
 

@@ -83,7 +83,7 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
             daoOtherFileTypes = fileTypeDao.findByCodeOrName(fileTypeDto.getCode(), fileTypeDto.getName().trim());
         }
         // check if it's the different object
-        if ((daoOtherFileTypes != null && daoOtherFileTypes.size() > 1) || daoOtherFileTypes != null && !daoOtherFileTypes.isEmpty() && daoFileType != daoOtherFileTypes.getFirst()) {
+        if ((daoOtherFileTypes != null && daoOtherFileTypes.size() > 1) || daoOtherFileTypes != null && !daoOtherFileTypes.isEmpty() && !daoFileType.getId().equals(daoOtherFileTypes.getFirst().getId())) {
             throw new GenericException("Same 'code' or 'name' already exists");
         }
 

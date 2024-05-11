@@ -83,7 +83,7 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
             daoOtherExamSlots = examSlotDao.findByCodeOrName(examSlotDto.getCode(), examSlotDto.getName().trim());
         }
         // check if it's the different object
-        if ((daoOtherExamSlots != null && daoOtherExamSlots.size() > 1) || daoOtherExamSlots != null && !daoOtherExamSlots.isEmpty() && daoExamSlot != daoOtherExamSlots.getFirst()) {
+        if ((daoOtherExamSlots != null && daoOtherExamSlots.size() > 1) || daoOtherExamSlots != null && !daoOtherExamSlots.isEmpty() && !daoExamSlot.getId().equals(daoOtherExamSlots.getFirst().getId())) {
             throw new GenericException("Same 'code' or 'name' already exists");
         }
 

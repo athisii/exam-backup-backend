@@ -3,14 +3,15 @@ package com.cdac.exambackup.service.impl;
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.SearchConfigDao;
 import com.cdac.exambackup.entity.SearchConfig;
+import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.service.SearchConfigService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,14 +32,15 @@ public class SearchConfigServiceImpl extends AbstractBaseService<SearchConfig, L
         super(baseService);
     }
 
-    public void dump() {
-        List<SearchConfig> searchConfigs = new ArrayList<>();
-        if (this.searchConfigDao.count() == 0L) {
-            searchConfigs.add(new SearchConfig("User", "userId,name,email,mobileNumber"));
-            searchConfigs.add(new SearchConfig("Role", "name"));
-            searchConfigs.add(new SearchConfig("Region", "name"));
-            searchConfigs.add(new SearchConfig("AuditModel", "name"));
-            this.searchConfigDao.save(searchConfigs);
-        }
+    @Transactional
+    @Override
+    public void dump(List<SearchConfig> searchConfigs) {
+        searchConfigs.forEach(searchConfig -> {
+            SearchConfig daoSearchConfig = searchConfigDao.findByEntityName(searchConfig.getEntityName());
+            if (daoSearchConfig != null && !daoSearchConfig.getId().equals(searchConfig.getId())) {
+                throw new GenericException("SearchConfig with name: " + searchConfig.getEntityName() + " already exists");
+            }
+        });
+        this.searchConfigDao.save(searchConfigs);
     }
 }

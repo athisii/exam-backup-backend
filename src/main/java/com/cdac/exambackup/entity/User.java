@@ -57,6 +57,5 @@ public class User extends AuditModel {
     boolean firstLogin = true; // to reset on first login
 
     @ManyToOne
-    @JsonIgnore
     Role role;
 }

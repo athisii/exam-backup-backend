@@ -59,7 +59,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         if (examCentreDto.getId() == null) {
             // if both values are invalid, throw exception
             if (examCentreDto.getCode() == null || examCentreDto.getCode().isBlank() || examCentreDto.getName() == null || examCentreDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty");
+                throw new GenericException("Both 'code' and 'name' cannot be null or empty. Please provide either one");
             }
             ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreDto.getCode());
             if (daoExamCentre != null) {
@@ -86,23 +86,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             user.setName(examCentreDto.getName());
             user.setUserId(examCentreDto.getCode());
 
-            if (examCentreDto.getUser().getMobileNumber() != null) {
-                if (!Util.validateMobileNumber(examCentreDto.getUser().getMobileNumber())) {
-                    throw new GenericException("Malformed mobile number.");
-                }
-                user.setMobileNumber(examCentreDto.getUser().getMobileNumber());
-            }
-            if (examCentreDto.getUser().getEmail() != null) {
-                if (!Util.validateEmail(examCentreDto.getUser().getEmail())) {
-                    throw new GenericException("Malformed email address.");
-                }
-                user.setEmail(examCentreDto.getUser().getEmail());
-            }
+            putEmailAndMobileNumberIfValid(examCentreDto, user);
+
             // TODO: need to encrypt with BCryptEncoder
             // will do after Spring Security added.
             user.setPassword(examCentreDto.getCode()); // need to used BCryptEncoder
 
-            Role daoRole = roleDao.findByName("USER");
+            Role daoRole = roleDao.findByName("USER"); // default role
             if (daoRole == null) {
                 throw new EntityNotFoundException("Role with name: 'USER' not found");
             }
@@ -154,6 +144,8 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             throw new EntityNotFoundException("User with userId: " + oldExamCode + " not found.");
         }
 
+        putEmailAndMobileNumberIfValid(examCentreDto, daoUser);
+
         if (examCentreDto.getCode() != null) {
             if (examCentreDto.getCode().isBlank()) {
                 throw new GenericException("code is empty.");
@@ -163,7 +155,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 throw new GenericException("Same code already exists");
             }
             daoExamCentre.setCode(examCentreDto.getCode());
-            daoUser.setUserId(daoExamCentre.getCode());
+            daoUser.setUserId(daoExamCentre.getCode()); // also change userId
         }
         if (examCentreDto.getName() != null) {
             if (examCentreDto.getName().isBlank()) {
@@ -181,5 +173,22 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         }
         userDao.save(daoUser);
         return examCentreDao.save(daoExamCentre);
+    }
+
+    private void putEmailAndMobileNumberIfValid(ExamCentre examCentreDto, User user) {
+        if (examCentreDto.getUser() != null) {
+            if (examCentreDto.getUser().getMobileNumber() != null) {
+                if (!Util.validateMobileNumber(examCentreDto.getUser().getMobileNumber())) {
+                    throw new GenericException("Malformed mobile number.");
+                }
+                user.setMobileNumber(examCentreDto.getUser().getMobileNumber());
+            }
+            if (examCentreDto.getUser().getEmail() != null) {
+                if (!Util.validateEmail(examCentreDto.getUser().getEmail())) {
+                    throw new GenericException("Malformed email address.");
+                }
+                user.setEmail(examCentreDto.getUser().getEmail());
+            }
+        }
     }
 }

@@ -34,15 +34,22 @@ public class UserServiceImpl extends AbstractBaseService<User, Long> implements 
     @Transactional
     @Override
     public User save(User userDto) {
+        if (userDto.getId() == null && userDto.getUserId() == null) {
+            throw new GenericException("Both id and userId can not be null or empty");
+        }
+        if ((userDto.getEmail() == null || userDto.getEmail().isBlank()) && (userDto.getMobileNumber() == null || userDto.getMobileNumber().isBlank())) {
+            throw new GenericException("Both email and mobile can not be null or empty. At least one of them must be provided");
+        }
         User daoUser = null;
         if (userDto.getId() != null) {
             daoUser = userDao.findById(userDto.getId());
         }
-        if (userDto.getUserId() != null) {
+        //  if not found with id, search with userId
+        if (daoUser == null && userDto.getUserId() != null) {
             daoUser = userDao.findByUserId(userDto.getUserId());
         }
         if (daoUser == null) {
-            throw new EntityNotFoundException("User with not found.");
+            throw new EntityNotFoundException("User not found.");
         }
         if (Boolean.FALSE.equals(daoUser.getActive())) {
             throw new EntityNotFoundException("ExamCentre with id: " + daoUser.getId() + " is not active. Must activate first.");
