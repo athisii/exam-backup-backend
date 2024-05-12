@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * @author athisii
@@ -17,6 +18,11 @@ public class JsonNodeUtil {
     }
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final JavaTimeModule javaTimeModule = new JavaTimeModule();
+
+    static {
+        objectMapper.registerModule(javaTimeModule);
+    }
 
     @JsonFilter("conditionalFilter")
     private static class ConditionalFilter {

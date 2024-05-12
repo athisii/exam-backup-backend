@@ -1,6 +1,7 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.*;
+import com.cdac.exambackup.dto.ExamFileReqDto;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamFile;
 import com.cdac.exambackup.entity.ExamSlot;
@@ -15,11 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.List;
 
 /**
  * @author athisii
@@ -47,7 +46,6 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         super(baseDao);
     }
 
-    @Transactional
     @Override
     public ExamFile save(ExamFile examFileDto) {
         /*
@@ -71,11 +69,15 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
                   3. save this file path, size, name, etc. in the db.
          */
 
-        if (examFileDto.getExamCentre() == null || examFileDto.getExamSlot() == null || examFileDto.getFileType() == null || examFileDto.getExamDate() == null || examFileDto.getFile() == null || examFileDto.getFile().isEmpty()) {
+        if (examFileDto.getExamCentre() == null || examFileDto.getExamSlot() == null || examFileDto.getFileType() == null || examFileDto.getExamDate() == null || examFileDto.getMultipartFile() == null) {
             throw new GenericException("Please provide all the required data.");
         }
+
         if (examFileDto.getExamCentre().getId() == null || examFileDto.getExamSlot().getId() == null || examFileDto.getFileType().getId() == null) {
             throw new GenericException("Please provide all the required ids.");
+        }
+        if (examFileDto.getMultipartFile().isEmpty()) {
+            throw new GenericException("Selected file is an empty file.");
         }
 
         // check exam centre exists and is active
@@ -104,14 +106,18 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
             throw new EntityNotFoundException("FileType with id: " + daoFileType.getId() + " is not active. Must activate first.");
         }
 
+        /* prepares for folder structure and filename
+           creates folder structure like: /data/exam-backup/regionCode/examCentreCode/examDate/examSlot
+           check and create if not existed
+        */
+
         String regionCode = daoExamCentre.getRegion().getCode() + "";
         // TODO: when retrieving exam file, code must be replaced like how it is replaced during creation.
         // to avoid issues while creating folder.
         String replacedExamCentreCode = daoExamCentre.getCode().replaceAll("[^a-zA-Z0-9.-]", "_");
 
         // date =2024-06-24 16:30 PM
-        LocalDate localDate = examFileDto.getExamDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        String dateString = localDate.getYear() + "-" + localDate.getMonthValue() + "-" + localDate.getDayOfMonth();
+        String dateString = examFileDto.getExamDate().getYear() + "-" + examFileDto.getExamDate().getMonthValue() + "-" + examFileDto.getExamDate().getDayOfMonth();
         String examSlotCodeStr = daoExamSlot.getCode() + "";
 
         Path firstLevelDir = Path.of("/", "data");
@@ -145,27 +151,84 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
             throw new RuntimeException("Error creating directory.");
         }
 
-        String filePath = sixthLevelDir + "/" + examFileDto.getFileType().getName();
+        // check if there is an entry for the same file type.
+        ExamFile daoExamFile = null;
+        List<ExamFile> daoExamFiles = examFileDao.findByExamCentreAndExamSlotAndFileType(daoExamCentre, daoExamSlot, daoFileType);
+        if (!daoExamFiles.isEmpty()) {
+            for (ExamFile xamFile : daoExamFiles) {
+                if (xamFile.getExamDate().getDayOfMonth() == examFileDto.getExamDate().getDayOfMonth() && xamFile.getExamDate().getMonthValue() == examFileDto.getExamDate().getMonthValue() && xamFile.getExamDate().getYear() == examFileDto.getExamDate().getYear()) {
+                    daoExamFile = xamFile;
+                    break;
+                }
+            }
+        }
+        // first entry, no duplicate found.
+        if (daoExamFile == null) {
+            String filePath = sixthLevelDir + "/" + examFileDto.getMultipartFile().getOriginalFilename();
+            // saves the file to local fs.
+            try {
+                log.info("**saving file to path: {}", filePath);
+                examFileDto.getMultipartFile().transferTo(Path.of(filePath));
+            } catch (Exception ex) {
+                log.error("File transfer error.", ex);
+                // RuntimeException will be handled by Controller Advice and will be sent to client as INTERNAL_SERVER_ERROR
+                throw new RuntimeException("Error occurred saving file.");
+            }
+            ExamFile examFile = new ExamFile();
+            examFile.setExamCentre(daoExamCentre);
+            examFile.setExamSlot(daoExamSlot);
+            examFile.setFileType(daoFileType);
+            examFile.setExamDate(examFileDto.getExamDate());
+            examFile.setFilePath(filePath);
+            examFile.setFileSize(examFileDto.getMultipartFile().getSize());
+            examFile.setContentType(examFileDto.getMultipartFile().getContentType() != null ? examFileDto.getMultipartFile().getContentType() : "not defined in the uploaded file");
+            examFile.setUserUploadedFilename(examFileDto.getMultipartFile().getOriginalFilename());
+            return examFileDao.save(examFile);
+        }
+        // daoExamFile is not null. Same file already exists.
+        // already uploaded, re-uploading the same file type again.
+
+        String oldFilePath = sixthLevelDir + "/" + daoExamFile.getUserUploadedFilename();
+        String newFilePath = sixthLevelDir + "/" + examFileDto.getMultipartFile().getOriginalFilename();
         // saves the file to local fs.
         try {
-            log.info("**saving file to path: {}", filePath);
-            examFileDto.getFile().transferTo(Path.of(filePath));
-        } catch (IOException ex) {
-            log.error("File transfer error.", ex);
+            log.info("**deleting previously stored file: {}", oldFilePath);
+            Files.deleteIfExists(Path.of(oldFilePath));
+            examFileDto.getMultipartFile().transferTo(Path.of(newFilePath));
+        } catch (Exception ex) {
+            log.error("Error occurred while deleting/saving file.", ex);
             // RuntimeException will be handled by Controller Advice and will be sent to client as INTERNAL_SERVER_ERROR
-            throw new RuntimeException("Error occurred saving file.");
+            throw new RuntimeException("Error occurred saving/deleting file.");
         }
+        daoExamFile.setExamDate(examFileDto.getExamDate());
+        daoExamFile.setFilePath(newFilePath);
+        daoExamFile.setFileSize(examFileDto.getMultipartFile().getSize());
+        daoExamFile.setContentType(examFileDto.getMultipartFile().getContentType() != null ? examFileDto.getMultipartFile().getContentType() : "not defined in the uploaded file");
+        daoExamFile.setUserUploadedFilename(examFileDto.getMultipartFile().getOriginalFilename());
+        return examFileDao.save(daoExamFile);
+    }
 
-        ExamFile examFile = new ExamFile();
-        examFile.setExamCentre(daoExamCentre);
-        examFile.setExamSlot(daoExamSlot);
-        examFile.setFileType(daoFileType);
-        examFile.setExamDate(examFileDto.getExamDate());
+    @Transactional
+    @Override
+    public ExamFile save(ExamFileReqDto examFileReqDto) {
+        var examFile = new ExamFile();
+        examFile.setId(examFileReqDto.id());
+        // examCentre
+        var examCentre = new ExamCentre();
+        examCentre.setId(examFileReqDto.examCentreId());
+        examFile.setExamCentre(examCentre);
+        // examSlot
+        var examSlot = new ExamSlot();
+        examSlot.setId(examFileReqDto.examSlotId());
+        examFile.setExamSlot(examSlot);
+        // fileType
+        var fileType = new FileType();
+        fileType.setId(examFileReqDto.fileTypeId());
+        examFile.setFileType(fileType);
 
-        examFile.setFilePath(filePath);
-        examFile.setFileSize(examFileDto.getFile().getSize());
-        examFile.setContentType(examFileDto.getFile().getContentType() != null ? examFileDto.getFile().getContentType() : "not defined in the uploaded file");
-        examFile.setUserUploadedFilename(examFileDto.getFile().getName());
-        return examFileDao.save(examFile);
+        examFile.setExamDate(examFileReqDto.examDate());
+        examFile.setMultipartFile(examFileReqDto.file());
+
+        return save(examFile);
     }
 }

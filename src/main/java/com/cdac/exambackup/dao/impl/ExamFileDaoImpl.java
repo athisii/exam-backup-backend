@@ -2,13 +2,18 @@ package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.ExamFileDao;
 import com.cdac.exambackup.dao.repo.ExamFileRepository;
+import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamFile;
+import com.cdac.exambackup.entity.ExamSlot;
+import com.cdac.exambackup.entity.FileType;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -31,5 +36,10 @@ public class ExamFileDaoImpl extends AbstractBaseDao<ExamFile, Long> implements 
     @Override
     public Class<ExamFile> getEntityClass() {
         return ExamFile.class;
+    }
+
+    @Override
+    public List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre examCentre, ExamSlot examSlot, FileType fileType) {
+        return this.examFileRepository.findByExamCentreAndExamSlotAndFileType(examCentre, examSlot, fileType);
     }
 }

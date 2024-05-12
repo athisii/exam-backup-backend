@@ -15,5 +15,4 @@ public class ExamBackupApplication {
     public static void main(String[] args) {
         SpringApplication.run(ExamBackupApplication.class, args);
     }
-
 }

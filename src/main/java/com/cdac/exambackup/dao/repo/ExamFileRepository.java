@@ -1,8 +1,13 @@
 package com.cdac.exambackup.dao.repo;
 
+import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamFile;
+import com.cdac.exambackup.entity.ExamSlot;
+import com.cdac.exambackup.entity.FileType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -12,4 +17,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ExamFileRepository extends JpaRepository<ExamFile, Long> {
+    List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre examCentre, ExamSlot examSlot, FileType fileType);
 }

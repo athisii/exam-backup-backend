@@ -4,7 +4,7 @@ import com.cdac.exambackup.entity.AuditModel;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author athisii
@@ -16,12 +16,12 @@ public class AuditListener {
 
     @PrePersist
     protected void beforePersist(AuditModel auditModel) {
-        auditModel.setCreatedDate(new Date());
-        auditModel.setModifiedDate(new Date());
+        auditModel.setCreatedDate(LocalDateTime.now());
+        auditModel.setModifiedDate(LocalDateTime.now());
     }
 
     @PreUpdate
     protected void beforeUpdate(AuditModel auditModel) {
-        auditModel.setModifiedDate(new Date());
+        auditModel.setModifiedDate(LocalDateTime.now());
     }
 }

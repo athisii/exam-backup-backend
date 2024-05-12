@@ -1,14 +1,17 @@
 package com.cdac.exambackup.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author athisii
@@ -40,11 +43,9 @@ public class ExamFile extends AuditModel {
     FileType fileType;
 
     @NotNull
-    @Schema(example = "2024-05-24 11:30 AM")
     @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
-    @Temporal(TemporalType.TIMESTAMP)
-    Date examDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm a")
+    LocalDateTime examDate;
 
     /*
      * path for file when saved in this local machine fs.
@@ -70,5 +71,5 @@ public class ExamFile extends AuditModel {
     String labNumber;
 
     @Transient
-    MultipartFile file;
+    MultipartFile multipartFile;
 }

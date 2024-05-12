@@ -90,6 +90,7 @@ public class Bootstrap implements CommandLineRunner {
             searchConfigs.add(new SearchConfig("Region", "name,code"));
             searchConfigs.add(new SearchConfig("ExamSlot", "name,code"));
             searchConfigs.add(new SearchConfig("FileType", "name,code"));
+            searchConfigs.add(new SearchConfig("ExamFile", "contentType,userUploadedFilename"));
             searchConfigs.add(new SearchConfig("ExamCentre", "name,code"));
             searchConfigs.add(new SearchConfig("User", "userId,name,email,mobileNumber"));
             searchConfigService.dump(searchConfigs);
