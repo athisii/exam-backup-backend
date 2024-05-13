@@ -12,6 +12,7 @@ import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -85,7 +86,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseDto<>("Error parsing json data.", false);
     }
 
-    @ExceptionHandler({EntityNotFoundException.class, JpaObjectRetrievalFailureException.class})
+    @ExceptionHandler({EntityNotFoundException.class, UsernameNotFoundException.class, JpaObjectRetrievalFailureException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> invalidRequest(Exception exception) {
         log.error("Entity Not Found -->{}", exception.getMessage());

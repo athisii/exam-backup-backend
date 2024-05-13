@@ -1,6 +1,6 @@
 package com.cdac.exambackup.controller;
 
-import com.cdac.exambackup.entity.User;
+import com.cdac.exambackup.entity.AppUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class UserControllerTest {
+class AppAppUserControllerTest {
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -45,7 +45,7 @@ class UserControllerTest {
     @Test
     @Order(3)
     void shouldUpdate_forValidDataAndValidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setMobileNumber("8132817645");
         user.setEmail("email@email.com");
         user.setId(1L);
@@ -59,7 +59,7 @@ class UserControllerTest {
     @Test
     @Order(4)
     void shouldUpdate_forValidEmailAndValidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setEmail("email@email.com");
         user.setId(1L);
         mockMvc.perform(post("/users/create")
@@ -72,7 +72,7 @@ class UserControllerTest {
     @Test
     @Order(5)
     void shouldUpdate_forValidMobileNumberAndValidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setMobileNumber("+91-8132817645");
         user.setId(1L);
         mockMvc.perform(post("/users/create")
@@ -85,7 +85,7 @@ class UserControllerTest {
     @Test
     @Order(6)
     void shouldNotUpdate_forInvalidDataAndValidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setMobileNumber("123");
         user.setEmail("3asdf@one");
         user.setId(2L);
@@ -99,7 +99,7 @@ class UserControllerTest {
     @Test
     @Order(7)
     void shouldNotUpdate_forValidDataAndInvalidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setMobileNumber("+91 8132817645");
         user.setEmail("email@email.com");
         user.setId(9L);

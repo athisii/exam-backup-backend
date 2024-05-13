@@ -2,7 +2,7 @@ package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.Region;
-import com.cdac.exambackup.entity.User;
+import com.cdac.exambackup.entity.AppUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -51,7 +51,7 @@ class ExamCentreControllerTest {
     void shouldCreate_forValidData() throws Exception {
         var region = new Region();
         region.setId(1L);
-        var user = new User();
+        var user = new AppUser();
         user.setEmail("athisii@email.com");
         user.setMobileNumber("8132817610");
         mockMvc.perform(post("/exam-centres/create")
@@ -128,7 +128,7 @@ class ExamCentreControllerTest {
     @Test
     @Order(10)
     void shouldUpdate_forValidDataAndValidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setEmail("change@email.com");
         user.setMobileNumber("8132817610");
         var examCentre = new ExamCentre("1", "new EC1", null, null, user);
@@ -143,7 +143,7 @@ class ExamCentreControllerTest {
     @Test
     @Order(11)
     void shouldNotUpdate_forInvalidEmailAndValidId() throws Exception {
-        var user = new User();
+        var user = new AppUser();
         user.setEmail("change@email");
         user.setMobileNumber("8132817610");
 

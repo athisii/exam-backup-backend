@@ -3,7 +3,9 @@ package com.cdac.exambackup.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,19 +18,15 @@ import java.time.LocalDateTime;
  */
 
 
-@Table(name = "app_user")
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User extends AuditModel {
+public class AppUser extends AuditModel {
     @Column(nullable = false, unique = true, length = 20)
     String userId; // exam-centre-code or admin-id
-
-    @OneToOne
-    ExamCentre examCentre;
 
     @Column(length = 50)
     String name;

@@ -31,7 +31,4 @@ public class ExamCentre extends AuditModel {
 
     @OneToMany(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ExamFile> examFiles;
-
-    @OneToOne(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
-    User user;
 }

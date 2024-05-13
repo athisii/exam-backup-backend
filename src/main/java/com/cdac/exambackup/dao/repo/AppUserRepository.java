@@ -1,6 +1,6 @@
 package com.cdac.exambackup.dao.repo;
 
-import com.cdac.exambackup.entity.User;
+import com.cdac.exambackup.entity.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    User findFirstByUserId(String userId);
+public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+    AppUser findFirstByUserId(String userId);
 }

@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -46,6 +47,12 @@ public class Bootstrap implements CommandLineRunner {
     @Autowired
     ExamCentreService examCentreService;
 
+    @Autowired
+    AppUserService appUserService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
 
     static {
         roleCodeNameMap = new TreeMap<>();
@@ -84,6 +91,7 @@ public class Bootstrap implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
+
         if (searchConfigService.count() == 0L) {
             List<SearchConfig> searchConfigs = new ArrayList<>();
             searchConfigs.add(new SearchConfig("Role", "name,code"));
@@ -92,7 +100,7 @@ public class Bootstrap implements CommandLineRunner {
             searchConfigs.add(new SearchConfig("FileType", "name,code"));
             searchConfigs.add(new SearchConfig("ExamFile", "contentType,userUploadedFilename"));
             searchConfigs.add(new SearchConfig("ExamCentre", "name,code"));
-            searchConfigs.add(new SearchConfig("User", "userId,name,email,mobileNumber"));
+            searchConfigs.add(new SearchConfig("AppUser", "userId,name,email,mobileNumber"));
             searchConfigService.dump(searchConfigs);
         }
 
@@ -106,6 +114,16 @@ public class Bootstrap implements CommandLineRunner {
             });
             roleService.save(roles);
         }
+
+        if (appUserService.count() == 0L) {
+            var appUser = new AppUser();
+            appUser.setUserId("000");
+            appUser.setPassword(passwordEncoder.encode("admin"));
+            appUser.setEmail("admin@cdac.in");
+            appUser.setRole(roleService.getById(Integer.toUnsignedLong(1))); // user `ADMIN`
+            appUserService.save(appUser);
+        }
+
 
         if (regionService.count() == 0L) {
             List<Region> regions = new ArrayList<>();
@@ -141,26 +159,14 @@ public class Bootstrap implements CommandLineRunner {
         }
 
         if (examCentreService.count() == 0L) {
-            List<ExamCentre> examCentres = new ArrayList<>();
             examCentreCodeNameMap.forEach((code, name) -> {
                 var examCentre = new ExamCentre();
                 examCentre.setCode(code + "");
                 examCentre.setName(name);
-                examCentres.add(examCentre);
                 Region region = regionService.getById(Long.parseLong(code + ""));
                 examCentre.setRegion(region);
-                User user = new User();
-                user.setUserId(code + "");
-                user.setName(name);
-                //TODO: password is plain text for now
-                user.setPassword("password");
-                user.setEmail(name + "@email.com");
-                user.setRole(roleService.getById(Integer.toUnsignedLong(3))); // user `USER`
-                user.setMobileNumber("+91813281764" + code);
-                user.setExamCentre(examCentre);
-                examCentre.setUser(user);
+                examCentreService.save(examCentre);
             });
-            examCentreService.save(examCentres);
         }
     }
 }

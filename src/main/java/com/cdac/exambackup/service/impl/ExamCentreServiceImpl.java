@@ -1,18 +1,18 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.*;
+import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.Region;
 import com.cdac.exambackup.entity.Role;
-import com.cdac.exambackup.entity.User;
 import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.service.ExamCentreService;
-import com.cdac.exambackup.util.Util;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +36,10 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     RoleDao roleDao;
 
     @Autowired
-    UserDao userDao;
+    AppUserDao appUserDao;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public ExamCentreServiceImpl(BaseDao<ExamCentre, Long> baseDao) {
         super(baseDao);
@@ -82,21 +85,17 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                         4. the rest used default values
              */
 
-            User user = new User();
-            user.setName(examCentreDto.getName());
-            user.setUserId(examCentreDto.getCode());
-
-            putEmailAndMobileNumberIfValid(examCentreDto, user);
-
-            // TODO: need to encrypt with BCryptEncoder
-            // will do after Spring Security added.
-            user.setPassword(examCentreDto.getCode()); // need to used BCryptEncoder
+            AppUser appUser = new AppUser();
+            appUser.setName(examCentreDto.getName());
+            appUser.setUserId(examCentreDto.getCode());
+            appUser.setPassword(passwordEncoder.encode(examCentreDto.getCode()));
 
             Role daoRole = roleDao.findByName("USER"); // default role
             if (daoRole == null) {
                 throw new EntityNotFoundException("Role with name: 'USER' not found");
             }
-            user.setRole(daoRole);
+            appUser.setRole(daoRole);
+            appUserDao.save(appUser);
 
             // now remove the unnecessary fields if present or create new object.
             ExamCentre examCentre = new ExamCentre();
@@ -104,8 +103,6 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             examCentre.setName(examCentreDto.getName().trim());
             examCentre.setRegion(daoRegion);
 
-            user.setExamCentre(examCentre);
-            examCentre.setUser(user); // user will be automatically saved when ExamCentre is saved due to rel-mapping.
             return examCentreDao.save(examCentre);
         }
         // for updating existing record.
@@ -139,12 +136,10 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         }
         // examCentreCode is change, so userId & name must also be changed
         // good catch
-        User daoUser = userDao.findByUserId(oldExamCode);
-        if (daoUser == null) {
+        AppUser daoAppUser = appUserDao.findByUserId(oldExamCode);
+        if (daoAppUser == null) {
             throw new EntityNotFoundException("User with userId: " + oldExamCode + " not found.");
         }
-
-        putEmailAndMobileNumberIfValid(examCentreDto, daoUser);
 
         if (examCentreDto.getCode() != null) {
             if (examCentreDto.getCode().isBlank()) {
@@ -155,14 +150,14 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 throw new GenericException("Same code already exists");
             }
             daoExamCentre.setCode(examCentreDto.getCode());
-            daoUser.setUserId(daoExamCentre.getCode()); // also change userId
+            daoAppUser.setUserId(daoExamCentre.getCode()); // also change userId
         }
         if (examCentreDto.getName() != null) {
             if (examCentreDto.getName().isBlank()) {
                 throw new GenericException("Name is empty.");
             }
             daoExamCentre.setName(examCentreDto.getName());
-            daoUser.setName(daoExamCentre.getName());
+            daoAppUser.setName(daoExamCentre.getName());
         }
         if (examCentreDto.getRegion() != null) {
             Region daoRegion = regionDao.findById(examCentreDto.getRegion().getId());
@@ -171,24 +166,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             }
             daoExamCentre.setRegion(daoRegion);
         }
-        userDao.save(daoUser);
+        appUserDao.save(daoAppUser);
         return examCentreDao.save(daoExamCentre);
-    }
-
-    private void putEmailAndMobileNumberIfValid(ExamCentre examCentreDto, User user) {
-        if (examCentreDto.getUser() != null) {
-            if (examCentreDto.getUser().getMobileNumber() != null) {
-                if (!Util.validateMobileNumber(examCentreDto.getUser().getMobileNumber())) {
-                    throw new GenericException("Malformed mobile number.");
-                }
-                user.setMobileNumber(examCentreDto.getUser().getMobileNumber());
-            }
-            if (examCentreDto.getUser().getEmail() != null) {
-                if (!Util.validateEmail(examCentreDto.getUser().getEmail())) {
-                    throw new GenericException("Malformed email address.");
-                }
-                user.setEmail(examCentreDto.getUser().getEmail());
-            }
-        }
     }
 }
