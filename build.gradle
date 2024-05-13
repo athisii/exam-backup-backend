@@ -29,14 +29,16 @@ dependencies {
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.21'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1'
-
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     runtimeOnly 'org.postgresql:postgresql'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     runtimeOnly 'com.h2database:h2' // only integration test
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {

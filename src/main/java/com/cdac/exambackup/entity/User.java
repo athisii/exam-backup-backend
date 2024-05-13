@@ -2,11 +2,12 @@ package com.cdac.exambackup.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author athisii
@@ -43,17 +44,16 @@ public class User extends AuditModel {
     String password;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
-    @Temporal(TemporalType.TIMESTAMP)
-    Date passExpiryDate;
+    LocalDateTime passExpiryDate;
 
     int tryCounter;
 
     boolean locked;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
-    @Temporal(TemporalType.TIMESTAMP)
-    Date unlockTime;
+    LocalDateTime unlockTime;
 
+    @Hidden
     boolean firstLogin = true; // to reset on first login
 
     @ManyToOne

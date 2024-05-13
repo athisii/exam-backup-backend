@@ -2,13 +2,18 @@ package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.dto.ExamFileReqDto;
 import com.cdac.exambackup.dto.ListRequest;
+import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamFile;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamFileService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -17,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author athisii
@@ -25,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @since 5/6/24
  */
 
-@Tag(name = "Exam File Controller")
+@Tag(name = "Exam File")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -56,13 +60,30 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> list(@RequestBody @Valid ListRequest listRequest) {
+    public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the ExamFile entity in the controller");
         return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.list(listRequest)));
     }
 
+    // this method should not be used, so overriding the parent class.
+    @Hidden // hide from swagger ui
+    @Override
+    public ResponseDto<?> create(@RequestBody ExamFile entity) {
+        log.info("Create Request for the entity in abstract controller.");
+        return new ResponseDto<>("Your data has been saved successfully", new ResIdDto<>(this.examFileService.save(entity).getId()));
+    }
+
+
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @Operation(summary = "Create/Update entity with MultipartFile", description = "Create or Update (if Id passed) the entity in Database")
+    @Operation(
+            summary = "Create/Update entity with MultipartFile",
+            description = "Create or Update (if Id passed) the entity in Database",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Your data has been saved successfully\", \"status\": true, \"data\": {\"id\":1}}"))),
+                    @ApiResponse(description = "Validation failure / invalid request payload", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Invalid request/validation error message.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
     public ResponseDto<?> create(ExamFileReqDto examFileReqDto) {
         log.info("Create Request for the ExamFile entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");

@@ -69,14 +69,14 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
                   3. save this file path, size, name, etc. in the db.
          */
 
-        if (examFileDto.getExamCentre() == null || examFileDto.getExamSlot() == null || examFileDto.getFileType() == null || examFileDto.getExamDate() == null || examFileDto.getMultipartFile() == null) {
+        if (examFileDto.getExamCentre() == null || examFileDto.getExamSlot() == null || examFileDto.getFileType() == null || examFileDto.getExamDate() == null || examFileDto.getFile() == null) {
             throw new GenericException("Please provide all the required data.");
         }
 
         if (examFileDto.getExamCentre().getId() == null || examFileDto.getExamSlot().getId() == null || examFileDto.getFileType().getId() == null) {
             throw new GenericException("Please provide all the required ids.");
         }
-        if (examFileDto.getMultipartFile().isEmpty()) {
+        if (examFileDto.getFile().isEmpty()) {
             throw new GenericException("Selected file is an empty file.");
         }
 
@@ -164,11 +164,11 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         }
         // first entry, no duplicate found.
         if (daoExamFile == null) {
-            String filePath = sixthLevelDir + "/" + examFileDto.getMultipartFile().getOriginalFilename();
+            String filePath = sixthLevelDir + "/" + examFileDto.getFile().getOriginalFilename();
             // saves the file to local fs.
             try {
                 log.info("**saving file to path: {}", filePath);
-                examFileDto.getMultipartFile().transferTo(Path.of(filePath));
+                examFileDto.getFile().transferTo(Path.of(filePath));
             } catch (Exception ex) {
                 log.error("File transfer error.", ex);
                 // RuntimeException will be handled by Controller Advice and will be sent to client as INTERNAL_SERVER_ERROR
@@ -180,21 +180,21 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
             examFile.setFileType(daoFileType);
             examFile.setExamDate(examFileDto.getExamDate());
             examFile.setFilePath(filePath);
-            examFile.setFileSize(examFileDto.getMultipartFile().getSize());
-            examFile.setContentType(examFileDto.getMultipartFile().getContentType() != null ? examFileDto.getMultipartFile().getContentType() : "not defined in the uploaded file");
-            examFile.setUserUploadedFilename(examFileDto.getMultipartFile().getOriginalFilename());
+            examFile.setFileSize(examFileDto.getFile().getSize());
+            examFile.setContentType(examFileDto.getFile().getContentType() != null ? examFileDto.getFile().getContentType() : "not defined in the uploaded file");
+            examFile.setUserUploadedFilename(examFileDto.getFile().getOriginalFilename());
             return examFileDao.save(examFile);
         }
         // daoExamFile is not null. Same file already exists.
         // already uploaded, re-uploading the same file type again.
 
         String oldFilePath = sixthLevelDir + "/" + daoExamFile.getUserUploadedFilename();
-        String newFilePath = sixthLevelDir + "/" + examFileDto.getMultipartFile().getOriginalFilename();
+        String newFilePath = sixthLevelDir + "/" + examFileDto.getFile().getOriginalFilename();
         // saves the file to local fs.
         try {
             log.info("**deleting previously stored file: {}", oldFilePath);
             Files.deleteIfExists(Path.of(oldFilePath));
-            examFileDto.getMultipartFile().transferTo(Path.of(newFilePath));
+            examFileDto.getFile().transferTo(Path.of(newFilePath));
         } catch (Exception ex) {
             log.error("Error occurred while deleting/saving file.", ex);
             // RuntimeException will be handled by Controller Advice and will be sent to client as INTERNAL_SERVER_ERROR
@@ -202,9 +202,9 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         }
         daoExamFile.setExamDate(examFileDto.getExamDate());
         daoExamFile.setFilePath(newFilePath);
-        daoExamFile.setFileSize(examFileDto.getMultipartFile().getSize());
-        daoExamFile.setContentType(examFileDto.getMultipartFile().getContentType() != null ? examFileDto.getMultipartFile().getContentType() : "not defined in the uploaded file");
-        daoExamFile.setUserUploadedFilename(examFileDto.getMultipartFile().getOriginalFilename());
+        daoExamFile.setFileSize(examFileDto.getFile().getSize());
+        daoExamFile.setContentType(examFileDto.getFile().getContentType() != null ? examFileDto.getFile().getContentType() : "not defined in the uploaded file");
+        daoExamFile.setUserUploadedFilename(examFileDto.getFile().getOriginalFilename());
         return examFileDao.save(daoExamFile);
     }
 
@@ -227,7 +227,7 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         examFile.setFileType(fileType);
 
         examFile.setExamDate(examFileReqDto.examDate());
-        examFile.setMultipartFile(examFileReqDto.file());
+        examFile.setFile(examFileReqDto.file());
 
         return save(examFile);
     }

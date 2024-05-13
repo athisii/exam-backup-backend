@@ -36,13 +36,6 @@ public class BeanConfig {
     }
 
     @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI().info(new Info().title("Exam Backup API")
-                .description("Exam Backup API Documentation")
-                .version("v1.0"));
-    }
-
-    @Bean
     public MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
         factory.setMaxFileSize(DataSize.ofGigabytes(10));

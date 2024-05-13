@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 5/5/24
  */
 
-@Tag(name = "SearchConfig Controller")
+@Tag(name = "SearchConfig")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController

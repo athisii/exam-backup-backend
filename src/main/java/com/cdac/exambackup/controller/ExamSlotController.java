@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
-@Tag(name = "Exam Slot Controller")
+@Tag(name = "Exam Slot")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -53,14 +53,14 @@ public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> list(@RequestBody @Valid ListRequest listRequest) {
+    public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the ExamSlot entity in the controller");
         return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examSlotService.list(listRequest)));
     }
 
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody @Valid ExamSlot entity) {
+    public ResponseDto<?> create(@RequestBody ExamSlot entity) {
         log.info("Create Request for the ExamSLot entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examSlotService.save(entity)));

@@ -59,7 +59,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         if (examCentreDto.getId() == null) {
             // if both values are invalid, throw exception
             if (examCentreDto.getCode() == null || examCentreDto.getCode().isBlank() || examCentreDto.getName() == null || examCentreDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty. Please provide either one");
+                throw new GenericException("Both 'code' and 'name' cannot be null or empty.");
             }
             ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreDto.getCode());
             if (daoExamCentre != null) {

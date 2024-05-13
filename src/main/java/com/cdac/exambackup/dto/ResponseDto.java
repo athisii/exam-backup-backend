@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(name = "ResponseDto", description = "Response object for every API.")
 public record ResponseDto<T>(
         @Schema(description = "Message received from API") String message,
-        @Schema(description = "Success status of API.") boolean status,
+        @Schema(description = "true on success, false on failure") boolean status,
         @Schema(description = "Data received from API. Its an generic object can return data of any type") T data) {
     public ResponseDto(String message, T data) {
         this(message, true, data);

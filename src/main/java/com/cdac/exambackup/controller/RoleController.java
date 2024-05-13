@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
-@Tag(name = "Role Controller")
+@Tag(name = "Role")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -52,14 +52,14 @@ public class RoleController extends AbstractBaseController<Role, Long> {
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> list(@RequestBody @Valid ListRequest listRequest) {
+    public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the Role entity in the controller");
         return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.roleService.list(listRequest)));
     }
 
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody @Valid Role role) {
+    public ResponseDto<?> create(@RequestBody Role role) {
         log.info("Create Request for the Role entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.roleService.save(role)));

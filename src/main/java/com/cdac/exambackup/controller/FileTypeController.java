@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
-@Tag(name = "File Type Controller")
+@Tag(name = "File Type")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -53,14 +53,14 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> list(@RequestBody @Valid ListRequest listRequest) {
+    public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the FileType entity in the controller");
         return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.list(listRequest)));
     }
 
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody @Valid FileType fileType) {
+    public ResponseDto<?> create(@RequestBody FileType fileType) {
         log.info("Create Request for the FileType entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileType)));

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
-@Tag(name = "Region Controller")
+@Tag(name = "Region")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -52,7 +52,7 @@ public class RegionController extends AbstractBaseController<Region, Long> {
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> list(@RequestBody @Valid ListRequest listRequest) {
+    public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the Region entity in the controller");
         return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.regionService.list(listRequest)));
     }
@@ -60,7 +60,7 @@ public class RegionController extends AbstractBaseController<Region, Long> {
 
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody @Valid Region region) {
+    public ResponseDto<?> create(@RequestBody Region region) {
         log.info("Create Request for the Region entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.regionService.save(region)));

@@ -7,6 +7,7 @@ import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamCentreService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
-@Tag(name = "Exam Centre Controller")
+@Tag(name = "Exam Centre")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -60,7 +61,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
 
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody @Valid ExamCentre examCentre) {
+    public ResponseDto<?> create(@RequestBody ExamCentre examCentre) {
         log.info("Create Request for the ExamCentre entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
