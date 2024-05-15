@@ -2,11 +2,11 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.entity.AppUser;
+import com.cdac.exambackup.entity.AppUserDetails;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,12 +31,6 @@ public class AppUserDetailsService implements UserDetailsService {
         if (appUser == null) {
             throw new UsernameNotFoundException(username);
         }
-        return User.builder()
-                .username(appUser.getUserId())
-                .password(appUser.getPassword())
-                .roles(appUser.getRole().getName())
-                .disabled(!appUser.getActive())
-                .accountLocked(appUser.isLocked())
-                .build();
+        return new AppUserDetails(appUser);
     }
 }
