@@ -2,6 +2,7 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.dao.BaseDao;
+import com.cdac.exambackup.dto.PasswordChangeDto;
 import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.service.AppUserService;
@@ -11,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> implements AppUserService {
     @Autowired
     AppUserDao appUserDao;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public AppUserServiceImpl(BaseDao<AppUser, Long> baseDao) {
         super(baseDao);
@@ -54,7 +59,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         if (daoAppUser == null && appUserDto.getUserId() != null) {
             daoAppUser = appUserDao.findByUserId(appUserDto.getUserId());
         }
-        if (daoAppUser == null) {
+        if (daoAppUser == null || Boolean.TRUE.equals(daoAppUser.getDeleted())) {
             throw new EntityNotFoundException("User not found.");
         }
         if (Boolean.FALSE.equals(daoAppUser.getActive())) {
@@ -73,5 +78,22 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
             daoAppUser.setEmail(appUserDto.getEmail());
         }
         return appUserDao.save(daoAppUser);
+    }
+
+    @Override
+    public void changePassword(PasswordChangeDto passwordChangeDto) {
+        if (passwordChangeDto == null || passwordChangeDto.userId() == null || passwordChangeDto.oldPassword() == null || passwordChangeDto.newPassword() == null) {
+            throw new GenericException("userId, oldPassword and newPassword can not be null or empty");
+        }
+        AppUser daoAppUser = appUserDao.findByUserId(passwordChangeDto.userId());
+        if (daoAppUser == null || Boolean.TRUE.equals(daoAppUser.getDeleted()) || Boolean.FALSE.equals(daoAppUser.getActive())) {
+            throw new EntityNotFoundException("User not found with userId: " + passwordChangeDto.userId());
+        }
+
+        if (!passwordEncoder.matches(passwordChangeDto.oldPassword(), daoAppUser.getPassword())) {
+            throw new GenericException("Bad credentials");
+        }
+        daoAppUser.setPassword(passwordEncoder.encode(passwordChangeDto.newPassword()));
+        appUserDao.save(daoAppUser);
     }
 }

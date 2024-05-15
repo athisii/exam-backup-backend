@@ -3,10 +3,11 @@ package com.cdac.exambackup.controller;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.AppUser;
-import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.AppUserService;
+import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "User")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)

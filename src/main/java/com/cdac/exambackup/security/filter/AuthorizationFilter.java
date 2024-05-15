@@ -46,7 +46,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("**Servlet Path => {}", request.getServletPath());
         String servletPath = request.getServletPath();
-        String[] securityExemptedPaths = {"/login", "/reset-password", "/api-docs", "/api-docs/.*", "/actuator/health", "/swagger.*/.*"};
+        String[] securityExemptedPaths = {"/login", "/change-password", "/reset-password", "/api-docs", "/api-docs/.*", "/actuator/health", "/swagger.*/.*"};
         for (String path : securityExemptedPaths) {
             if (servletPath.matches(path)) {
                 log.info("**Authorization not required for path: {}", path);

@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Exam File")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)

@@ -28,7 +28,7 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser appUser = appUserDao.findByUserId(username);
-        if (appUser == null) {
+        if (appUser == null || Boolean.TRUE.equals(appUser.getDeleted())) {
             throw new UsernameNotFoundException(username);
         }
         return new AppUserDetails(appUser);

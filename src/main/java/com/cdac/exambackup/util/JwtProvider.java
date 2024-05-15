@@ -74,6 +74,7 @@ public class JwtProvider {
                 .withClaim(PERMISSIONS, findListValueFromToken(refreshToken, PERMISSIONS))
                 .withClaim("id", findLongValueFromToken(refreshToken, "id"))
                 .withClaim("name", findStringValueFromToken(refreshToken, "name"))
+                .withClaim("key", (String) null) // place holder
                 .sign(algorithm);
     }
 

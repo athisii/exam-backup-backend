@@ -3,6 +3,7 @@ package com.cdac.exambackup.controller;
 import com.cdac.exambackup.entity.SearchConfig;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.SearchConfigService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 5/5/24
  */
 
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "SearchConfig")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)

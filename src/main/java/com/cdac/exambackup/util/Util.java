@@ -1,5 +1,6 @@
 package com.cdac.exambackup.util;
 
+import java.util.Random;
 import java.util.regex.Pattern;
 
 /**
@@ -9,6 +10,9 @@ import java.util.regex.Pattern;
  */
 
 public class Util {
+    private static final String ALPHANUMERICS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final Random random = new Random();
+
     private Util() {
 
     }
@@ -25,5 +29,13 @@ public class Util {
 
     public static boolean validateMobileNumber(String mobileNumber) {
         return VALID_MOBILE_NUMBER_REGEX.matcher(mobileNumber).matches();
+    }
+
+    public static String generateRandomString(int length) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(ALPHANUMERICS.charAt(random.nextInt(ALPHANUMERICS.length())));
+        }
+        return sb.toString();
     }
 }

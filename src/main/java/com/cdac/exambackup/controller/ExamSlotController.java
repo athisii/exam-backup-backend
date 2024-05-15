@@ -7,6 +7,7 @@ import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamSlotService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 5/6/24
  */
 
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Exam Slot")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)

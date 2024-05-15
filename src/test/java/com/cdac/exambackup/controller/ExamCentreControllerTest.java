@@ -1,8 +1,8 @@
 package com.cdac.exambackup.controller;
 
+import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.Region;
-import com.cdac.exambackup.entity.AppUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -55,7 +55,7 @@ class ExamCentreControllerTest {
         user.setEmail("athisii@email.com");
         user.setMobileNumber("8132817610");
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre("7", "EC7", region, null, user)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre("7", "EC7", region, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -65,7 +65,7 @@ class ExamCentreControllerTest {
     @Order(4)
     void shouldNotCreate_forInvalidData() throws Exception {
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre(" ", " ", null, null, null)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre(" ", " ", null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -75,7 +75,7 @@ class ExamCentreControllerTest {
     @Order(5)
     void shouldNotCreate_forValidCodeAndInvalidName() throws Exception {
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre("10", null, null, null, null)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre("10", null, null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -87,7 +87,7 @@ class ExamCentreControllerTest {
         var region = new Region();
         region.setId(20L);
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre("10", "valid name", region, null, null)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre("10", "valid name", region, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -97,7 +97,7 @@ class ExamCentreControllerTest {
     @Order(7)
     void shouldNotCreate_forValidNameAndInvalidCode() throws Exception {
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre(null, "valid name", null, null, null)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre(null, "valid name", null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -107,7 +107,7 @@ class ExamCentreControllerTest {
     @Order(8)
     void shouldNotCreate_forAlreadyExistedCode() throws Exception {
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre("1", "new role name", null, null, null)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre("1", "new role name", null, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -119,7 +119,7 @@ class ExamCentreControllerTest {
         var region = new Region();
         region.setId(3L);
         mockMvc.perform(post("/exam-centres/create")
-                        .content(objectMapper.writeValueAsString(new ExamCentre("20", "EC1", region, null, null)))
+                        .content(objectMapper.writeValueAsString(new ExamCentre("20", "EC1", region, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -128,10 +128,7 @@ class ExamCentreControllerTest {
     @Test
     @Order(10)
     void shouldUpdate_forValidDataAndValidId() throws Exception {
-        var user = new AppUser();
-        user.setEmail("change@email.com");
-        user.setMobileNumber("8132817610");
-        var examCentre = new ExamCentre("1", "new EC1", null, null, user);
+        var examCentre = new ExamCentre("1", "new EC1", null, null);
         examCentre.setId(1L);
         mockMvc.perform(post("/exam-centres/create")
                         .content(objectMapper.writeValueAsString(examCentre))
@@ -143,11 +140,7 @@ class ExamCentreControllerTest {
     @Test
     @Order(11)
     void shouldNotUpdate_forInvalidEmailAndValidId() throws Exception {
-        var user = new AppUser();
-        user.setEmail("change@email");
-        user.setMobileNumber("8132817610");
-
-        var examCentre = new ExamCentre("1", "new EC1", null, null, user);
+        var examCentre = new ExamCentre("1", "new EC1", null, null);
         examCentre.setId(1L);
         mockMvc.perform(post("/exam-centres/create")
                         .content(objectMapper.writeValueAsString(examCentre))
@@ -159,7 +152,7 @@ class ExamCentreControllerTest {
     @Test
     @Order(12)
     void shouldUpdate_forValidNameAndValidId() throws Exception {
-        var examCentre = new ExamCentre(null, "Valid Name EC1", null, null, null);
+        var examCentre = new ExamCentre(null, "Valid Name EC1", null, null);
         examCentre.setId(1L);
         mockMvc.perform(post("/exam-centres/create")
                         .content(objectMapper.writeValueAsString(examCentre))
@@ -171,7 +164,7 @@ class ExamCentreControllerTest {
     @Test
     @Order(13)
     void shouldNotUpdate_forValidDataAndInvalidId() throws Exception {
-        var examCentre = new ExamCentre("50", "incorrect id", null, null, null);
+        var examCentre = new ExamCentre("50", "incorrect id", null, null);
         examCentre.setId(50L);
         mockMvc.perform(post("/exam-centres/create")
                         .content(objectMapper.writeValueAsString(examCentre))
@@ -185,7 +178,7 @@ class ExamCentreControllerTest {
     void shouldNotUpdate_forInvalidRegionIdValidIdData() throws Exception {
         var region = new Region();
         region.setId(10L);
-        var examCentre = new ExamCentre("50", "incorrect region id", region, null, null);
+        var examCentre = new ExamCentre("50", "incorrect region id", region, null);
         examCentre.setId(50L);
         mockMvc.perform(post("/exam-centres/create")
                         .content(objectMapper.writeValueAsString(examCentre))
