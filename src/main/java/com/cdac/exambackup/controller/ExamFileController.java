@@ -91,4 +91,19 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examFileService.save(examFileReqDto)));
     }
+
+    @PostMapping(value = {"/search"}, produces = {"application/json"})
+    @Operation(
+            summary = "Returns list of ExamFiles matching centre code, exam date and slot",
+            description = "Loads all the active available entities based on requested centre code,  exam date and slot",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully\", \"status\": true, \"data\": [{}]}"))),
+                    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Bad request.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> getByCentreCodeExamDateAndSlot(@RequestBody ExamFileReqDto examFileReqDto) {
+        log.info("Search request for the ExamFile entity in the controller.");
+        return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCodeExamDateAndSlot(examFileReqDto)));
+    }
 }

@@ -60,7 +60,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             log.error("Token not starting with 'Bearer ' or token is missing");
             response.setContentType(APPLICATION_JSON_VALUE);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             var responseDto = new ResponseDto<>("Either token not starting with 'Bearer ' or token is missing in the header", false, null);
             objectMapper.writeValue(response.getOutputStream(), responseDto);
             return;

@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,7 +92,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         }
 
         if (!passwordEncoder.matches(passwordChangeDto.oldPassword(), daoAppUser.getPassword())) {
-            throw new GenericException("Bad credentials");
+            throw new BadCredentialsException("Bad credentials");
         }
         daoAppUser.setPassword(passwordEncoder.encode(passwordChangeDto.newPassword()));
         appUserDao.save(daoAppUser);

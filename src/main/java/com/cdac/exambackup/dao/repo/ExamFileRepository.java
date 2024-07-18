@@ -18,4 +18,5 @@ import java.util.List;
 @Repository
 public interface ExamFileRepository extends JpaRepository<ExamFile, Long> {
     List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre examCentre, ExamSlot examSlot, FileType fileType);
+    List<ExamFile> findByExamCentreAndExamSlot(ExamCentre examCentre, ExamSlot examSlot);
 }

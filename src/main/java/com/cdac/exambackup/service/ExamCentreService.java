@@ -9,4 +9,5 @@ import com.cdac.exambackup.entity.ExamCentre;
  */
 
 public interface ExamCentreService extends BaseService<ExamCentre, Long> {
+    ExamCentre getByCode(String code);
 }

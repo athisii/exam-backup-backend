@@ -42,4 +42,9 @@ public class ExamFileDaoImpl extends AbstractBaseDao<ExamFile, Long> implements 
     public List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre examCentre, ExamSlot examSlot, FileType fileType) {
         return this.examFileRepository.findByExamCentreAndExamSlotAndFileType(examCentre, examSlot, fileType);
     }
+
+    @Override
+    public List<ExamFile> findByExamCentreAndExamSlot(ExamCentre examCentre, ExamSlot examSlot) {
+        return this.examFileRepository.findByExamCentreAndExamSlot(examCentre, examSlot);
+    }
 }

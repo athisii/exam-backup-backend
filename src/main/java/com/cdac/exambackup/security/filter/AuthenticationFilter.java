@@ -1,8 +1,10 @@
 package com.cdac.exambackup.security.filter;
 
+import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.dto.LoginFormDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.dto.TokenResDto;
+import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.AppUserDetails;
 import com.cdac.exambackup.enums.TokenType;
 import com.cdac.exambackup.util.JwtProvider;
@@ -41,7 +43,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     final AuthenticationManager authenticationManager;
     final JwtProvider jwtProvider;
-
+    final AppUserDao appUserDao;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -67,7 +69,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         AppUserDetails appUserDetails = (AppUserDetails) authResult.getPrincipal();
         String token = jwtProvider.generateTokenFromAppUser(appUserDetails.getAppUser(), TokenType.ACCESS_TOKEN);
         String refreshToken = jwtProvider.generateTokenFromAppUser(appUserDetails.getAppUser(), TokenType.REFRESH_TOKEN);
-        var responseDto = new ResponseDto<>("Token fetched successfully.", new TokenResDto(token, refreshToken));
+        boolean isFirstLogin = appUserDetails.getAppUser().isFirstLogin();
+        // update db.
+        if (isFirstLogin) {
+            AppUser appUser = appUserDetails.getAppUser();
+            appUser.setFirstLogin(false);
+            appUserDao.save(appUser);
+        }
+        var responseDto = new ResponseDto<>("Token fetched successfully.", new TokenResDto(token, refreshToken, isFirstLogin));
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_OK);
         objectMapper.writeValue(response.getWriter(), responseDto);

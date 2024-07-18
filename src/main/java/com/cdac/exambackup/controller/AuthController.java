@@ -29,7 +29,7 @@ public class AuthController {
     @Autowired
     AppUserService appUserService;
 
-    @PostMapping(name = "/change-password", produces = {"application/json"}, consumes = {"application/json"})
+    @PostMapping(value = "/change-password", produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> changePassword(@RequestBody @Valid PasswordChangeDto passwordChangeDto) {
         appUserService.changePassword(passwordChangeDto);
         return new ResponseDto<>("Password changed successfully", null);

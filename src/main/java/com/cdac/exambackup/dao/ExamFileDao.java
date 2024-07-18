@@ -15,4 +15,5 @@ import java.util.List;
 
 public interface ExamFileDao extends BaseDao<ExamFile, Long> {
     List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre daoExamCentre, ExamSlot daoExamSlot, FileType daoFileType);
+    List<ExamFile> findByExamCentreAndExamSlot(ExamCentre daoExamCentre, ExamSlot daoExamSlot);
 }

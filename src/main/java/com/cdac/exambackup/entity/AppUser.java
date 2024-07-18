@@ -41,18 +41,18 @@ public class AppUser extends AuditModel {
     @Column(nullable = false)
     String password;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime passExpiryDate;
 
     int tryCounter;
 
     boolean locked;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime unlockTime;
 
     @Hidden
-    boolean firstLogin = true; // to reset on first login
+    boolean isFirstLogin = true; // to reset on first login
 
     @ManyToOne
     Role role;

@@ -12,6 +12,7 @@ import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -97,6 +98,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> handleGenericException(GenericException ex) {
         log.info("**Generic exception occurred: {}", ex.getMessage());
+        return new ResponseDto<>(ex.getMessage(), false);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseDto<?> handleBadCredentialsException(BadCredentialsException ex) {
+        log.info("**Bad credentials exception occurred: {}", ex.getMessage());
         return new ResponseDto<>(ex.getMessage(), false);
     }
 

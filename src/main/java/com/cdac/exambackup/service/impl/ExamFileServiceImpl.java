@@ -73,7 +73,7 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
             throw new GenericException("Please provide all the required data.");
         }
 
-        if (examFileDto.getExamCentre().getId() == null || examFileDto.getExamSlot().getId() == null || examFileDto.getFileType().getId() == null) {
+        if (examFileDto.getExamCentre().getCode() == null || examFileDto.getExamSlot().getId() == null || examFileDto.getFileType().getId() == null) {
             throw new GenericException("Please provide all the required ids.");
         }
         if (examFileDto.getFile().isEmpty()) {
@@ -81,9 +81,9 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         }
 
         // check exam centre exists and is active
-        ExamCentre daoExamCentre = examCentreDao.findById(examFileDto.getExamCentre().getId());
+        ExamCentre daoExamCentre = examCentreDao.findByCode(examFileDto.getExamCentre().getCode());
         if (daoExamCentre == null) {
-            throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getId() + " not found");
+            throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getCode() + " not found");
         }
         if (Boolean.FALSE.equals(daoExamCentre.getActive())) {
             throw new EntityNotFoundException("ExamCentre with id: " + daoExamCentre.getId() + " is not active. Must activate first.");
@@ -154,14 +154,13 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         // check if there is an entry for the same file type.
         ExamFile daoExamFile = null;
         List<ExamFile> daoExamFiles = examFileDao.findByExamCentreAndExamSlotAndFileType(daoExamCentre, daoExamSlot, daoFileType);
-        if (!daoExamFiles.isEmpty()) {
-            for (ExamFile xamFile : daoExamFiles) {
-                if (xamFile.getExamDate().getDayOfMonth() == examFileDto.getExamDate().getDayOfMonth() && xamFile.getExamDate().getMonthValue() == examFileDto.getExamDate().getMonthValue() && xamFile.getExamDate().getYear() == examFileDto.getExamDate().getYear()) {
-                    daoExamFile = xamFile;
-                    break;
-                }
+        for (ExamFile xamFile : daoExamFiles) {
+            if (xamFile.getExamDate().getDayOfMonth() == examFileDto.getExamDate().getDayOfMonth() && xamFile.getExamDate().getMonthValue() == examFileDto.getExamDate().getMonthValue() && xamFile.getExamDate().getYear() == examFileDto.getExamDate().getYear()) {
+                daoExamFile = xamFile;
+                break;
             }
         }
+
         // first entry, no duplicate found.
         if (daoExamFile == null) {
             String filePath = sixthLevelDir + "/" + examFileDto.getFile().getOriginalFilename();
@@ -215,7 +214,7 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         examFile.setId(examFileReqDto.id());
         // examCentre
         var examCentre = new ExamCentre();
-        examCentre.setId(examFileReqDto.examCentreId());
+        examCentre.setCode(examFileReqDto.examCentreCode());
         examFile.setExamCentre(examCentre);
         // examSlot
         var examSlot = new ExamSlot();
@@ -230,5 +229,33 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         examFile.setFile(examFileReqDto.file());
 
         return save(examFile);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ExamFile> findByCentreCodeExamDateAndSlot(ExamFileReqDto examFileReqDto) {
+        if (examFileReqDto.examCentreCode() == null || examFileReqDto.examDate() == null || examFileReqDto.examSlotId() == null) {
+            throw new GenericException("Please provide all the required ids.");
+        }
+
+        // check exam centre exists and is active
+        ExamCentre daoExamCentre = examCentreDao.findByCode(examFileReqDto.examCentreCode());
+        if (daoExamCentre == null) {
+            throw new EntityNotFoundException("ExamCentre with id: " + examFileReqDto.examCentreCode() + " not found");
+        }
+        if (Boolean.FALSE.equals(daoExamCentre.getActive())) {
+            throw new EntityNotFoundException("ExamCentre with id: " + daoExamCentre.getId() + " is not active. Must activate first.");
+        }
+        // check exam slot exists and is active
+        ExamSlot daoExamSlot = examSlotDao.findById(examFileReqDto.examSlotId());
+        if (daoExamSlot == null) {
+            throw new EntityNotFoundException("ExamSlot with id: " + examFileReqDto.examSlotId() + " not found");
+        }
+        if (Boolean.FALSE.equals(daoExamSlot.getActive())) {
+            throw new EntityNotFoundException("ExamSlot with id: " + daoExamSlot.getId() + " is not active. Must activate first.");
+        }
+
+        List<ExamFile> daoExamFiles = examFileDao.findByExamCentreAndExamSlot(daoExamCentre, daoExamSlot);
+        return daoExamFiles.stream().filter(examFile -> examFile.getExamDate().getDayOfMonth() == examFileReqDto.examDate().getDayOfMonth() && examFile.getExamDate().getMonthValue() == examFileReqDto.examDate().getMonthValue() && examFile.getExamDate().getYear() == examFileReqDto.examDate().getYear()).toList();
     }
 }

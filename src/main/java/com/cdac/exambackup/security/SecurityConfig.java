@@ -1,5 +1,6 @@
 package com.cdac.exambackup.security;
 
+import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.security.filter.AuthenticationFilter;
 import com.cdac.exambackup.service.impl.AppUserDetailsService;
 import com.cdac.exambackup.util.JwtProvider;
@@ -32,6 +33,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SecurityConfig {
     @Autowired
+    AppUserDao appUserDao;
+
+    @Autowired
     AppUserDetailsService appUserDetailsService;
 
     @Autowired
@@ -45,7 +49,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(customizer -> customizer.anyRequest().permitAll())
-                .addFilter(new AuthenticationFilter(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)), jwtProvider))
+                .addFilter(new AuthenticationFilter(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)), jwtProvider, appUserDao))
                 .build();
     }
 

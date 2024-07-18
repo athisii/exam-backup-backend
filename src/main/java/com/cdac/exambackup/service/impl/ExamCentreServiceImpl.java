@@ -169,4 +169,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         appUserDao.save(daoAppUser);
         return examCentreDao.save(daoExamCentre);
     }
+
+    @Override
+    public ExamCentre getByCode(String code) {
+        ExamCentre daoExamCentre = examCentreDao.findByCode(code);
+        if (daoExamCentre == null || daoExamCentre.getDeleted()) {
+            throw new GenericException("No exam centre found with code: " + code);
+        }
+        return daoExamCentre;
+    }
 }

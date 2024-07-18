@@ -68,24 +68,24 @@ public class Bootstrap implements CommandLineRunner {
         regionCodeNameMap.put(4, "WEST");
 
         examSlotCodeNameMap = new TreeMap<>();
-        examSlotCodeNameMap.put(1, "SLOT_1");
-        examSlotCodeNameMap.put(2, "SLOT_2");
-        examSlotCodeNameMap.put(3, "SLOT_3");
-        examSlotCodeNameMap.put(4, "SLOT_4");
+        examSlotCodeNameMap.put(1, "SLOT 1");
+        examSlotCodeNameMap.put(2, "SLOT 2");
+        examSlotCodeNameMap.put(3, "SLOT 3");
+        examSlotCodeNameMap.put(4, "SLOT 4");
 
         fileTypeCodeNameMap = new TreeMap<>();
-        fileTypeCodeNameMap.put(1, "PXE_LOG");
-        fileTypeCodeNameMap.put(2, "PRIMARY_SERVER_LOG");
-        fileTypeCodeNameMap.put(3, "SECONDARY_SERVER_LOG");
-        fileTypeCodeNameMap.put(4, "RESPONSE_SHEET");
-        fileTypeCodeNameMap.put(5, "ATTENDANCE_SHEET");
-        fileTypeCodeNameMap.put(6, "BIOMETRIC_DATA");
+        fileTypeCodeNameMap.put(1, "PXE LOG");
+        fileTypeCodeNameMap.put(2, "PRIMARY SERVER LOG");
+        fileTypeCodeNameMap.put(3, "SECONDARY SERVER LOG");
+        fileTypeCodeNameMap.put(4, "RESPONSE SHEET");
+        fileTypeCodeNameMap.put(5, "ATTENDANCE SHEET");
+        fileTypeCodeNameMap.put(6, "BIOMETRIC DATA");
 
         examCentreCodeNameMap = new TreeMap<>();
-        examCentreCodeNameMap.put(1, "EC1");
-        examCentreCodeNameMap.put(2, "EC2");
-        examCentreCodeNameMap.put(3, "EC3");
-        examCentreCodeNameMap.put(4, "EC4");
+        examCentreCodeNameMap.put(101, "EC1");
+        examCentreCodeNameMap.put(102, "EC2");
+        examCentreCodeNameMap.put(103, "EC3");
+        examCentreCodeNameMap.put(104, "EC4");
     }
 
     @Override
@@ -163,7 +163,7 @@ public class Bootstrap implements CommandLineRunner {
                 var examCentre = new ExamCentre();
                 examCentre.setCode(code + "");
                 examCentre.setName(name);
-                Region region = regionService.getById(Long.parseLong(code + ""));
+                Region region = regionService.getById(Long.parseLong(code - 100 + ""));
                 examCentre.setRegion(region);
                 examCentreService.save(examCentre);
             });

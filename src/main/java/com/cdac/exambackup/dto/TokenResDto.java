@@ -6,5 +6,5 @@ package com.cdac.exambackup.dto;
  * @since 5/15/24
  */
 
-public record TokenResDto(String token, String refreshToken) {
+public record TokenResDto(String token, String refreshToken, boolean isFirstLogin) {
 }
