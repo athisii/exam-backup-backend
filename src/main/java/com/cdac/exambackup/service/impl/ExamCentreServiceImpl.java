@@ -12,9 +12,13 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author athisii
@@ -171,11 +175,33 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     }
 
     @Override
-    public ExamCentre getByCode(String code) {
-        ExamCentre daoExamCentre = examCentreDao.findByCode(code);
-        if (daoExamCentre == null || daoExamCentre.getDeleted()) {
-            throw new GenericException("No exam centre found with code: " + code);
+    public List<ExamCentre> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable) {
+        ExamCentre daoExamCentre;
+        if (code != null && name != null) {
+            daoExamCentre = examCentreDao.findByCodeAndName(code, name);
+            if (daoExamCentre == null || daoExamCentre.getDeleted()) {
+                return Collections.emptyList();
+            }
+            return List.of(daoExamCentre);
+        } else if (code != null) {
+            daoExamCentre = examCentreDao.findByCode(code);
+            if (daoExamCentre == null || daoExamCentre.getDeleted()) {
+                return Collections.emptyList();
+            }
+            return List.of(daoExamCentre);
+        } else if (name != null) {
+            daoExamCentre = examCentreDao.findByCode(name);
+            if (daoExamCentre == null || daoExamCentre.getDeleted()) {
+                return Collections.emptyList();
+            }
+            return List.of(daoExamCentre);
+        } else if (regionId != null) {
+            Region region = regionDao.findById(regionId);
+            if (region == null) {
+                return Collections.emptyList();
+            }
+            return examCentreDao.findByRegion(region,pageable);
         }
-        return daoExamCentre;
+        return Collections.emptyList();
     }
 }

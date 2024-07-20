@@ -1,6 +1,10 @@
 package com.cdac.exambackup.dao;
 
 import com.cdac.exambackup.entity.ExamCentre;
+import com.cdac.exambackup.entity.Region;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -11,4 +15,10 @@ import com.cdac.exambackup.entity.ExamCentre;
 
 public interface ExamCentreDao extends BaseDao<ExamCentre, Long> {
     ExamCentre findByCode(String code);
+
+    ExamCentre findByCodeAndName(String code, String name);
+
+    ExamCentre findByName(String name);
+
+    List<ExamCentre> findByRegion(Region region, Pageable pageable);
 }

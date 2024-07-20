@@ -61,13 +61,13 @@ public class ExamFile extends AuditModel {
     @Column(nullable = false)
     String contentType = " ";
 
-    @Column(length = 50)
+    @Column
     String userUploadedFilename;
 
-    @Column(length = 50)
+    @Column
     String examName;
 
-    @Column(length = 50)
+    @Column
     String labNumber;
 
     @Transient

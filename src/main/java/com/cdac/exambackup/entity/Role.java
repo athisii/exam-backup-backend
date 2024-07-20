@@ -34,6 +34,6 @@ public class Role extends AuditModel {
     @Column(nullable = false, unique = true)
     Integer code;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true)
     String name;
 }

@@ -1,6 +1,5 @@
 package com.cdac.exambackup.controller;
 
-import com.cdac.exambackup.dto.ExamCentreReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
@@ -19,6 +18,8 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -73,18 +74,19 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
     }
 
-    @PostMapping(value = {"/search/code"}, produces = {"application/json"})
+
+    @GetMapping(value = {"/search"}, produces = {"application/json"})
     @Operation(
-            summary = "Get Entity",
-            description = "Loads a single entity from Database corresponds to requested code",
+            summary = "Get List of entities",
+            description = "Loads a list of entities from Database corresponds to requested code, name, and/or region",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByCode(@RequestBody @Valid ExamCentreReqDto examCentreReqDto) {
-        log.info("Find Request for the ExamCentre entity in the controller for code: {}", examCentreReqDto.code());
-        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getByCode(examCentreReqDto.code())));
+    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) Long regionId, @PageableDefault(size = 10) Pageable pageable) {
+        log.info("Find Request for the ExamCentre entity in the controller for code, name, and/or region");
+        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId,pageable)));
     }
 }

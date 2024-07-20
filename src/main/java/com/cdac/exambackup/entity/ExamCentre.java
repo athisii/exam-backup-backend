@@ -22,7 +22,7 @@ public class ExamCentre extends AuditModel {
     @Column(nullable = false, unique = true, length = 20)
     String code;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     String name;
 
     @ManyToOne // do nothing for the other side of the relation.

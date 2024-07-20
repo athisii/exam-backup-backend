@@ -28,7 +28,7 @@ public class AppUser extends AuditModel {
     @Column(nullable = false, unique = true, length = 20)
     String userId; // exam-centre-code or admin-id
 
-    @Column(length = 50)
+    @Column
     String name;
 
     @Column(length = 50)

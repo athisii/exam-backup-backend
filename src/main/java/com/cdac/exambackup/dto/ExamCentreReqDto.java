@@ -6,5 +6,5 @@ package com.cdac.exambackup.dto;
  * @since 5/12/24
  */
 
-public record ExamCentreReqDto(String code, String name) {
+public record ExamCentreReqDto(String code, String name, Long regionId) {
 }

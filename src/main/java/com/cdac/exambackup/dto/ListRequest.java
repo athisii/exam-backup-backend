@@ -31,14 +31,15 @@ public class ListRequest {
 
     @Schema(description = "search keyword")
     String searchTag;
-    @Schema(description = "sort property")
 
+    @Schema(description = "sort property")
     @Builder.Default
     String sortBy = "id";
-    @Schema(description = "sort order")
 
+    @Schema(description = "sort order")
     @Builder.Default
     String sortOrder = "asc";
+
     @Schema(description = "Filters")
     Map<String, List<Object>> filters;
 }

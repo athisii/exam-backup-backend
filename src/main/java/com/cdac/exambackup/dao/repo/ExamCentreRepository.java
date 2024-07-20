@@ -1,6 +1,9 @@
 package com.cdac.exambackup.dao.repo;
 
 import com.cdac.exambackup.entity.ExamCentre;
+import com.cdac.exambackup.entity.Region;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +16,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
     ExamCentre findFirstByCodeIgnoreCase(String code);
+
+    ExamCentre findFirstByCodeAndName(String code, String name);
+
+    ExamCentre findFirstByName(String name);
+
+    Page<ExamCentre> findByRegion(Region region, Pageable pageable);
 }
