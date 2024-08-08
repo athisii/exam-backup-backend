@@ -82,10 +82,10 @@ public class Bootstrap implements CommandLineRunner {
         fileTypeCodeNameMap.put(6, "BIOMETRIC DATA");
 
         examCentreCodeNameMap = new TreeMap<>();
-        examCentreCodeNameMap.put(101, "EC1");
-        examCentreCodeNameMap.put(102, "EC2");
-        examCentreCodeNameMap.put(103, "EC3");
-        examCentreCodeNameMap.put(104, "EC4");
+        examCentreCodeNameMap.put(101, "Exam Centre 1");
+        examCentreCodeNameMap.put(102, "Exam Centre 2");
+        examCentreCodeNameMap.put(103, "Exam Centre 3");
+        examCentreCodeNameMap.put(104, "Exam Centre 4");
     }
 
     @Override
@@ -117,7 +117,7 @@ public class Bootstrap implements CommandLineRunner {
 
         if (appUserService.count() == 0L) {
             var appUser = new AppUser();
-            appUser.setUserId("000");
+            appUser.setUserId("admin");
             appUser.setPassword(passwordEncoder.encode("admin"));
             appUser.setEmail("admin@cdac.in");
             appUser.setRole(roleService.getById(Integer.toUnsignedLong(1))); // user `ADMIN`
@@ -167,6 +167,14 @@ public class Bootstrap implements CommandLineRunner {
                 examCentre.setRegion(region);
                 examCentreService.save(examCentre);
             });
+
+            // just add another center
+            var examCentre = new ExamCentre();
+            examCentre.setCode(105 + "");
+            examCentre.setName("Exam Centre, CDAC Chennai Tidel Park");
+            Region region = regionService.getById(Long.parseLong("1"));
+            examCentre.setRegion(region);
+            examCentreService.save(examCentre);
         }
     }
 }

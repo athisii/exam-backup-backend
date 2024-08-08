@@ -41,7 +41,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
     @Override
     public AppUser save(AppUser appUserDto) {
         // for admin
-        if ("000".equals(appUserDto.getUserId()) && appUserDao.count() == 0L) {
+        if ("admin".equals(appUserDto.getUserId()) && appUserDao.count() == 0L) {
             appUserDao.save(appUserDto);
             return appUserDto;
         }
