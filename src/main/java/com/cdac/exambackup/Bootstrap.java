@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
 
 /**
  * @author athisii
@@ -168,13 +169,17 @@ public class Bootstrap implements CommandLineRunner {
                 examCentreService.save(examCentre);
             });
 
-            // just add another center
-            var examCentre = new ExamCentre();
-            examCentre.setCode(105 + "");
-            examCentre.setName("Exam Centre, CDAC Chennai Tidel Park");
+            // dummy exam centre for pagination
             Region region = regionService.getById(Long.parseLong("1"));
-            examCentre.setRegion(region);
-            examCentreService.save(examCentre);
+            List<ExamCentre> dummyExamCentreRegion1 = new ArrayList<>();
+            IntStream.range(105, 131).forEach(code -> {
+                var examCentre = new ExamCentre();
+                examCentre.setCode(code + "");
+                examCentre.setName("Exam Centre, CDAC Chennai Tidel Park");
+                examCentre.setRegion(region);
+                dummyExamCentreRegion1.add(examCentre);
+            });
+            examCentreService.save(dummyExamCentreRegion1);
         }
     }
 }
