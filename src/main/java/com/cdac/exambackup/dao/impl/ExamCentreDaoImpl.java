@@ -9,12 +9,11 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -55,9 +54,9 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     }
 
     @Override
-    public List<ExamCentre> findByRegion(Region region, Pageable pageable) {
+    public Page<ExamCentre> findByRegion(Region region, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegion(region, pageable).getContent();
+            return this.examCentreRepository.findByRegion(region, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException("Invalid sorting field name or sorting direction. Must be sort:['fieldName,asc','fieldName,desc']");
         }

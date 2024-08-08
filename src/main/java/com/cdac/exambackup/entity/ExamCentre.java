@@ -1,5 +1,6 @@
 package com.cdac.exambackup.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -30,5 +31,6 @@ public class ExamCentre extends AuditModel {
 
 
     @OneToMany(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     List<ExamFile> examFiles;
 }
