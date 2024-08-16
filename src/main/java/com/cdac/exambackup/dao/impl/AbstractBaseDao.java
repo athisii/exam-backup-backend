@@ -264,7 +264,7 @@ public abstract class AbstractBaseDao<E extends AuditModel, ID extends Serializa
             listRequest.setStart(0);
         }
         if (listRequest.getLength() < 0) {
-            listRequest.setLength(100);
+            listRequest.setLength(20);
         }
         return this.entityManager.createQuery(criteriaQuery).setFirstResult(listRequest.getStart()).setMaxResults(listRequest.getLength()).getResultList();
     }
