@@ -9,11 +9,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 /**
  * @author athisii
@@ -47,6 +50,9 @@ public class Bootstrap implements CommandLineRunner {
 
     @Autowired
     ExamCentreService examCentreService;
+
+    @Autowired
+    ExamDateService examDateService;
 
     @Autowired
     AppUserService appUserService;
@@ -172,15 +178,25 @@ public class Bootstrap implements CommandLineRunner {
 
             // dummy exam centre for pagination
             Region region = regionService.getById(Long.parseLong("1"));
-            List<ExamCentre> dummyExamCentreRegion1 = new ArrayList<>();
             IntStream.range(105, 131).forEach(code -> {
                 var examCentre = new ExamCentre();
                 examCentre.setCode(code + "");
                 examCentre.setName("Exam Centre, CDAC Chennai Tidel Park");
                 examCentre.setRegion(region);
-                dummyExamCentreRegion1.add(examCentre);
+                examCentreService.save(examCentre);
             });
-            examCentreService.save(dummyExamCentreRegion1);
+        }
+
+        if (examDateService.count() == 0L) {
+            List<ExamDate> examDates = new ArrayList<>();
+            for (int i = 0; i < 2; i++) {
+                ExamDate examDate = new ExamDate();
+                examDate.setExamCentre(examCentreService.getById(1L));
+                examDate.setExamSlots(LongStream.range(1, 5).mapToObj(number -> examSlotService.getById(number)).collect(Collectors.toSet()));
+                examDate.setExamDate(LocalDateTime.now());
+                examDates.add(examDate);
+            }
+            examDateService.save(examDates);
         }
     }
 }

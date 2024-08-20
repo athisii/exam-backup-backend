@@ -1,6 +1,7 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.*;
+import com.cdac.exambackup.dto.ExamCentreResDto;
 import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.ExamCentre;
@@ -34,6 +35,18 @@ import java.util.List;
 public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long> implements ExamCentreService {
     @Autowired
     ExamCentreDao examCentreDao;
+
+    @Autowired
+    ExamFileDao examFileDao;
+
+    @Autowired
+    ExamDateDao examDateDao;
+
+    @Autowired
+    FileTypeDao fileTypeDao;
+
+    @Autowired
+    ExamSlotDao examSlotDao;
 
     @Autowired
     RegionDao regionDao;
@@ -177,30 +190,30 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     }
 
     @Override
-    public PageResDto<List<ExamCentre>> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable) {
+    public PageResDto<List<ExamCentreResDto>> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable) {
         Page<ExamCentre> examCentrePage;
         if (code != null && name != null && regionId != null) {
             examCentrePage = examCentreDao.findByRegionIdAndCodeOrName(regionId, code, name, pageable);
-            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), examCentrePage.getContent());
+            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
         } else if (code != null && regionId != null) {
             examCentrePage = examCentreDao.findByRegionIdAndCode(regionId, code, pageable);
-            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), examCentrePage.getContent());
+            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
         } else if (name != null && regionId != null) {
             examCentrePage = examCentreDao.findByRegionIdAndName(regionId, name, pageable);
-            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), examCentrePage.getContent());
+            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
         } else if (code != null || name != null) {
             examCentrePage = examCentreDao.findByCodeOrName(code, name, pageable);
-            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), examCentrePage.getContent());
+            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
         } else if (regionId != null) {
-            Page<ExamCentre> page = examCentreDao.findByRegionId(regionId, pageable);
-            return new PageResDto<>(pageable.getPageNumber(), page.getTotalPages(), page.getContent());
+            examCentrePage = examCentreDao.findByRegionId(regionId, pageable);
+            return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
         }
         return new PageResDto<>(0, 0, Collections.emptyList());
 
     }
 
     @Override
-    public PageResDto<List<ExamCentre>> query(String query, Long regionId, Pageable pageable) {
+    public PageResDto<List<ExamCentreResDto>> query(String query, Long regionId, Pageable pageable) {
         if (query == null || query.isBlank()) {
             return new PageResDto<>(0, 0, Collections.emptyList());
         }
@@ -210,6 +223,21 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         } else {
             examCentrePage = examCentreDao.query(query, pageable);
         }
-        return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), examCentrePage.getContent());
+        return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
+    }
+
+    private List<ExamCentreResDto> convertExamCentresToExamCentreResDto(List<ExamCentre> examCentres) {
+        return examCentres
+                .stream()
+                .map(examCentre -> {
+                    int size = examDateDao.findByExamCentre(examCentre).size();
+                    if (size == 0) {
+                        size = 1;
+                    }
+                    int totalFileCount = (int) (size * fileTypeDao.count() * examSlotDao.count());
+
+                    int uploadedFileCount = examFileDao.findByExamCentre(examCentre).size();
+                    return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount);
+                }).toList();
     }
 }

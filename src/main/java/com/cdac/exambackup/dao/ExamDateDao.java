@@ -1,7 +1,7 @@
 package com.cdac.exambackup.dao;
 
+import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamDate;
-import com.cdac.exambackup.entity.ExamSlot;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ import java.util.List;
  */
 
 public interface ExamDateDao extends BaseDao<ExamDate, Long> {
-
+    List<ExamDate> findByExamCentre(ExamCentre examCentre);
 }
