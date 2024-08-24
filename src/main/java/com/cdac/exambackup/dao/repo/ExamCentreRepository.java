@@ -25,11 +25,11 @@ public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
 
     Page<ExamCentre> findByRegionId(Long regionId, Pageable pageable);
 
-    @Query("SELECT ec FROM ExamCentre ec WHERE (LOWER(ec.code) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :query, '%'))) AND ec.region.id = :regionId")
-    Page<ExamCentre> findByRegionIdAndQueryString(Long regionId, String query, Pageable pageable);
+    @Query("SELECT ec FROM ExamCentre ec WHERE (LOWER(ec.code) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND ec.region.id = :regionId")
+    Page<ExamCentre> findByRegionIdAndSearchTerm(Long regionId, String searchTerm, Pageable pageable);
 
-    @Query("SELECT ec FROM ExamCentre ec WHERE LOWER(ec.code) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :query, '%'))")
-    Page<ExamCentre> findByQuery(String query, Pageable pageable);
+    @Query("SELECT ec FROM ExamCentre ec WHERE LOWER(ec.code) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<ExamCentre> findBySearchTerm(String searchTerm, Pageable pageable);
 
 
     Page<ExamCentre> findByRegionIdAndCodeOrNameIgnoreCase(Long regionId, String code, String name, Pageable pageable);

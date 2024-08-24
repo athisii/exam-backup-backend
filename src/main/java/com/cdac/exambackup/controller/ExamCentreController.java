@@ -1,7 +1,6 @@
 package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.dto.ListRequest;
-import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.service.BaseService;
@@ -22,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -78,10 +75,10 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     }
 
 
-    @GetMapping(value = {"/search"}, produces = {"application/json"})
+    @GetMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
-            summary = "Get List of entities",
-            description = "Loads a list of entities from Database corresponds to requested code, name, and/or region",
+            summary = "Get list of entities by page",
+            description = "Loads a list of entities by page from Database corresponds to requested code, name, and/or region",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
@@ -94,19 +91,19 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId, pageable)));
     }
 
-    @GetMapping(value = {"/query"}, produces = {"application/json"})
+    @GetMapping(value = {"/search"}, produces = {"application/json"})
     @Operation(
-            summary = "Get List of entities",
-            description = "Loads a list of entities from Database corresponds to query parameters",
+            summary = "Get list of entities by page",
+            description = "Loads a list of entities by page from Database corresponds to search parameters",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> query(@RequestParam(required = false) String query, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+    public ResponseDto<?> search(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
         log.info("Query Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.query(query, regionId, pageable)));
+        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.search(searchTerm, regionId, pageable)));
     }
 }

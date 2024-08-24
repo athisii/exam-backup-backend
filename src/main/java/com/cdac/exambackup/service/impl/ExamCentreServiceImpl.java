@@ -213,15 +213,15 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     }
 
     @Override
-    public PageResDto<List<ExamCentreResDto>> query(String query, Long regionId, Pageable pageable) {
-        if (query == null || query.isBlank()) {
+    public PageResDto<List<ExamCentreResDto>> search(String searchTerm, Long regionId, Pageable pageable) {
+        if (searchTerm == null || searchTerm.isBlank()) {
             return new PageResDto<>(0, 0, Collections.emptyList());
         }
         Page<ExamCentre> examCentrePage;
         if (regionId != null) {
-            examCentrePage = examCentreDao.queryWithRegionId(query, regionId, pageable);
+            examCentrePage = examCentreDao.searchWithRegionId(searchTerm, regionId, pageable);
         } else {
-            examCentrePage = examCentreDao.query(query, pageable);
+            examCentrePage = examCentreDao.search(searchTerm, pageable);
         }
         return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
     }

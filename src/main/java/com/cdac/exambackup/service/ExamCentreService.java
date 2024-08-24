@@ -16,5 +16,5 @@ import java.util.List;
 public interface ExamCentreService extends BaseService<ExamCentre, Long> {
     PageResDto<List<ExamCentreResDto>> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable);
 
-    PageResDto<List<ExamCentreResDto>> query(String query, Long regionId, Pageable pageable);
+    PageResDto<List<ExamCentreResDto>> search(String searchTerm, Long regionId, Pageable pageable);
 }

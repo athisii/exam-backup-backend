@@ -92,10 +92,10 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examFileService.save(examFileReqDto)));
     }
 
-    @PostMapping(value = {"/search"}, produces = {"application/json"})
+    @PostMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
             summary = "Returns list of ExamFiles matching centre code, exam date and slot",
-            description = "Loads all the active available entities based on requested centre code,  exam date and slot",
+            description = "Loads all the active available entities based on requested centre code, exam date and slot",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully\", \"status\": true, \"data\": [{}]}"))),
                     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Bad request.\", \"status\": false, \"data\": null}"))),
@@ -103,7 +103,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
             }
     )
     public ResponseDto<?> getByCentreCodeExamDateAndSlot(@RequestBody ExamFileReqDto examFileReqDto) {
-        log.info("Search request for the ExamFile entity in the controller.");
+        log.info("Query request for the ExamFile entity in the controller.");
         return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCodeExamDateAndSlot(examFileReqDto)));
     }
 }

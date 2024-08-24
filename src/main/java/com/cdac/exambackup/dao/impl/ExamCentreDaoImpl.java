@@ -86,18 +86,18 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     }
 
     @Override
-    public Page<ExamCentre> queryWithRegionId(String query, Long regionId, Pageable pageable) {
+    public Page<ExamCentre> searchWithRegionId(String searchTerm, Long regionId, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndQueryString(regionId, query, pageable);
+            return this.examCentreRepository.findByRegionIdAndSearchTerm(regionId, searchTerm, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
     }
 
     @Override
-    public Page<ExamCentre> query(String query, Pageable pageable) {
+    public Page<ExamCentre> search(String searchTerm, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByQuery(query, pageable);
+            return this.examCentreRepository.findBySearchTerm(searchTerm, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
