@@ -102,8 +102,24 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
             }
     )
     public ResponseDto<?> search(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
-        log.info("Query Request for the ExamCentre entity in the controller");
+        log.info("Search Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.search(searchTerm, regionId, pageable)));
+    }
+
+    @GetMapping(value = {"/upload-status-filter-page"}, produces = {"application/json"})
+    @Operation(
+            summary = "Get filtered list of entities by page based on upload status",
+            description = "Loads a filtered list of entities by page from Database corresponds to search parameters",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
+                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> getExamCentresOnUploadStatusByPage(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) String filterType, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+        log.info("Filter By Page Request for the ExamCentre entity in the controller");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
+        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(searchTerm, filterType, regionId, pageable)));
     }
 }

@@ -2,6 +2,7 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.ExamSlotDao;
+import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.ExamSlot;
 import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.service.ExamSlotService;
@@ -10,6 +11,8 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> implements ExamSlotService {
+
     @Autowired
     ExamSlotDao examSlotDao;
 
@@ -101,4 +105,11 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
         }
         return examSlotDao.save(daoExamSlot);
     }
+
+    @Override
+    public PageResDto<List<ExamSlot>> getAllByPage(Pageable pageable) {
+        Page<ExamSlot> page = examSlotDao.getAllByPage(pageable);
+        return new PageResDto<>(pageable.getPageNumber(), page.getTotalPages(), page.getContent());
+    }
+
 }

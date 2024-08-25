@@ -189,7 +189,7 @@ public class Bootstrap implements CommandLineRunner {
 
         if (examDateService.count() == 0L) {
             List<ExamDate> examDates = new ArrayList<>();
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 1; i++) {
                 ExamDate examDate = new ExamDate();
                 examDate.setExamCentre(examCentreService.getById(1L));
                 examDate.setExamSlots(LongStream.range(1, 5).mapToObj(number -> examSlotService.getById(number)).collect(Collectors.toSet()));

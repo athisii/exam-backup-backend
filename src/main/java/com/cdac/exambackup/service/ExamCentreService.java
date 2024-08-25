@@ -17,4 +17,6 @@ public interface ExamCentreService extends BaseService<ExamCentre, Long> {
     PageResDto<List<ExamCentreResDto>> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable);
 
     PageResDto<List<ExamCentreResDto>> search(String searchTerm, Long regionId, Pageable pageable);
+
+    PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String searchTerm, String filterType, Long regionId, Pageable pageable);
 }

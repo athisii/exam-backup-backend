@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -37,4 +39,6 @@ public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
     Page<ExamCentre> findByRegionIdAndCode(Long regionId, String code, Pageable pageable);
 
     Page<ExamCentre> findByRegionIdAndNameIgnoreCase(Long regionId, String name, Pageable pageable);
+
+    List<ExamCentre> findByRegionId(Long regionId);
 }

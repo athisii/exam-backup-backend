@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -226,6 +227,73 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
     }
 
+    @Override
+    public PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String searchTerm, String filterType, Long regionId, Pageable pageable) {
+        List<ExamCentreResDto> examCentreResDtos;
+        if ("UPLOADED".equalsIgnoreCase(filterType)) {
+            examCentreResDtos = convertExamCentresToExamCentreResDto(examCentreDao.findByRegionId(regionId))
+                    .stream()
+                    .filter(examCentreResDto -> {
+                        if (searchTerm == null || searchTerm.isBlank()) {
+                            return isUploadCompleted(examCentreResDto);
+                        }
+                        return isUploadCompleted(examCentreResDto) && (examCentreResDto.code().toLowerCase().contains(searchTerm.trim().toLowerCase()) || examCentreResDto.name().toLowerCase().contains(searchTerm.trim().toLowerCase()));
+                    })
+                    .sorted((a, b) -> sort(pageable, a, b))
+                    .toList();
+
+
+        } else if ("NOT_UPLOADED".equalsIgnoreCase(filterType)) {
+            examCentreResDtos = convertExamCentresToExamCentreResDto(examCentreDao.findByRegionId(regionId))
+                    .stream()
+                    .filter(examCentreResDto -> {
+                        if (searchTerm == null || searchTerm.isBlank()) {
+                            return !isUploadCompleted(examCentreResDto);
+                        }
+                        return !isUploadCompleted(examCentreResDto) && (examCentreResDto.code().toLowerCase().contains(searchTerm.trim().toLowerCase()) || examCentreResDto.name().toLowerCase().contains(searchTerm.trim().toLowerCase()));
+                    })
+                    .sorted((a, b) -> sort(pageable, a, b))
+                    .toList();
+        } else {
+            examCentreResDtos = convertExamCentresToExamCentreResDto(examCentreDao.findByRegionId(regionId))
+                    .stream()
+                    .sorted((a, b) -> sort(pageable, a, b))
+                    .toList();
+        }
+
+        int totalPage = Math.ceilDiv(examCentreResDtos.size(), pageable.getPageSize());
+        int pageNumber = pageable.getPageNumber();
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+
+        if (pageNumber > 0) {
+            pageNumber = pageNumber * pageable.getPageSize();
+        }
+        int toIndex = pageNumber + pageable.getPageSize(); // starts from pageNumber index.
+
+        return new PageResDto<>(
+                pageNumber,
+                totalPage,
+                examCentreResDtos.subList(Math.min(pageNumber, examCentreResDtos.size()), Math.min(toIndex, examCentreResDtos.size())));
+    }
+
+    private static boolean isUploadCompleted(ExamCentreResDto examCentreResDto) {
+        return examCentreResDto.totalFileCount().equals(examCentreResDto.uploadedFileCount());
+    }
+
+    private static int sort(Pageable pageable, ExamCentreResDto a, ExamCentreResDto b) {
+        Sort.Order order = pageable.getSort().getOrderFor("code");
+        if (order != null) {
+            return order.isAscending() ? a.code().compareTo(b.code()) : b.code().compareTo(a.code());
+        }
+        order = pageable.getSort().getOrderFor("name");
+        if (order != null) {
+            return order.isAscending() ? a.name().compareTo(b.name()) : b.name().compareTo(a.name());
+        }
+        return a.id().compareTo(b.id());
+    }
+
     private List<ExamCentreResDto> convertExamCentresToExamCentreResDto(List<ExamCentre> examCentres) {
         return examCentres
                 .stream()
@@ -240,4 +308,5 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                     return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount);
                 }).toList();
     }
+
 }

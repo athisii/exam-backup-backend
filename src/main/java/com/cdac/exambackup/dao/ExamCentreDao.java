@@ -4,6 +4,8 @@ import com.cdac.exambackup.entity.ExamCentre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -30,4 +32,6 @@ public interface ExamCentreDao extends BaseDao<ExamCentre, Long> {
     Page<ExamCentre> findByRegionIdAndCode(Long regionId, String code, Pageable pageable);
 
     Page<ExamCentre> findByRegionIdAndName(Long regionId, String name, Pageable pageable);
+
+    List<ExamCentre> findByRegionId(Long regionId);
 }

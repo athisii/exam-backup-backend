@@ -74,35 +74,19 @@ public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
         return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examSlotService.save(entity)));
     }
 
-//    @GetMapping(value = {"/query"}, produces = {"application/json"})
-//    @Operation(
-//            summary = "Get list of entities by page",
-//            description = "Loads a list of entities by page from Database corresponds to requested code, name",
-//            responses = {
-//                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
-//                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
-//                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
-//            }
-//    )
-//    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @PageableDefault Pageable pageable) {
-//        log.info("GetByCodeOrName Request for the ExamSlot entity in the controller for code, name");
-//        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-//        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examSlotService.getByCodeOrNameOrRegionId(code, name, pageable)));
-//    }
-//
-//    @GetMapping(value = {"/search"}, produces = {"application/json"})
-//    @Operation(
-//            summary = "Get list of entities by page",
-//            description = "Loads a list of entities by page from Database corresponds to search parameters",
-//            responses = {
-//                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
-//                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
-//                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
-//            }
-//    )
-//    public ResponseDto<?> query(@RequestParam(required = false) String searchTerm, @PageableDefault Pageable pageable) {
-//        log.info("Query Request for the ExamSlot entity in the controller");
-//        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-//        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examSlotService.search(searchTerm, pageable)));
-//    }
+    @GetMapping(value = {"/page"}, produces = {"application/json"})
+    @Operation(
+            summary = "Get list of entities by page",
+            description = "Loads a list of entities by page from Database corresponds to requested code, name",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
+                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
+        log.info("GetByCodeOrName Request for the ExamSlot entity in the controller for code, name");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
+        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examSlotService.getAllByPage(pageable)));
+    }
 }

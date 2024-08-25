@@ -14,6 +14,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -119,5 +121,10 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
+    }
+
+    @Override
+    public List<ExamCentre> findByRegionId(Long regionId) {
+        return this.examCentreRepository.findByRegionId(regionId);
     }
 }
