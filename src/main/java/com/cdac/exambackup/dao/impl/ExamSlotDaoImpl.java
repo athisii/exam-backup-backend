@@ -14,6 +14,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,8 +44,30 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
     }
 
     @Override
-    public List<ExamSlot> findByCodeOrName(Integer code, String name) {
-        return this.examSlotRepository.findByCodeOrNameIgnoreCase(code, name);
+    public void softDelete(ExamSlot entity) {
+        if (entity != null) {
+            entity.setDeleted(true);
+            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+            examSlotRepository.save(entity);
+        }
+    }
+
+    @Override
+    public void softDelete(Collection<ExamSlot> entities) {
+        if (entities != null && !entities.isEmpty()) {
+            entities.forEach(entity -> {
+                entity.setDeleted(true);
+                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+            });
+            examSlotRepository.saveAll(entities);
+        }
+    }
+
+    @Override
+    public List<ExamSlot> findByCodeOrName(String code, String name) {
+        return this.examSlotRepository.findByCodeOrNameIgnoreCaseAndDeletedFalse(code, name);
     }
 
     @Override

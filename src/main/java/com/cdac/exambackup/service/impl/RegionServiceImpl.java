@@ -48,7 +48,7 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         // new record entry
         if (regionDto.getId() == null) {
             // if both values are invalid, throw exception
-            if (regionDto.getCode() == null || regionDto.getCode() <= 0 || regionDto.getName() == null || regionDto.getName().isBlank()) {
+            if (regionDto.getCode() == null || regionDto.getCode().isBlank() || regionDto.getName() == null || regionDto.getName().isBlank()) {
                 throw new GenericException("Both 'code' and 'name' cannot be null or empty");
             }
             List<Region> daoRegions = regionDao.findByCodeOrName(regionDto.getCode(), regionDto.getName().trim());
@@ -72,7 +72,7 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         }
 
         // if both values are invalid, one should be valid
-        if ((regionDto.getCode() == null && regionDto.getName() == null) || (regionDto.getCode() != null && regionDto.getCode() <= 0 && regionDto.getName() != null && regionDto.getName().isBlank())) {
+        if ((regionDto.getCode() == null && regionDto.getName() == null) || (regionDto.getCode() != null && regionDto.getCode().isBlank() && regionDto.getName() != null && regionDto.getName().isBlank())) {
             throw new GenericException("Both 'code' and 'name' cannot be null or empty");
         }
 
@@ -88,8 +88,8 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         }
 
         if (regionDto.getCode() != null) {
-            if (regionDto.getCode() <= 0) {
-                throw new GenericException("code must be greater than 0");
+            if (regionDto.getCode().isBlank()) {
+                throw new GenericException("code cannot be empty.");
             }
             daoRegion.setCode(regionDto.getCode());
         }

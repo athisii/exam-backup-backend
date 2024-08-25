@@ -86,7 +86,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
             }
     )
     public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
-        log.info("GetByCodeOrNameOrRegionId Request for the ExamCentre entity in the controller for code, name, and/or region");
+        log.info("Query Request for the ExamCentre entity in the controller for code, name, and/or region");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId, pageable)));
     }

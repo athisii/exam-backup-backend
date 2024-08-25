@@ -27,10 +27,10 @@ import java.util.stream.LongStream;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
 public class Bootstrap implements CommandLineRunner {
-    static final Map<Integer, String> roleCodeNameMap;
-    static final Map<Integer, String> regionCodeNameMap;
-    static final Map<Integer, String> examSlotCodeNameMap;
-    static final Map<Integer, String> fileTypeCodeNameMap;
+    static final Map<String, String> roleCodeNameMap;
+    static final Map<String, String> regionCodeNameMap;
+    static final Map<String, String> examSlotCodeNameMap;
+    static final Map<String, String> fileTypeCodeNameMap;
     static final Map<Integer, String> examCentreCodeNameMap;
 
     @Autowired
@@ -63,30 +63,30 @@ public class Bootstrap implements CommandLineRunner {
 
     static {
         roleCodeNameMap = new TreeMap<>();
-        roleCodeNameMap.put(1, "ADMIN");
-        roleCodeNameMap.put(2, "STAFF");
-        roleCodeNameMap.put(3, "USER");
-        roleCodeNameMap.put(4, "OTHER");
+        roleCodeNameMap.put("1", "ADMIN");
+        roleCodeNameMap.put("2", "STAFF");
+        roleCodeNameMap.put("3", "USER");
+        roleCodeNameMap.put("4", "OTHER");
 
         regionCodeNameMap = new TreeMap<>();
-        regionCodeNameMap.put(1, "NORTH");
-        regionCodeNameMap.put(2, "EAST");
-        regionCodeNameMap.put(3, "SOUTH");
-        regionCodeNameMap.put(4, "WEST");
+        regionCodeNameMap.put("1", "NORTH");
+        regionCodeNameMap.put("2", "EAST");
+        regionCodeNameMap.put("3", "SOUTH");
+        regionCodeNameMap.put("4", "WEST");
 
         examSlotCodeNameMap = new TreeMap<>();
-        examSlotCodeNameMap.put(1, "SLOT 1");
-        examSlotCodeNameMap.put(2, "SLOT 2");
-        examSlotCodeNameMap.put(3, "SLOT 3");
-        examSlotCodeNameMap.put(4, "SLOT 4");
+        examSlotCodeNameMap.put("1", "SLOT 1");
+        examSlotCodeNameMap.put("2", "SLOT 2");
+        examSlotCodeNameMap.put("3", "SLOT 3");
+        examSlotCodeNameMap.put("4", "SLOT 4");
 
         fileTypeCodeNameMap = new TreeMap<>();
-        fileTypeCodeNameMap.put(1, "PXE LOG");
-        fileTypeCodeNameMap.put(2, "PRIMARY SERVER LOG");
-        fileTypeCodeNameMap.put(3, "SECONDARY SERVER LOG");
-        fileTypeCodeNameMap.put(4, "RESPONSE SHEET");
-        fileTypeCodeNameMap.put(5, "ATTENDANCE SHEET");
-        fileTypeCodeNameMap.put(6, "BIOMETRIC DATA");
+        fileTypeCodeNameMap.put("1", "PXE LOG");
+        fileTypeCodeNameMap.put("2", "PRIMARY SERVER LOG");
+        fileTypeCodeNameMap.put("3", "SECONDARY SERVER LOG");
+        fileTypeCodeNameMap.put("4", "RESPONSE SHEET");
+        fileTypeCodeNameMap.put("5", "ATTENDANCE SHEET");
+        fileTypeCodeNameMap.put("6", "BIOMETRIC DATA");
 
         examCentreCodeNameMap = new TreeMap<>();
         examCentreCodeNameMap.put(101, "Exam Centre 1");

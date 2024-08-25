@@ -14,5 +14,5 @@ import java.util.List;
 
 @Repository
 public interface RegionRepository extends JpaRepository<Region, Long> {
-    List<Region> findByCodeOrNameIgnoreCase(Integer code, String name);
+    List<Region> findByCodeOrNameIgnoreCaseAndDeletedFalse(String code, String name);
 }

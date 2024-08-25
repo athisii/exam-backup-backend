@@ -11,5 +11,5 @@ import java.util.List;
  */
 
 public interface FileTypeDao extends BaseDao<FileType, Long> {
-    List<FileType> findByCodeOrName(Integer code, String name);
+    List<FileType> findByCodeOrName(String code, String name);
 }

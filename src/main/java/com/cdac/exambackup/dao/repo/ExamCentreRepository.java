@@ -17,28 +17,27 @@ import java.util.List;
 
 @Repository
 public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
-    ExamCentre findFirstByCode(String code);
+    ExamCentre findFirstByCodeAndDeletedFalse(String code);
 
-    ExamCentre findFirstByCodeAndNameIgnoreCase(String code, String name);
+    ExamCentre findFirstByCodeAndNameIgnoreCaseAndDeletedFalse(String code, String name);
 
-    Page<ExamCentre> findByCodeOrNameIgnoreCase(String code, String name, Pageable pageable);
+    Page<ExamCentre> findByCodeOrNameIgnoreCaseAndDeletedFalse(String code, String name, Pageable pageable);
 
-    Page<ExamCentre> findByNameIgnoreCase(String name, Pageable pageable);
+    Page<ExamCentre> findByNameIgnoreCaseAndDeletedFalse(String name, Pageable pageable);
 
-    Page<ExamCentre> findByRegionId(Long regionId, Pageable pageable);
+    Page<ExamCentre> findByRegionIdAndDeletedFalse(Long regionId, Pageable pageable);
 
-    @Query("SELECT ec FROM ExamCentre ec WHERE (LOWER(ec.code) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND ec.region.id = :regionId")
-    Page<ExamCentre> findByRegionIdAndSearchTerm(Long regionId, String searchTerm, Pageable pageable);
+    @Query("SELECT ec FROM ExamCentre ec WHERE (LOWER(ec.code) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND ec.region.id = :regionId AND ec.deleted = false")
+    Page<ExamCentre> findByRegionIdAndSearchTermAndDeletedFalse(Long regionId, String searchTerm, Pageable pageable);
 
-    @Query("SELECT ec FROM ExamCentre ec WHERE LOWER(ec.code) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<ExamCentre> findBySearchTerm(String searchTerm, Pageable pageable);
+    @Query("SELECT ec FROM ExamCentre ec WHERE LOWER(ec.code) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(ec.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) AND ec.deleted = false")
+    Page<ExamCentre> findBySearchTermAndDeletedFalse(String searchTerm, Pageable pageable);
 
+    Page<ExamCentre> findByRegionIdAndCodeOrNameIgnoreCaseAndDeletedFalse(Long regionId, String code, String name, Pageable pageable);
 
-    Page<ExamCentre> findByRegionIdAndCodeOrNameIgnoreCase(Long regionId, String code, String name, Pageable pageable);
+    Page<ExamCentre> findByRegionIdAndCodeAndDeletedFalse(Long regionId, String code, Pageable pageable);
 
-    Page<ExamCentre> findByRegionIdAndCode(Long regionId, String code, Pageable pageable);
+    Page<ExamCentre> findByRegionIdAndNameIgnoreCaseAndDeletedFalse(Long regionId, String name, Pageable pageable);
 
-    Page<ExamCentre> findByRegionIdAndNameIgnoreCase(Long regionId, String name, Pageable pageable);
-
-    List<ExamCentre> findByRegionId(Long regionId);
+    List<ExamCentre> findByRegionIdAndDeletedFalse(Long regionId);
 }

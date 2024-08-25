@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppUser extends AuditModel {
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, unique = true)
     String userId; // exam-centre-code or admin-id
 
     @Column

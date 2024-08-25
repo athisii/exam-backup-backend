@@ -1,7 +1,9 @@
 package com.cdac.exambackup.dao.impl;
 
+import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.dao.ExamCentreDao;
 import com.cdac.exambackup.dao.repo.ExamCentreRepository;
+import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.exception.GenericException;
 import lombok.AccessLevel;
@@ -14,6 +16,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,6 +35,9 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Autowired
     ExamCentreRepository examCentreRepository;
 
+    @Autowired
+    AppUserDao appUserDao;
+
     @Override
     public JpaRepository<ExamCentre, Long> getRepository() {
         return this.examCentreRepository;
@@ -42,19 +49,58 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     }
 
     @Override
+    public void softDelete(ExamCentre entity) {
+        if (entity != null) {
+            AppUser appUser = appUserDao.findByUserId(entity.getCode());
+            appUser.setDeleted(true);
+            appUser.setActive(false);
+
+            entity.setDeleted(true);
+            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+
+            appUser.setUserId(entity.getCode());
+            appUser.setName(entity.getName());
+            appUserDao.save(appUser);
+
+            examCentreRepository.save(entity);
+        }
+    }
+
+    @Override
+    public void softDelete(Collection<ExamCentre> entities) {
+        if (entities != null && !entities.isEmpty()) {
+            entities.forEach(entity -> {
+                AppUser appUser = appUserDao.findByUserId(entity.getCode());
+                appUser.setDeleted(true);
+                appUser.setActive(false);
+
+                entity.setDeleted(true);
+                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+
+                appUser.setUserId(entity.getCode());
+                appUser.setName(entity.getName());
+                appUserDao.save(appUser);
+            });
+            examCentreRepository.saveAll(entities);
+        }
+    }
+
+    @Override
     public ExamCentre findByCode(String code) {
-        return this.examCentreRepository.findFirstByCode(code);
+        return this.examCentreRepository.findFirstByCodeAndDeletedFalse(code);
     }
 
     @Override
     public ExamCentre findByCodeAndName(String code, String name) {
-        return this.examCentreRepository.findFirstByCodeAndNameIgnoreCase(code, name);
+        return this.examCentreRepository.findFirstByCodeAndNameIgnoreCaseAndDeletedFalse(code, name);
     }
 
     @Override
     public Page<ExamCentre> findByCodeOrName(String code, String name, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByCodeOrNameIgnoreCase(code, name, pageable);
+            return this.examCentreRepository.findByCodeOrNameIgnoreCaseAndDeletedFalse(code, name, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -63,7 +109,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> findByRegionIdAndCodeOrName(Long regionId, String code, String name, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndCodeOrNameIgnoreCase(regionId, code, name, pageable);
+            return this.examCentreRepository.findByRegionIdAndCodeOrNameIgnoreCaseAndDeletedFalse(regionId, code, name, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -72,7 +118,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> findByName(String name, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByNameIgnoreCase(name, pageable);
+            return this.examCentreRepository.findByNameIgnoreCaseAndDeletedFalse(name, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -81,7 +127,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> findByRegionId(Long regionId, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionId(regionId, pageable);
+            return this.examCentreRepository.findByRegionIdAndDeletedFalse(regionId, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -90,7 +136,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> searchWithRegionId(String searchTerm, Long regionId, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndSearchTerm(regionId, searchTerm, pageable);
+            return this.examCentreRepository.findByRegionIdAndSearchTermAndDeletedFalse(regionId, searchTerm, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -99,7 +145,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> search(String searchTerm, Pageable pageable) {
         try {
-            return this.examCentreRepository.findBySearchTerm(searchTerm, pageable);
+            return this.examCentreRepository.findBySearchTermAndDeletedFalse(searchTerm, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -108,7 +154,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> findByRegionIdAndCode(Long regionId, String code, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndCode(regionId, code, pageable);
+            return this.examCentreRepository.findByRegionIdAndCodeAndDeletedFalse(regionId, code, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -117,7 +163,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Override
     public Page<ExamCentre> findByRegionIdAndName(Long regionId, String name, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndNameIgnoreCase(regionId, name, pageable);
+            return this.examCentreRepository.findByRegionIdAndNameIgnoreCaseAndDeletedFalse(regionId, name, pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
@@ -125,6 +171,6 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
 
     @Override
     public List<ExamCentre> findByRegionId(Long regionId) {
-        return this.examCentreRepository.findByRegionId(regionId);
+        return this.examCentreRepository.findByRegionIdAndDeletedFalse(regionId);
     }
 }

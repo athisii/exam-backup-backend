@@ -52,7 +52,7 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
         // new record entry
         if (examSlotDto.getId() == null) {
             // if both values are invalid, throw exception
-            if (examSlotDto.getCode() == null || examSlotDto.getCode() <= 0 || examSlotDto.getName() == null || examSlotDto.getName().isBlank()) {
+            if (examSlotDto.getCode() == null || examSlotDto.getCode().isBlank() || examSlotDto.getName() == null || examSlotDto.getName().isBlank()) {
                 throw new GenericException("Both 'code' and 'name' cannot be null or empty");
             }
             List<ExamSlot> daoExamSlots = examSlotDao.findByCodeOrName(examSlotDto.getCode(), examSlotDto.getName().trim());
@@ -76,7 +76,7 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
         }
 
         // if both values are invalid, one should be valid
-        if ((examSlotDto.getCode() == null && examSlotDto.getName() == null) || (examSlotDto.getCode() != null && examSlotDto.getCode() <= 0 && examSlotDto.getName() != null && examSlotDto.getName().isBlank())) {
+        if ((examSlotDto.getCode() == null && examSlotDto.getName() == null) || (examSlotDto.getCode() != null && examSlotDto.getCode().isBlank() && examSlotDto.getName() != null && examSlotDto.getName().isBlank())) {
             throw new GenericException("Both 'code' and 'name' cannot be null or empty");
         }
 
@@ -92,8 +92,8 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
         }
 
         if (examSlotDto.getCode() != null) {
-            if (examSlotDto.getCode() <= 0) {
-                throw new GenericException("code must be greater than 0");
+            if (examSlotDto.getCode().isBlank()) {
+                throw new GenericException("code cannot be empty.");
             }
             daoExamSlot.setCode(examSlotDto.getCode());
         }

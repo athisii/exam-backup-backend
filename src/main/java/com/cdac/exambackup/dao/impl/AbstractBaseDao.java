@@ -182,8 +182,7 @@ public abstract class AbstractBaseDao<E extends AuditModel, ID extends Serializa
     public void softDeleteAll() {
         Collection<E> entities = this.getRepository().findAll();
         if (!entities.isEmpty()) {
-            entities.forEach(e -> e.setDeleted(true));
-            this.getRepository().saveAll(entities);
+            softDelete(entities);
         }
     }
 

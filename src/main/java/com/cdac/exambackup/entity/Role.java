@@ -32,7 +32,7 @@ public class Role extends AuditModel {
      */
 
     @Column(nullable = false, unique = true)
-    Integer code;
+    String code;
 
     @Column(nullable = false, unique = true)
     String name;

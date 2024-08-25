@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,8 +38,30 @@ public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao 
     }
 
     @Override
-    public List<Role> findByCodeOrName(Integer code, String name) {
-        return this.roleRepository.findByCodeOrNameIgnoreCase(code, name);
+    public void softDelete(Role entity) {
+        if (entity != null) {
+            entity.setDeleted(true);
+            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+            roleRepository.save(entity);
+        }
+    }
+
+    @Override
+    public void softDelete(Collection<Role> entities) {
+        if (entities != null && !entities.isEmpty()) {
+            entities.forEach(entity -> {
+                entity.setDeleted(true);
+                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+            });
+            roleRepository.saveAll(entities);
+        }
+    }
+
+    @Override
+    public List<Role> findByCodeOrName(String code, String name) {
+        return this.roleRepository.findByCodeOrNameIgnoreCaseAndDeletedFalse(code, name);
     }
 
     @Override

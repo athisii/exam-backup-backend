@@ -33,7 +33,7 @@ public class FileType extends AuditModel {
      */
 
     @Column(nullable = false, unique = true)
-    Integer code;
+    String code;
 
     @Column(nullable = false, unique = true)
     String name;

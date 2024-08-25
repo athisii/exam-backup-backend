@@ -49,7 +49,7 @@ public class JwtProvider {
                 .sign(algorithm);
     }
 
-    public List<Integer> getPermissionsFromAppUser(AppUser appUser) {
+    public List<String> getPermissionsFromAppUser(AppUser appUser) {
         return List.of(appUser.getRole().getCode());
     }
 

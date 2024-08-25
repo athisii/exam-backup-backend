@@ -48,7 +48,7 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
         // new record entry
         if (fileTypeDto.getId() == null) {
             // if both values are invalid, throw exception
-            if (fileTypeDto.getCode() == null || fileTypeDto.getCode() <= 0 || fileTypeDto.getName() == null || fileTypeDto.getName().isBlank()) {
+            if (fileTypeDto.getCode() == null || fileTypeDto.getCode().isBlank() || fileTypeDto.getName() == null || fileTypeDto.getName().isBlank()) {
                 throw new GenericException("Both 'code' and 'name' cannot be null or empty");
             }
             List<FileType> daoFileTypes = fileTypeDao.findByCodeOrName(fileTypeDto.getCode(), fileTypeDto.getName().trim());
@@ -71,8 +71,8 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
             throw new EntityNotFoundException("FileType with id: " + daoFileType.getId() + " is not active. Must activate first.");
         }
 
-        // if both values are invalid, one should be valid
-        if ((fileTypeDto.getCode() == null && fileTypeDto.getName() == null) || (fileTypeDto.getCode() != null && fileTypeDto.getCode() <= 0 && fileTypeDto.getName() != null && fileTypeDto.getName().isBlank())) {
+        // if both values are invalid; one should be valid
+        if ((fileTypeDto.getCode() == null && fileTypeDto.getName() == null) || (fileTypeDto.getCode() != null && fileTypeDto.getCode().isBlank() && fileTypeDto.getName() != null && fileTypeDto.getName().isBlank())) {
             throw new GenericException("Both 'code' and 'name' cannot be null or empty");
         }
 
@@ -88,8 +88,8 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
         }
 
         if (fileTypeDto.getCode() != null) {
-            if (fileTypeDto.getCode() <= 0) {
-                throw new GenericException("code must be greater than 0");
+            if (fileTypeDto.getCode().isBlank()) {
+                throw new GenericException("code cannot be empty.");
             }
             daoFileType.setCode(fileTypeDto.getCode());
         }

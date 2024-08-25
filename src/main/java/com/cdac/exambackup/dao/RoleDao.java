@@ -11,7 +11,7 @@ import java.util.List;
  */
 
 public interface RoleDao extends BaseDao<Role, Long> {
-    List<Role> findByCodeOrName(Integer code, String name);
+    List<Role> findByCodeOrName(String code, String name);
 
     Role findByName(String name);
 }

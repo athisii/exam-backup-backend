@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 public interface ExamSlotDao extends BaseDao<ExamSlot, Long> {
-    List<ExamSlot> findByCodeOrName(Integer code, String name);
+    List<ExamSlot> findByCodeOrName(String code, String name);
 
     Page<ExamSlot> getAllByPage(Pageable pageable);
 

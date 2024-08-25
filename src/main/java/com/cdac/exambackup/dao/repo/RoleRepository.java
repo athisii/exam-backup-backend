@@ -14,7 +14,7 @@ import java.util.List;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
-    List<Role> findByCodeOrNameIgnoreCase(Integer code, String name);
+    List<Role> findByCodeOrNameIgnoreCaseAndDeletedFalse(String code, String name);
 
     Role findFirstByNameIgnoreCase(String name);
 }

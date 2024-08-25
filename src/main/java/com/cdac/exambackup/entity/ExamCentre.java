@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExamCentre extends AuditModel {
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, unique = true)
     String code;
 
     @Column(nullable = false)

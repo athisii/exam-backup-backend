@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,7 +38,29 @@ public class FileTypeDaoImpl extends AbstractBaseDao<FileType, Long> implements 
     }
 
     @Override
-    public List<FileType> findByCodeOrName(Integer code, String name) {
-        return fileTypeRepository.findByCodeOrNameIgnoreCase(code, name);
+    public void softDelete(FileType entity) {
+        if (entity != null) {
+            entity.setDeleted(true);
+            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+            fileTypeRepository.save(entity);
+        }
+    }
+
+    @Override
+    public void softDelete(Collection<FileType> entities) {
+        if (entities != null && !entities.isEmpty()) {
+            entities.forEach(entity -> {
+                entity.setDeleted(true);
+                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
+                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+            });
+            fileTypeRepository.saveAll(entities);
+        }
+    }
+
+    @Override
+    public List<FileType> findByCodeOrName(String code, String name) {
+        return fileTypeRepository.findByCodeOrNameIgnoreCaseAndDeletedFalse(code, name);
     }
 }

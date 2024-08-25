@@ -11,5 +11,5 @@ import java.util.List;
  */
 
 public interface RegionDao extends BaseDao<Region, Long> {
-    List<Region> findByCodeOrName(Integer code, String name);
+    List<Region> findByCodeOrName(String code, String name);
 }
