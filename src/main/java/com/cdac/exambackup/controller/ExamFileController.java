@@ -50,21 +50,21 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the ExamFile entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getById(id)));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the ExamFile entity in the controller");
-        return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getAll()));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getAll()));
     }
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the ExamFile entity in the controller");
-        return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.list(listRequest)));
+        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.list(listRequest)));
     }
 
     // this method should not be used, so overriding the parent class.
@@ -72,7 +72,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     @Override
     public ResponseDto<?> create(@RequestBody ExamFile entity) {
         log.info("Create Request for the entity in abstract controller.");
-        return new ResponseDto<>("Your data has been saved successfully", new ResIdDto<>(this.examFileService.save(entity).getId()));
+        return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examFileService.save(entity).getId()));
     }
 
 
@@ -81,7 +81,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
             summary = "Create/Update entity with MultipartFile",
             description = "Create or Update (if Id passed) the entity in Database",
             responses = {
-                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Your data has been saved successfully\", \"status\": true, \"data\": {\"id\":1}}"))),
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Your data has been saved successfully.\", \"status\": true, \"data\": {\"id\":1}}"))),
                     @ApiResponse(description = "Validation failure / invalid request payload", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Invalid request/validation error message.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
@@ -89,7 +89,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     public ResponseDto<?> create(ExamFileReqDto examFileReqDto) {
         log.info("Create Request for the ExamFile entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examFileService.save(examFileReqDto)));
+        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examFileService.save(examFileReqDto)));
     }
 
     @PostMapping(value = {"/query"}, produces = {"application/json"})
@@ -97,13 +97,13 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
             summary = "Returns list of ExamFiles matching centre code, exam date and slot",
             description = "Loads all the active available entities based on requested centre code, exam date and slot",
             responses = {
-                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully\", \"status\": true, \"data\": [{}]}"))),
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched successfully.\", \"status\": true, \"data\": [{}]}"))),
                     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Bad request.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
     public ResponseDto<?> getByCentreCodeExamDateAndSlot(@RequestBody ExamFileReqDto examFileReqDto) {
         log.info("Query request for the ExamFile entity in the controller.");
-        return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCodeExamDateAndSlot(examFileReqDto)));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCodeExamDateAndSlot(examFileReqDto)));
     }
 }

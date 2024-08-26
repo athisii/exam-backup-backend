@@ -45,21 +45,21 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the ExamDate entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.getById(id)));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the ExamSExamDatelot entity in the controller");
-        return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.getAll()));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.getAll()));
     }
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the ExamDate entity in the controller");
-        return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.list(listRequest)));
+        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.list(listRequest)));
     }
 
     // this method should not be used, so overriding the parent class.
@@ -68,7 +68,7 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
     @PostMapping(value = {"/new"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamDate entity) {
         log.info("Create Request for the entity in abstract controller.");
-        return new ResponseDto<>("Your data has been saved successfully", new ResIdDto<>(this.examDateService.save(entity).getId()));
+        return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examDateService.save(entity).getId()));
     }
 
 
@@ -76,6 +76,6 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
     public ResponseDto<?> create(@RequestBody ExamDateReqDto examDateReqDto) {
         log.info("Create Request for the ExamDate entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.save(examDateReqDto)));
+        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.save(examDateReqDto)));
     }
 }

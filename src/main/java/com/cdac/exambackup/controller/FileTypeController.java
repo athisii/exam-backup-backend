@@ -43,21 +43,21 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the FileType entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched Successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.getById(id)));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the FileType entity in the controller");
-        return new ResponseDto<>("Data fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.getAll()));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.getAll()));
     }
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
         log.info("List Request for the FileType entity in the controller");
-        return new ResponseDto<>("Filtered List fetched successfully", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.list(listRequest)));
+        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.list(listRequest)));
     }
 
     @Override
@@ -65,6 +65,6 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
     public ResponseDto<?> create(@RequestBody FileType fileType) {
         log.info("Create Request for the FileType entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileType)));
+        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileType)));
     }
 }

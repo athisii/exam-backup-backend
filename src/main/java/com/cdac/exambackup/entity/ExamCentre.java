@@ -21,7 +21,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExamCentre extends AuditModel {
     @Column(nullable = false, unique = true)
-    String code;
+    String code; // string is used to add suffix when deleted
 
     @Column(nullable = false)
     String name;

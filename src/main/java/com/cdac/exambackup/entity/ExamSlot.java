@@ -19,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExamSlot extends AuditModel {
     @Column(nullable = false, unique = true)
-    String code;
+    String code; // string is used to add suffix when deleted
 
     @Column(nullable = false, unique = true)
     String name;
