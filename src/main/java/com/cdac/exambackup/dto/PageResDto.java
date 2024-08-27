@@ -6,5 +6,5 @@ package com.cdac.exambackup.dto;
  * @since 8/8/24
  */
 
-public record PageResDto<T>(int page, int totalPages, T items) {
+public record PageResDto<T>(int page, int numberOfElements, long totalElements, int totalPages, T items) {
 }

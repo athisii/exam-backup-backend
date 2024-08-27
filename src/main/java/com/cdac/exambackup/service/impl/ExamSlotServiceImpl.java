@@ -109,7 +109,7 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
     @Override
     public PageResDto<List<ExamSlot>> getAllByPage(Pageable pageable) {
         Page<ExamSlot> page = examSlotDao.getAllByPage(pageable);
-        return new PageResDto<>(pageable.getPageNumber(), page.getTotalPages(), page.getContent());
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent());
     }
 
 }
