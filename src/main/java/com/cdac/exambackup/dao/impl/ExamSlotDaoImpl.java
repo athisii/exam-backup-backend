@@ -73,7 +73,7 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
     @Override
     public Page<ExamSlot> getAllByPage(Pageable pageable) {
         try {
-            return this.examSlotRepository.findAll(pageable);
+            return this.examSlotRepository.findByDeletedFalse(pageable);
         } catch (PropertyReferenceException ex) {
             throw new GenericException(ERROR_MSG);
         }
