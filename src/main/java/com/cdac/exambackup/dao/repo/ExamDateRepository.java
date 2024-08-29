@@ -15,5 +15,4 @@ import java.util.List;
 
 @Repository
 public interface ExamDateRepository extends JpaRepository<ExamDate, Long> {
-    List<ExamDate> findByExamCentre(ExamCentre examCentre);
 }

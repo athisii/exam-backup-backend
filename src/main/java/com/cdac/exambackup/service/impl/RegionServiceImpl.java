@@ -4,6 +4,7 @@ import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.RegionDao;
 import com.cdac.exambackup.entity.Region;
 import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.RegionService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
@@ -49,11 +50,11 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         if (regionDto.getId() == null) {
             // if both values are invalid, throw exception
             if (regionDto.getCode() == null || regionDto.getCode().isBlank() || regionDto.getName() == null || regionDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty");
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
             }
             List<Region> daoRegions = regionDao.findByCodeOrName(regionDto.getCode(), regionDto.getName().trim());
             if (!daoRegions.isEmpty()) {
-                throw new GenericException("Same 'code' or 'name' already exists");
+                throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
             }
             // now remove the unnecessary fields if present or create new object.
             Region region = new Region();
@@ -84,18 +85,18 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         }
         // check if it's the different object
         if ((daoOtherRegions != null && daoOtherRegions.size() > 1) || daoOtherRegions != null && !daoOtherRegions.isEmpty() && !daoRegion.getId().equals(daoOtherRegions.getFirst().getId())) {
-            throw new GenericException("Same 'code' or 'name' already exists");
+            throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
         }
 
         if (regionDto.getCode() != null) {
             if (regionDto.getCode().isBlank()) {
-                throw new GenericException("code cannot be empty.");
+                throw new InvalidReqPayloadException("code cannot be empty.");
             }
             daoRegion.setCode(regionDto.getCode());
         }
         if (regionDto.getName() != null) {
             if (regionDto.getName().isBlank()) {
-                throw new GenericException("name cannot be empty.");
+                throw new InvalidReqPayloadException("name cannot be empty.");
             }
             daoRegion.setName(regionDto.getName().trim().toUpperCase());
         }

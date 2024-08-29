@@ -1,9 +1,6 @@
 package com.cdac.exambackup.dao;
 
-import com.cdac.exambackup.entity.ExamCentre;
-import com.cdac.exambackup.entity.ExamFile;
-import com.cdac.exambackup.entity.ExamSlot;
-import com.cdac.exambackup.entity.FileType;
+import com.cdac.exambackup.entity.*;
 
 import java.util.List;
 
@@ -14,9 +11,9 @@ import java.util.List;
  */
 
 public interface ExamFileDao extends BaseDao<ExamFile, Long> {
-    List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre examCentre, ExamSlot examSlot, FileType fileType);
+    ExamFile findByExamCentreAndExamDateAndSlotAndFileType(ExamCentre examCentre, ExamDate examDate, Slot slot, FileType fileType);
 
-    List<ExamFile> findByExamCentreAndExamSlot(ExamCentre examCentre, ExamSlot examSlot);
+    List<ExamFile> findByExamCentreAndExamDateAndSlot(ExamCentre examCentre, ExamDate examDate, Slot slot);
 
     List<ExamFile> findByExamCentre(ExamCentre example);
 }

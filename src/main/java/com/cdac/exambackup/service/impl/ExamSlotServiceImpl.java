@@ -1,22 +1,22 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.BaseDao;
+import com.cdac.exambackup.dao.ExamDao;
 import com.cdac.exambackup.dao.ExamSlotDao;
-import com.cdac.exambackup.dto.PageResDto;
+import com.cdac.exambackup.dao.SlotDao;
+import com.cdac.exambackup.dto.ExamSlotReqDto;
+import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamSlot;
-import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.entity.Slot;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamSlotService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -28,9 +28,13 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> implements ExamSlotService {
-
+    @Autowired
+    ExamDao examDao;
+    @Autowired
+    SlotDao slotDao;
     @Autowired
     ExamSlotDao examSlotDao;
+
 
     public ExamSlotServiceImpl(BaseDao<ExamSlot, Long> baseDao) {
         super(baseDao);
@@ -38,78 +42,59 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
 
     @Transactional
     @Override
-    public ExamSlot save(ExamSlot examSlotDto) {
-        /*
-             if id not present in dto:
-                  add new record after passing the constraint check.
-             else:
-                  if entity exist in table for passed id:
-                       update only {code} and {name} after passing the constraint check. // other fields have separate API.
-                  else:
-                       throw exception.
-         */
-
-        // new record entry
-        if (examSlotDto.getId() == null) {
-            // if both values are invalid, throw exception
-            if (examSlotDto.getCode() == null || examSlotDto.getCode().isBlank() || examSlotDto.getName() == null || examSlotDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty");
+    public ExamSlot save(ExamSlotReqDto examSlotReqDto) {
+        // new entry
+        if (examSlotReqDto.id() == null) {
+            if (examSlotReqDto.examId() == null || examSlotReqDto.slotId() == null) {
+                throw new InvalidReqPayloadException("Please provide all the required ids.");
             }
-            List<ExamSlot> daoExamSlots = examSlotDao.findByCodeOrName(examSlotDto.getCode(), examSlotDto.getName().trim());
-            if (!daoExamSlots.isEmpty()) {
-                throw new GenericException("Same 'code' or 'name' already exists");
+            Slot daoSlot = slotDao.findById(examSlotReqDto.slotId());
+            if (daoSlot == null) {
+                throw new EntityNotFoundException("Slot with id: " + examSlotReqDto.slotId() + " not found.");
             }
-            // now remove the unnecessary fields if present or create new object.
-            ExamSlot examSlot = new ExamSlot();
-            examSlot.setCode(examSlotDto.getCode());
-            examSlot.setName(examSlotDto.getName().trim().toUpperCase());
-            return examSlotDao.save(examSlot);
+            Exam daoExam = examDao.findById(examSlotReqDto.examId());
+            if (daoExam == null) {
+                throw new EntityNotFoundException("Exam with id: " + examSlotReqDto.examId() + " not found.");
+            }
+            ExamSlot daoExamSlot = examSlotDao.findByExamAndSlot(daoExam, daoSlot);
+            if (daoExamSlot != null) {
+                throw new InvalidReqPayloadException("ExamSlot already exists for given examId and slotId.");
+            }
+            daoExamSlot = new ExamSlot();
+            daoExamSlot.setExam(daoExam);
+            daoExamSlot.setSlot(daoSlot);
+            return examSlotDao.save(daoExamSlot);
         }
-        // else updating existing record.
+        // else update existing entry
 
-        ExamSlot daoExamSlot = examSlotDao.findById(examSlotDto.getId());
+        if (examSlotReqDto.examId() == null && examSlotReqDto.slotId() == null) {
+            throw new InvalidReqPayloadException("Please provide all the required ids.");
+        }
+
+        ExamSlot daoExamSlot = examSlotDao.findById(examSlotReqDto.id());
         if (daoExamSlot == null) {
-            throw new EntityNotFoundException("ExamSlot with id: " + examSlotDto.getId() + " not found.");
-        }
-        if (Boolean.FALSE.equals(daoExamSlot.getActive())) {
-            throw new EntityNotFoundException("ExamSlot with id: " + daoExamSlot.getId() + " is not active. Must activate first.");
+            throw new EntityNotFoundException("ExamSlot with id: " + examSlotReqDto.id() + " not found.");
         }
 
-        // if both values are invalid, one should be valid
-        if ((examSlotDto.getCode() == null && examSlotDto.getName() == null) || (examSlotDto.getCode() != null && examSlotDto.getCode().isBlank() && examSlotDto.getName() != null && examSlotDto.getName().isBlank())) {
-            throw new GenericException("Both 'code' and 'name' cannot be null or empty");
-        }
-
-        List<ExamSlot> daoOtherExamSlots;
-        if (examSlotDto.getName() == null) {
-            daoOtherExamSlots = examSlotDao.findByCodeOrName(examSlotDto.getCode(), null);
-        } else {
-            daoOtherExamSlots = examSlotDao.findByCodeOrName(examSlotDto.getCode(), examSlotDto.getName().trim());
-        }
-        // check if it's the different object
-        if ((daoOtherExamSlots != null && daoOtherExamSlots.size() > 1) || daoOtherExamSlots != null && !daoOtherExamSlots.isEmpty() && !daoExamSlot.getId().equals(daoOtherExamSlots.getFirst().getId())) {
-            throw new GenericException("Same 'code' or 'name' already exists");
-        }
-
-        if (examSlotDto.getCode() != null) {
-            if (examSlotDto.getCode().isBlank()) {
-                throw new GenericException("code cannot be empty.");
+        if (examSlotReqDto.slotId() != null) {
+            Slot daoSlot = slotDao.findById(examSlotReqDto.slotId());
+            if (daoSlot == null) {
+                throw new EntityNotFoundException("Slot with id: " + examSlotReqDto.slotId() + " not found.");
             }
-            daoExamSlot.setCode(examSlotDto.getCode());
+            daoExamSlot.setSlot(daoSlot);
         }
-        if (examSlotDto.getName() != null) {
-            if (examSlotDto.getName().isBlank()) {
-                throw new GenericException("name cannot be empty.");
+        if (examSlotReqDto.examId() != null) {
+            Exam daoExam = examDao.findById(examSlotReqDto.examId());
+            if (daoExam == null) {
+                throw new EntityNotFoundException("Exam with id: " + examSlotReqDto.examId() + " not found.");
             }
-            daoExamSlot.setName(examSlotDto.getName().trim().toUpperCase());
+            daoExamSlot.setExam(daoExam);
         }
-        return examSlotDao.save(daoExamSlot);
+        try {
+            return examSlotDao.save(daoExamSlot);
+        } catch (Exception ex) {
+            log.warn("Error: {}", ex.getMessage());
+            throw new InvalidReqPayloadException("Same exam slot already exists.");
+        }
     }
-
-    @Override
-    public PageResDto<List<ExamSlot>> getAllByPage(Pageable pageable) {
-        Page<ExamSlot> page = examSlotDao.getAllByPage(pageable);
-        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent());
-    }
-
 }

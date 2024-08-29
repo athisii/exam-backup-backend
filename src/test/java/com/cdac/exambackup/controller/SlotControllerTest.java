@@ -1,6 +1,6 @@
 package com.cdac.exambackup.controller;
 
-import com.cdac.exambackup.entity.ExamSlot;
+import com.cdac.exambackup.entity.Slot;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class ExamSlotControllerTest {
+class SlotControllerTest {
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
@@ -46,7 +46,7 @@ class ExamSlotControllerTest {
     @Order(3)
     void shouldCreate_forValidData() throws Exception {
         mockMvc.perform(post("/exam-slots/create")
-                        .content(objectMapper.writeValueAsString(new ExamSlot(5, "new")))
+                        .content(objectMapper.writeValueAsString(new Slot(5, "new")))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -56,7 +56,7 @@ class ExamSlotControllerTest {
     @Order(4)
     void shouldNotCreate_forInvalidData() throws Exception {
         mockMvc.perform(post("/exam-slots/create")
-                        .content(objectMapper.writeValueAsString(new ExamSlot(0, " ")))
+                        .content(objectMapper.writeValueAsString(new Slot(0, " ")))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -66,7 +66,7 @@ class ExamSlotControllerTest {
     @Order(5)
     void shouldNotCreate_forValidCodeAndInvalidName() throws Exception {
         mockMvc.perform(post("/exam-slots/create")
-                        .content(objectMapper.writeValueAsString(new ExamSlot(5, null)))
+                        .content(objectMapper.writeValueAsString(new Slot(5, null)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -76,7 +76,7 @@ class ExamSlotControllerTest {
     @Order(6)
     void shouldNotCreate_forValidNameAndInvalidCode() throws Exception {
         mockMvc.perform(post("/exam-slots/create")
-                        .content(objectMapper.writeValueAsString(new ExamSlot(null, "valid name")))
+                        .content(objectMapper.writeValueAsString(new Slot(null, "valid name")))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -86,7 +86,7 @@ class ExamSlotControllerTest {
     @Order(7)
     void shouldNotCreate_forAlreadyExistedCode() throws Exception {
         mockMvc.perform(post("/exam-slots/create")
-                        .content(objectMapper.writeValueAsString(new ExamSlot(1, "new exam-slot name")))
+                        .content(objectMapper.writeValueAsString(new Slot(1, "new exam-slot name")))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -96,7 +96,7 @@ class ExamSlotControllerTest {
     @Order(8)
     void shouldNotCreate_forAlreadyExistedName() throws Exception {
         mockMvc.perform(post("/exam-slots/create")
-                        .content(objectMapper.writeValueAsString(new ExamSlot(8, "SLOT_1")))
+                        .content(objectMapper.writeValueAsString(new Slot(8, "SLOT_1")))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -105,7 +105,7 @@ class ExamSlotControllerTest {
     @Test
     @Order(9)
     void shouldUpdate_forValidDataAndValidId() throws Exception {
-        var examSlot = new ExamSlot(1, "both fields valid");
+        var examSlot = new Slot(1, "both fields valid");
         examSlot.setId(1L);
         mockMvc.perform(post("/exam-slots/create")
                         .content(objectMapper.writeValueAsString(examSlot))
@@ -117,7 +117,7 @@ class ExamSlotControllerTest {
     @Test
     @Order(10)
     void shouldUpdate_forValidNameAndValidId() throws Exception {
-        var examSlot = new ExamSlot(null, "only name valid");
+        var examSlot = new Slot(null, "only name valid");
         examSlot.setId(1L);
         mockMvc.perform(post("/exam-slots/create")
                         .content(objectMapper.writeValueAsString(examSlot))
@@ -129,7 +129,7 @@ class ExamSlotControllerTest {
     @Test
     @Order(11)
     void shouldNotUpdate_forValidDataAndInvalidId() throws Exception {
-        var examSlot = new ExamSlot(1, "incorrect id");
+        var examSlot = new Slot(1, "incorrect id");
         examSlot.setId(6L);
         mockMvc.perform(post("/exam-slots/create")
                         .content(objectMapper.writeValueAsString(examSlot))

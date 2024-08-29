@@ -1,10 +1,9 @@
 package com.cdac.exambackup.service;
 
+import com.cdac.exambackup.dto.ExamSlotReqDto;
 import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.ExamSlot;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 /**
  * @author athisii
@@ -13,5 +12,5 @@ import java.util.List;
  */
 
 public interface ExamSlotService extends BaseService<ExamSlot, Long> {
-    PageResDto<List<ExamSlot>> getAllByPage(Pageable pageable);
+    ExamSlot save(ExamSlotReqDto examSlotReqDto);
 }

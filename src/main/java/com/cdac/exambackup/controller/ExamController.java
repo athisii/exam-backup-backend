@@ -1,12 +1,12 @@
 package com.cdac.exambackup.controller;
 
-import com.cdac.exambackup.dto.ExamDateReqDto;
+import com.cdac.exambackup.dto.ExamReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
-import com.cdac.exambackup.entity.ExamDate;
+import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.service.BaseService;
-import com.cdac.exambackup.service.ExamDateService;
+import com.cdac.exambackup.service.ExamService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -21,8 +21,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -32,72 +30,73 @@ import org.springframework.web.bind.annotation.*;
  */
 
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Exam Date")
+@Tag(name = "Exam")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
-@RequestMapping("/exam-dates")
-public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
-    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "active", "date", "createdDate", "modifiedDate");
+@RequestMapping("/exams")
+public class ExamController extends AbstractBaseController<Exam, Long> {
+    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "active", "examDate", "examCentre", "createdDate", "modifiedDate");
 
     @Autowired
-    ExamDateService examDateService;
+    ExamService examService;
 
-    public ExamDateController(BaseService<ExamDate, Long> baseService) {
+    public ExamController(BaseService<Exam, Long> baseService) {
         super(baseService);
     }
 
     @Override
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
-        log.info("Find Request for the ExamDate entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.getById(id)));
+        log.info("Find Request for the Exam entity in the controller with id: {}", id);
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
-        log.info("GetAll Request for the ExamDate entity in the controller");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.getAll()));
+        log.info("GetAll Request for the Exam entity in the controller");
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.getAll()));
     }
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
-        log.info("List Request for the ExamDate entity in the controller");
-        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examDateService.list(listRequest)));
+        log.info("List Request for the Exam entity in the controller");
+        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.list(listRequest)));
     }
 
     // this method should not be used, so overriding the parent class.
     @Hidden // hide from swagger ui
     @Override
     @PostMapping(value = {"/new"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody ExamDate entity) {
+    public ResponseDto<?> create(@RequestBody Exam entity) {
         log.info("Create Request for the entity in abstract controller.");
-        return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examDateService.save(entity).getId()));
+        return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examService.save(entity).getId()));
     }
 
 
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody ExamDateReqDto examDateReqDto) {
-        log.info("Create Request for the ExamDate entity in the controller.");
+    public ResponseDto<?> create(@RequestBody ExamReqDto examReqDto) {
+        log.info("Create Request for the Exam entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.save(examDateReqDto)));
+        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examService.save(examReqDto)));
     }
 
     @GetMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
-            summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to requested exam centre id.",
+            summary = "Gets an entity",
+            description = "Loads an entity from the Database for the requested exam centre id and exam date id",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByExamCentreId(@RequestParam Long examCentreId, @PageableDefault Pageable pageable) {
-        log.info("Query Request for the ExamDate entity in the controller for exam centre id: " + examCentreId);
-        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.getByExamCentreId(examCentreId, pageable)));
+    public ResponseDto<?> getByExamCentreIdAndExamDateId(@RequestParam Long examCentreId, @RequestParam Long examDateId) {
+        log.info("Query Request for the Exam entity in the controller for exam center id:" + examCentreId + " and exam date id: " + examDateId);
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examService.getByExamCentreIdAndExamDateId(examCentreId, examDateId)));
     }
+
 }

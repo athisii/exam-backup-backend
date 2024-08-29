@@ -1,10 +1,10 @@
 package com.cdac.exambackup.dao;
 
+import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamSlot;
+import com.cdac.exambackup.entity.Slot;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -13,8 +13,7 @@ import java.util.List;
  */
 
 public interface ExamSlotDao extends BaseDao<ExamSlot, Long> {
-    List<ExamSlot> findByCodeOrName(String code, String name);
+    ExamSlot findByExamAndSlot(Exam exam, Slot slot);
 
-    Page<ExamSlot> getAllByPage(Pageable pageable);
-
+    Page<ExamSlot> findByExamId(Long examId, Pageable pageable);
 }

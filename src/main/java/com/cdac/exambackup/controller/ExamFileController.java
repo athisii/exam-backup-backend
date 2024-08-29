@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/exam-files")
 public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
-    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "examCentre", "examSlot", "fileType", "examDate", "filePath", "fileSize", "contentType", "userUploadedFilename");
+    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "examCentre", "examSlot", "fileType", "examDateId", "filePath", "fileSize", "contentType", "userUploadedFilename");
 
     @Autowired
     ExamFileService examFileService;
@@ -102,8 +102,8 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByCentreCodeExamDateAndSlot(@RequestBody ExamFileReqDto examFileReqDto) {
+    public ResponseDto<?> getByCentreCentreExamDateAndSlot(@RequestBody ExamFileReqDto examFileReqDto) {
         log.info("Query request for the ExamFile entity in the controller.");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCodeExamDateAndSlot(examFileReqDto)));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCentreExamDateAndSlot(examFileReqDto)));
     }
 }

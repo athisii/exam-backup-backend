@@ -1,6 +1,5 @@
 package com.cdac.exambackup.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,8 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
 
 /**
  * @author athisii
@@ -28,7 +25,7 @@ import java.time.LocalDateTime;
 @Schema(description = "Entity which stores information about exam files for the particular exam")
 public class ExamFile extends AuditModel {
     /*
-        must search by examCentre + examSlot + examDate + fileType to match for an entry
+        must search by examCentre + examSlot + examDateId + fileType to match for an entry
      */
     @NotNull
     @ManyToOne
@@ -36,16 +33,15 @@ public class ExamFile extends AuditModel {
 
     @NotNull
     @ManyToOne
-    ExamSlot examSlot;
+    Slot slot;
 
     @NotNull
-    @ManyToOne // cascade default off
+    @ManyToOne
     FileType fileType;
 
     @NotNull
-    @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    LocalDateTime examDate;
+    @ManyToOne
+    ExamDate examDate;
 
     /*
      * path for file when saved in this local machine fs.

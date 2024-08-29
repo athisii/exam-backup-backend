@@ -2,24 +2,25 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.ExamCentreDao;
+import com.cdac.exambackup.dao.ExamDao;
 import com.cdac.exambackup.dao.ExamDateDao;
-import com.cdac.exambackup.dao.ExamSlotDao;
 import com.cdac.exambackup.dto.ExamDateReqDto;
-import com.cdac.exambackup.entity.ExamCentre;
+import com.cdac.exambackup.dto.PageResDto;
+import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamDate;
-import com.cdac.exambackup.entity.ExamSlot;
-import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamDateService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author athisii
@@ -35,8 +36,9 @@ public class ExamDateServiceImpl extends AbstractBaseService<ExamDate, Long> imp
     ExamDateDao examDateDao;
     @Autowired
     ExamCentreDao examCentreDao;
+
     @Autowired
-    ExamSlotDao examSlotDao;
+    ExamDao examDao;
 
 
     public ExamDateServiceImpl(BaseDao<ExamDate, Long> baseDao) {
@@ -48,60 +50,35 @@ public class ExamDateServiceImpl extends AbstractBaseService<ExamDate, Long> imp
     public ExamDate save(ExamDateReqDto examDateReqDto) {
         // new entry
         if (examDateReqDto.id() == null) {
-            ExamCentre daoExamCentre = examCentreDao.findById(examDateReqDto.examCentreId());
-            if (daoExamCentre == null) {
-                throw new EntityNotFoundException("ExamCentre with id: " + examDateReqDto.examCentreId() + " not found.");
+            if (examDateReqDto.date() == null) {
+                throw new InvalidReqPayloadException("Please provide date.");
             }
-            if (examDateReqDto.examDate() == null) {
-                throw new GenericException("ExamDate must not be null.");
+            try {
+                return examDateDao.save(new ExamDate(examDateReqDto.date()));
+            } catch (Exception e) {
+                throw new InvalidReqPayloadException("Same date already exists.");
             }
-            Set<ExamSlot> examSlots = new HashSet<>();
-            examDateReqDto.examSlotIds().forEach(examSlotId -> {
-                ExamSlot daoExamSlot = examSlotDao.findById(examSlotId);
-                if (daoExamSlot == null) {
-                    throw new EntityNotFoundException("ExamSlot with id: " + examSlotId + " not found.");
-                }
-                examSlots.add(daoExamSlot);
-            });
-            ExamDate examDate = new ExamDate();
-            examDate.setExamCentre(daoExamCentre);
-            if (!examSlots.isEmpty()) {
-                examDate.setExamSlots(examSlots);
-            }
-            examDate.setExamDate(examDateReqDto.examDate());
-            return examDateDao.save(examDate);
         }
         //else update existing entry
+        if (examDateReqDto.date() == null) {
+            throw new InvalidReqPayloadException("Please provide date.");
+        }
         ExamDate daoExamDate = examDateDao.findById(examDateReqDto.id());
         if (daoExamDate == null) {
             throw new EntityNotFoundException("ExamDate with id: " + examDateReqDto.id() + " not found.");
         }
-
-        if (examDateReqDto.examDate() != null) {
-            daoExamDate.setExamDate(examDateReqDto.examDate());
+        daoExamDate.setDate(examDateReqDto.date());
+        try {
+            return examDateDao.save(daoExamDate);
+        } catch (Exception e) {
+            throw new InvalidReqPayloadException("Same date already exists.");
         }
+    }
 
-        if (examDateReqDto.examCentreId() != null) {
-            ExamCentre daoExamCentre = examCentreDao.findById(examDateReqDto.examCentreId());
-            if (daoExamCentre == null) {
-                throw new EntityNotFoundException("ExamCentre with id: " + examDateReqDto.examCentreId() + " not found.");
-            }
-            daoExamDate.setExamCentre(daoExamCentre);
-        }
-
-        if (examDateReqDto.examSlotIds() != null) {
-            Set<ExamSlot> examSlots = new HashSet<>();
-            examDateReqDto.examSlotIds().forEach(examSlotId -> {
-                ExamSlot daoExamSlot = examSlotDao.findById(examSlotId);
-                if (daoExamSlot == null) {
-                    throw new EntityNotFoundException("ExamSlot with id: " + examSlotId + " not found.");
-                }
-                examSlots.add(daoExamSlot);
-            });
-            if (!examSlots.isEmpty()) {
-                daoExamDate.setExamSlots(examSlots);
-            }
-        }
-        return examDateDao.save(daoExamDate);
+    @Transactional(readOnly = true)
+    @Override
+    public PageResDto<List<ExamDate>> getByExamCentreId(Long examCentreId, Pageable pageable) {
+        Page<Exam> page = examDao.getByExamCentreId(examCentreId, pageable);
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent().stream().map(Exam::getExamDate).toList());
     }
 }

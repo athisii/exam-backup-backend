@@ -2,10 +2,7 @@ package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.ExamFileDao;
 import com.cdac.exambackup.dao.repo.ExamFileRepository;
-import com.cdac.exambackup.entity.ExamCentre;
-import com.cdac.exambackup.entity.ExamFile;
-import com.cdac.exambackup.entity.ExamSlot;
-import com.cdac.exambackup.entity.FileType;
+import com.cdac.exambackup.entity.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -38,14 +35,15 @@ public class ExamFileDaoImpl extends AbstractBaseDao<ExamFile, Long> implements 
         return ExamFile.class;
     }
 
+
     @Override
-    public List<ExamFile> findByExamCentreAndExamSlotAndFileType(ExamCentre examCentre, ExamSlot examSlot, FileType fileType) {
-        return this.examFileRepository.findByExamCentreAndExamSlotAndFileType(examCentre, examSlot, fileType);
+    public ExamFile findByExamCentreAndExamDateAndSlotAndFileType(ExamCentre examCentre, ExamDate examDate, Slot slot, FileType fileType) {
+        return this.examFileRepository.findFirstByExamCentreAndExamDateAndSlotAndFileType(examCentre, examDate, slot, fileType);
     }
 
     @Override
-    public List<ExamFile> findByExamCentreAndExamSlot(ExamCentre examCentre, ExamSlot examSlot) {
-        return this.examFileRepository.findByExamCentreAndExamSlot(examCentre, examSlot);
+    public List<ExamFile> findByExamCentreAndExamDateAndSlot(ExamCentre examCentre, ExamDate examDate, Slot slot) {
+        return this.examFileRepository.findByExamCentreAndExamDateAndSlot(examCentre, examDate, slot);
     }
 
     @Override

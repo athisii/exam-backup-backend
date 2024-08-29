@@ -4,6 +4,7 @@ import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.FileTypeDao;
 import com.cdac.exambackup.entity.FileType;
 import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.FileTypeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
@@ -49,11 +50,11 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
         if (fileTypeDto.getId() == null) {
             // if both values are invalid, throw exception
             if (fileTypeDto.getCode() == null || fileTypeDto.getCode().isBlank() || fileTypeDto.getName() == null || fileTypeDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty");
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
             }
             List<FileType> daoFileTypes = fileTypeDao.findByCodeOrName(fileTypeDto.getCode(), fileTypeDto.getName().trim());
             if (!daoFileTypes.isEmpty()) {
-                throw new GenericException("Same 'code' or 'name' already exists");
+                throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
             }
             // now remove the unnecessary fields if present or create new object.
             FileType fileType = new FileType();
@@ -73,7 +74,7 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
 
         // if both values are invalid; one should be valid
         if ((fileTypeDto.getCode() == null && fileTypeDto.getName() == null) || (fileTypeDto.getCode() != null && fileTypeDto.getCode().isBlank() && fileTypeDto.getName() != null && fileTypeDto.getName().isBlank())) {
-            throw new GenericException("Both 'code' and 'name' cannot be null or empty");
+            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
         }
 
         List<FileType> daoOtherFileTypes;
@@ -84,18 +85,18 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
         }
         // check if it's the different object
         if ((daoOtherFileTypes != null && daoOtherFileTypes.size() > 1) || daoOtherFileTypes != null && !daoOtherFileTypes.isEmpty() && !daoFileType.getId().equals(daoOtherFileTypes.getFirst().getId())) {
-            throw new GenericException("Same 'code' or 'name' already exists");
+            throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
         }
 
         if (fileTypeDto.getCode() != null) {
             if (fileTypeDto.getCode().isBlank()) {
-                throw new GenericException("code cannot be empty.");
+                throw new InvalidReqPayloadException("code cannot be empty.");
             }
             daoFileType.setCode(fileTypeDto.getCode());
         }
         if (fileTypeDto.getName() != null) {
             if (fileTypeDto.getName().isBlank()) {
-                throw new GenericException("name cannot be empty.");
+                throw new InvalidReqPayloadException("name cannot be empty.");
             }
             daoFileType.setName(fileTypeDto.getName().trim().toUpperCase());
         }

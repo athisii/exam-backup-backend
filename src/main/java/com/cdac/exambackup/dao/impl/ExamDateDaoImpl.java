@@ -2,7 +2,6 @@ package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.ExamDateDao;
 import com.cdac.exambackup.dao.repo.ExamDateRepository;
-import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamDate;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -10,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -34,10 +31,5 @@ public class ExamDateDaoImpl extends AbstractBaseDao<ExamDate, Long> implements 
     @Override
     public Class<ExamDate> getEntityClass() {
         return ExamDate.class;
-    }
-
-    @Override
-    public List<ExamDate> findByExamCentre(ExamCentre examCentre) {
-        return examDateRepository.findByExamCentre(examCentre);
     }
 }

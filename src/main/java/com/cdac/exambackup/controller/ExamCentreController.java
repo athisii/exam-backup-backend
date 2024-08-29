@@ -78,15 +78,15 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @GetMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
             summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to requested code, name, and/or region",
+            description = "Loads a list of entities by page from Database corresponds to requested code, name, exam date, and/or region",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
-        log.info("Query Request for the ExamCentre entity in the controller for code, name, and/or region");
+    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) String examDateId, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+        log.info("Query Request for the ExamCentre entity in the controller for code, name, exam date, and/or region");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId, pageable)));
     }

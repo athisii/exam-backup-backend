@@ -7,7 +7,7 @@ import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.Region;
 import com.cdac.exambackup.entity.Role;
-import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
@@ -47,7 +47,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     FileTypeDao fileTypeDao;
 
     @Autowired
-    ExamSlotDao examSlotDao;
+    SlotDao slotDao;
 
     @Autowired
     RegionDao regionDao;
@@ -82,11 +82,11 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         if (examCentreDto.getId() == null) {
             // if both values are invalid, throw exception
             if (examCentreDto.getCode() == null || examCentreDto.getCode().isBlank() || examCentreDto.getName() == null || examCentreDto.getName().isBlank()) {
-                throw new GenericException("Both 'code' and 'name' cannot be null or empty.");
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty.");
             }
             ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreDto.getCode());
             if (daoExamCentre != null) {
-                throw new GenericException("Same 'code' already exists");
+                throw new InvalidReqPayloadException("Same 'code' already exists");
             }
             if (examCentreDto.getRegion() == null) {
                 throw new EntityNotFoundException("Region cannot be null.");
@@ -99,7 +99,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             /* before saving need to create User account for this exam centre for login into system.
                 1. create a user:
                         1. with role as `USER`
-                        2. userId as examCentreCode
+                        2. userId as examCentreId
                         3. name as ExamCentreName
                         4. password as userId encrypted using BCryptEncoder
                         4. the rest used default values
@@ -130,7 +130,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         // do the validation/constraint check and update
 
         /*
-            1. if examCentreCode is updated then userId is also to be updated
+            1. if examCentreId is updated then userId is also to be updated
             2. if examCentreName is updated then userName is also to be updated
             3. password need to be reset ?? no
         */
@@ -147,14 +147,14 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
         // if both values are invalid, one should be valid
         if (examCentreDto.getCode() == null && examCentreDto.getName() == null) {
-            throw new GenericException("Both 'code' and 'name' cannot be null");
+            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null");
         }
 
         // if both values are invalid, one should be valid
         if ((examCentreDto.getCode() != null && examCentreDto.getCode().isBlank()) && (examCentreDto.getName() != null && examCentreDto.getName().isBlank())) {
-            throw new GenericException("Both 'code' and 'name' cannot be  empty");
+            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be  empty");
         }
-        // examCentreCode is change, so userId & name must also be changed
+        // examCentreId is change, so userId & name must also be changed
         // good catch
         AppUser daoAppUser = appUserDao.findByUserId(oldExamCode);
         if (daoAppUser == null) {
@@ -163,18 +163,18 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
         if (examCentreDto.getCode() != null) {
             if (examCentreDto.getCode().isBlank()) {
-                throw new GenericException("code is empty.");
+                throw new InvalidReqPayloadException("code is empty.");
             }
             ExamCentre daoOtherExamCentre = examCentreDao.findByCode(examCentreDto.getCode());
             if (daoOtherExamCentre != null && !daoOtherExamCentre.getId().equals(daoExamCentre.getId())) {
-                throw new GenericException("Same code already exists");
+                throw new InvalidReqPayloadException("Same code already exists");
             }
             daoExamCentre.setCode(examCentreDto.getCode());
             daoAppUser.setUserId(daoExamCentre.getCode()); // also change userId
         }
         if (examCentreDto.getName() != null) {
             if (examCentreDto.getName().isBlank()) {
-                throw new GenericException("Name is empty.");
+                throw new InvalidReqPayloadException("Name is empty.");
             }
             daoExamCentre.setName(examCentreDto.getName());
             daoAppUser.setName(daoExamCentre.getName());
@@ -190,6 +190,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return examCentreDao.save(daoExamCentre);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PageResDto<List<ExamCentreResDto>> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable) {
         Page<ExamCentre> examCentrePage;
@@ -213,6 +214,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PageResDto<List<ExamCentreResDto>> search(String searchTerm, Long regionId, Pageable pageable) {
         if (searchTerm == null || searchTerm.isBlank()) {
@@ -227,6 +229,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getNumberOfElements(), examCentrePage.getTotalElements(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String searchTerm, String filterType, Long regionId, Pageable pageable) {
         List<ExamCentreResDto> examCentreResDtos;
@@ -301,11 +304,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return examCentres
                 .stream()
                 .map(examCentre -> {
-                    int size = examDateDao.findByExamCentre(examCentre).size();
+//                    int size = examDateDao.findByExamCentre(examCentre).size();
+                    // TODO; check on this.
+                    int size = 1;
                     if (size == 0) {
                         size = 1;
                     }
-                    int totalFileCount = (int) (size * fileTypeDao.count() * examSlotDao.count());
+                    int totalFileCount = (int) (size * fileTypeDao.count() * slotDao.count());
 
                     int uploadedFileCount = examFileDao.findByExamCentre(examCentre).size();
                     return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount);

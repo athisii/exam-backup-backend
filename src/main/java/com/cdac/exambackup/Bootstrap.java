@@ -9,14 +9,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 
 /**
  * @author athisii
@@ -43,7 +41,7 @@ public class Bootstrap implements CommandLineRunner {
     RegionService regionService;
 
     @Autowired
-    ExamSlotService examSlotService;
+    SlotService slotService;
 
     @Autowired
     FileTypeService fileTypeService;
@@ -103,12 +101,15 @@ public class Bootstrap implements CommandLineRunner {
             List<SearchConfig> searchConfigs = new ArrayList<>();
             searchConfigs.add(new SearchConfig("Role", "name,code"));
             searchConfigs.add(new SearchConfig("Region", "name,code"));
-            searchConfigs.add(new SearchConfig("ExamSlot", "name,code"));
+            searchConfigs.add(new SearchConfig("Slot", "name,code"));
             searchConfigs.add(new SearchConfig("FileType", "name,code"));
             searchConfigs.add(new SearchConfig("ExamFile", "contentType,userUploadedFilename"));
             searchConfigs.add(new SearchConfig("ExamCentre", "name,code"));
             searchConfigs.add(new SearchConfig("AppUser", "userId,name,email,mobileNumber"));
-            searchConfigs.add(new SearchConfig("ExamDate", "examDate"));
+            searchConfigs.add(new SearchConfig("ExamDate", "date"));
+            searchConfigs.add(new SearchConfig("Exam", ""));
+            searchConfigs.add(new SearchConfig("ExamSlot", ""));
+            searchConfigs.add(new SearchConfig("ExamSlotFileType", ""));
             searchConfigService.dump(searchConfigs);
         }
 
@@ -144,15 +145,15 @@ public class Bootstrap implements CommandLineRunner {
             regionService.save(regions);
         }
 
-        if (examSlotService.count() == 0L) {
-            List<ExamSlot> examSlots = new ArrayList<>();
+        if (slotService.count() == 0L) {
+            List<Slot> slots = new ArrayList<>();
             examSlotCodeNameMap.forEach((code, name) -> {
-                var examSlot = new ExamSlot();
+                var examSlot = new Slot();
                 examSlot.setCode(code);
                 examSlot.setName(name);
-                examSlots.add(examSlot);
+                slots.add(examSlot);
             });
-            examSlotService.save(examSlots);
+            slotService.save(slots);
         }
 
         if (fileTypeService.count() == 0L) {
@@ -189,11 +190,9 @@ public class Bootstrap implements CommandLineRunner {
 
         if (examDateService.count() == 0L) {
             List<ExamDate> examDates = new ArrayList<>();
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 4; i++) {
                 ExamDate examDate = new ExamDate();
-                examDate.setExamCentre(examCentreService.getById(1L));
-                examDate.setExamSlots(LongStream.range(1, 5).mapToObj(number -> examSlotService.getById(number)).collect(Collectors.toSet()));
-                examDate.setExamDate(LocalDateTime.now());
+                examDate.setDate(LocalDate.now().plusDays(i));
                 examDates.add(examDate);
             }
             examDateService.save(examDates);

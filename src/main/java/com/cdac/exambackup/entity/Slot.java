@@ -1,13 +1,9 @@
 package com.cdac.exambackup.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDate;
 
 /**
  * @author athisii
@@ -21,10 +17,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ExamDate extends AuditModel {
-
-    @NotNull
+public class Slot extends AuditModel {
     @Column(nullable = false, unique = true)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    LocalDate date;
+    String code; // string is used to add suffix when deleted
+
+    @Column(nullable = false, unique = true)
+    String name;
 }

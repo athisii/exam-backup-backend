@@ -22,14 +22,14 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"exam_id", "slot_id"})
+                @UniqueConstraint(columnNames = {"exam_slot_id", "file_type_id"})
         })
-public class ExamSlot extends AuditModel {
+public class ExamSlotFileType extends AuditModel {
     @NotNull
     @ManyToOne
-    Exam exam;
+    ExamSlot examSlot;
 
     @NotNull
     @ManyToOne
-    Slot slot;
+    FileType fileType;
 }
