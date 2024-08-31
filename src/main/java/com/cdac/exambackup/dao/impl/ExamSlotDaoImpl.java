@@ -53,4 +53,9 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
             throw new GenericException(ex.getMessage());
         }
     }
+
+    @Override
+    public boolean checkIfSlotIdExist(Long slotId) {
+        return this.examSlotRepository.existsBySlotIdAndDeletedFalse(slotId);
+    }
 }

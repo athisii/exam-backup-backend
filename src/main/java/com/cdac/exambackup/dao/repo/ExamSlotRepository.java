@@ -19,4 +19,6 @@ public interface ExamSlotRepository extends JpaRepository<ExamSlot, Long> {
     ExamSlot findFirstByExamAndSlotAndDeletedFalse(Exam exam, Slot slot);
 
     Page<ExamSlot> findByExamIdAndDeletedFalse(Long examId, Pageable pageable);
+
+    boolean existsBySlotIdAndDeletedFalse(Long slotId);
 }

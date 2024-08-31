@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,6 @@ public class Bootstrap implements CommandLineRunner {
             searchConfigs.add(new SearchConfig("ExamDate", "date"));
             searchConfigs.add(new SearchConfig("Exam", ""));
             searchConfigs.add(new SearchConfig("ExamSlot", ""));
-            searchConfigs.add(new SearchConfig("ExamSlotFileType", ""));
             searchConfigService.dump(searchConfigs);
         }
 
@@ -147,10 +147,14 @@ public class Bootstrap implements CommandLineRunner {
 
         if (slotService.count() == 0L) {
             List<Slot> slots = new ArrayList<>();
+            LocalTime eightAm = LocalTime.of(8, 0, 0);
             examSlotCodeNameMap.forEach((code, name) -> {
                 var examSlot = new Slot();
                 examSlot.setCode(code);
                 examSlot.setName(name);
+                long startHour = Long.parseLong(code);
+                examSlot.setStartTime(eightAm.plusHours(startHour));
+                examSlot.setEndTime(eightAm.plusHours(startHour + 1)); // one hour duration
                 slots.add(examSlot);
             });
             slotService.save(slots);

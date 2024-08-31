@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalTime;
+
 /**
  * @author athisii
  * @version 1.0
@@ -23,4 +25,7 @@ public class Slot extends AuditModel {
 
     @Column(nullable = false, unique = true)
     String name;
+
+    LocalTime startTime;
+    LocalTime endTime;
 }

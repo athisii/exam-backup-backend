@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/exam-files")
 public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
-    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "examCentre", "examSlot", "fileType", "examDateId", "filePath", "fileSize", "contentType", "userUploadedFilename");
+    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "examCentre", "slot", "fileType", "examDate", "filePath", "fileSize", "contentType", "userUploadedFilename");
 
     @Autowired
     ExamFileService examFileService;
@@ -70,6 +70,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     // this method should not be used, so overriding the parent class.
     @Hidden // hide from swagger ui
     @Override
+    @PostMapping(value = {"/hidden-create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamFile entity) {
         log.info("Create Request for the entity in abstract controller.");
         return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examFileService.save(entity).getId()));
@@ -92,7 +93,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examFileService.save(examFileReqDto)));
     }
 
-    @PostMapping(value = {"/query"}, produces = {"application/json"})
+    @GetMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
             summary = "Returns list of ExamFiles matching centre code, exam date and slot",
             description = "Loads all the active available entities based on requested centre code, exam date and slot",
@@ -102,8 +103,8 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByCentreCentreExamDateAndSlot(@RequestBody ExamFileReqDto examFileReqDto) {
+    public ResponseDto<?> getByCentreCentreExamDateAndSlot(@RequestParam Long examCentreId, @RequestParam Long examDateId, @RequestParam Long slotId) {
         log.info("Query request for the ExamFile entity in the controller.");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCentreExamDateAndSlot(examFileReqDto)));
+        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCentreIdExamDateIdAndSlotId(examCentreId, examDateId, slotId)));
     }
 }

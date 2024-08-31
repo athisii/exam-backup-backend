@@ -87,7 +87,7 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
 
         ExamCentre daoExamCentre = examCentreDao.findById(examFileDto.getExamCentre().getId());
         if (daoExamCentre == null) {
-            throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getCode() + " not found");
+            throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getId() + " not found");
         }
         Slot daoSlot = slotDao.findById(examFileDto.getSlot().getId());
         if (daoSlot == null) {
@@ -115,7 +115,7 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         String examCentreCode = daoExamCentre.getCode().replaceAll("[^a-zA-Z0-9.-]", "_");
         String slotCode = daoSlot.getCode().replaceAll("[^a-zA-Z0-9.-]", "_");
 
-        LocalDate examDate = examFileDto.getExamDate().getDate();
+        LocalDate examDate = daoExamDate.getDate();
 
         // date =2024-06-24 16:30 PM
         String dateStr = examDate.getYear() + "-" + examDate.getMonthValue() + "-" + examDate.getDayOfMonth();
@@ -128,24 +128,29 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         Path sixthLevelDir = Path.of("/data/exam-backup/" + regionCode + "/" + examCentreCode + "/" + dateStr, slotCode);
 
         try {
-            if (!Files.exists(firstLevelDir)) {
-                Files.createDirectory(firstLevelDir);
-            }
-            if (!Files.exists(secondLevelDir)) {
-                Files.createDirectory(secondLevelDir);
-            }
-            if (!Files.exists(thirdLevelDir)) {
-                Files.createDirectory(thirdLevelDir);
-            }
-            if (!Files.exists(fourthLevelDir)) {
-                Files.createDirectory(fourthLevelDir);
-            }
-            if (!Files.exists(fifthLevelDir)) {
-                Files.createDirectory(fifthLevelDir);
-            }
+
             if (!Files.exists(sixthLevelDir)) {
-                Files.createDirectory(sixthLevelDir);
+                if (!Files.exists(firstLevelDir)) {
+                    Files.createDirectory(firstLevelDir);
+                }
+                if (!Files.exists(secondLevelDir)) {
+                    Files.createDirectory(secondLevelDir);
+                }
+                if (!Files.exists(thirdLevelDir)) {
+                    Files.createDirectory(thirdLevelDir);
+                }
+                if (!Files.exists(fourthLevelDir)) {
+                    Files.createDirectory(fourthLevelDir);
+                }
+                if (!Files.exists(fifthLevelDir)) {
+                    Files.createDirectory(fifthLevelDir);
+                }
+                // other might create it in between, so check again.
+                if (!Files.exists(sixthLevelDir)) {
+                    Files.createDirectory(sixthLevelDir);
+                }
             }
+            // else directory already exists
         } catch (Exception ex) {
             log.error("Error creating directory.", ex);
             // RuntimeException will be handled by Controller Advice and will be sent to client as INTERNAL_SERVER_ERROR
@@ -233,25 +238,8 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
 
     @Transactional(readOnly = true)
     @Override
-    public List<ExamFile> findByCentreCentreExamDateAndSlot(ExamFileReqDto examFileReqDto) {
-        if (examFileReqDto.examCentreId() == null || examFileReqDto.examDateId() == null || examFileReqDto.slotId() == null) {
-            throw new InvalidReqPayloadException("Please provide all the required ids.");
-        }
-
+    public List<ExamFile> findByCentreCentreIdExamDateIdAndSlotId(Long examCentreId, Long examDateId, Long slotId) {
         // check exam centre exists and is active; findById() only returns active entity else null
-        ExamCentre daoExamCentre = examCentreDao.findById(examFileReqDto.examCentreId());
-        if (daoExamCentre == null) {
-            throw new EntityNotFoundException("ExamCentre with id: " + examFileReqDto.examCentreId() + " not found");
-        }
-        Slot daoSlot = slotDao.findById(examFileReqDto.slotId());
-        if (daoSlot == null) {
-            throw new EntityNotFoundException("Slot with id: " + examFileReqDto.slotId() + " not found");
-        }
-
-        ExamDate daoExamDate = examDateDao.findById(examFileReqDto.examDateId());
-        if (daoExamDate == null) {
-            throw new EntityNotFoundException("ExamDate with id: " + examFileReqDto.examDateId() + " not found");
-        }
-        return examFileDao.findByExamCentreAndExamDateAndSlot(daoExamCentre, daoExamDate, daoSlot);
+        return examFileDao.findByExamCentreIdExamDateIdAndSlotId(examCentreId, examDateId, slotId);
     }
 }

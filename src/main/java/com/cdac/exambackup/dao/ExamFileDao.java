@@ -13,7 +13,7 @@ import java.util.List;
 public interface ExamFileDao extends BaseDao<ExamFile, Long> {
     ExamFile findByExamCentreAndExamDateAndSlotAndFileType(ExamCentre examCentre, ExamDate examDate, Slot slot, FileType fileType);
 
-    List<ExamFile> findByExamCentreAndExamDateAndSlot(ExamCentre examCentre, ExamDate examDate, Slot slot);
+    List<ExamFile> findByExamCentreIdExamDateIdAndSlotId(Long examCentreId, Long examDateId, Long slotId);
 
     List<ExamFile> findByExamCentre(ExamCentre example);
 }

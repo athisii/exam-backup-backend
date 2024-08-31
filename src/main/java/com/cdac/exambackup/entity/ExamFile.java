@@ -1,10 +1,7 @@
 package com.cdac.exambackup.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Schema(description = "Entity which stores information about exam files for the particular exam")
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"exam_centre_id", "exam_date_id", "slot_id", "file_type_id",})
+        })
 public class ExamFile extends AuditModel {
     /*
         must search by examCentre + examSlot + examDateId + fileType to match for an entry
@@ -33,15 +34,15 @@ public class ExamFile extends AuditModel {
 
     @NotNull
     @ManyToOne
+    ExamDate examDate;
+
+    @NotNull
+    @ManyToOne
     Slot slot;
 
     @NotNull
     @ManyToOne
     FileType fileType;
-
-    @NotNull
-    @ManyToOne
-    ExamDate examDate;
 
     /*
      * path for file when saved in this local machine fs.

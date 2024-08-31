@@ -38,16 +38,16 @@ public class ExamFileDaoImpl extends AbstractBaseDao<ExamFile, Long> implements 
 
     @Override
     public ExamFile findByExamCentreAndExamDateAndSlotAndFileType(ExamCentre examCentre, ExamDate examDate, Slot slot, FileType fileType) {
-        return this.examFileRepository.findFirstByExamCentreAndExamDateAndSlotAndFileType(examCentre, examDate, slot, fileType);
+        return this.examFileRepository.findFirstByExamCentreAndExamDateAndSlotAndFileTypeAndDeletedFalse(examCentre, examDate, slot, fileType);
     }
 
     @Override
-    public List<ExamFile> findByExamCentreAndExamDateAndSlot(ExamCentre examCentre, ExamDate examDate, Slot slot) {
-        return this.examFileRepository.findByExamCentreAndExamDateAndSlot(examCentre, examDate, slot);
+    public List<ExamFile> findByExamCentreIdExamDateIdAndSlotId(Long examCentreId, Long examDateId, Long slotId) {
+        return this.examFileRepository.findByExamCentreIdAndExamDateIdAndSlotIdAndDeletedFalse(examCentreId, examDateId, slotId);
     }
 
     @Override
     public List<ExamFile> findByExamCentre(ExamCentre examCentre) {
-        return this.examFileRepository.findByExamCentre(examCentre);
+        return this.examFileRepository.findByExamCentreAndDeletedFalse(examCentre);
     }
 }

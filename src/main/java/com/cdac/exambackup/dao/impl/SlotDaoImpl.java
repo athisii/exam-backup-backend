@@ -1,9 +1,11 @@
 package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.SlotDao;
+import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.dao.repo.SlotRepository;
 import com.cdac.exambackup.entity.Slot;
 import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,9 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
     @Autowired
     SlotRepository slotRepository;
 
+    @Autowired
+    ExamSlotRepository examSlotRepository;
+
     @Override
     public JpaRepository<Slot, Long> getRepository() {
         return this.slotRepository;
@@ -44,12 +49,15 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
     }
 
     @Override
-    public void softDelete(Slot entity) {
-        if (entity != null) {
-            entity.setDeleted(true);
-            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-            slotRepository.save(entity);
+    public void softDelete(Slot slot) {
+        if (examSlotRepository.existsBySlotIdAndDeletedFalse(slot.getId())) {
+            throw new InvalidReqPayloadException("Slot id: " + slot.getId() + " is associated with some exams. Cannot delete it.");
+        }
+        if (slot != null) {
+            slot.setDeleted(true);
+            slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
+            slot.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getName());
+            slotRepository.save(slot);
         }
     }
 

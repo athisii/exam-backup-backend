@@ -14,5 +14,5 @@ import java.util.List;
 public interface ExamFileService extends BaseService<ExamFile, Long> {
     ExamFile save(ExamFileReqDto examFileReqDto);
 
-    List<ExamFile> findByCentreCentreExamDateAndSlot(ExamFileReqDto examFileReqDto);
+    List<ExamFile> findByCentreCentreIdExamDateIdAndSlotId(Long examCentreId, Long examDateId, Long slotId);
 }

@@ -1,6 +1,7 @@
 package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.dto.ListRequest;
+import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.Slot;
 import com.cdac.exambackup.service.BaseService;
@@ -8,6 +9,8 @@ import com.cdac.exambackup.service.SlotService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,7 +39,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/slots")
 public class SlotController extends AbstractBaseController<Slot, Long> {
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "active", "createdDate", "modifiedDate");
-
 
     @Autowired
     SlotService slotService;
