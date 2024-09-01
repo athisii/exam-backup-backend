@@ -11,6 +11,7 @@ import com.cdac.exambackup.entity.Slot;
 import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.SlotService;
+import com.cdac.exambackup.util.NullAndBlankUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -63,18 +64,24 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
         // new record entry
         if (slotDto.getId() == null) {
             // if both values are invalid, throw exception
-            if (slotDto.getCode() == null || slotDto.getCode().isBlank() || slotDto.getName() == null || slotDto.getName().isBlank()) {
+            if (NullAndBlankUtil.isAnyNullOrBlank(slotDto.getCode(), slotDto.getName())) {
                 throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
             }
-            List<Slot> daoSlots = slotDao.findByCodeOrName(slotDto.getCode(), slotDto.getName().trim());
-            if (!daoSlots.isEmpty()) {
-                throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
+            if (slotDto.getStartTime() == null || slotDto.getEndTime() == null) {
+                throw new InvalidReqPayloadException("'Start Time' and 'End Time' cannot be null");
             }
-            // now remove the unnecessary fields if present or create new object.
-            Slot slot = new Slot();
-            slot.setCode(slotDto.getCode());
-            slot.setName(slotDto.getName().trim().toUpperCase());
-            return slotDao.save(slot);
+            if (slotDto.getStartTime().isAfter(slotDto.getEndTime()) || slotDto.getStartTime().equals(slotDto.getEndTime())) {
+                throw new InvalidReqPayloadException("'Start Time' cannot be greater or equal to 'End Time'");
+            }
+            // brute force add to for performance
+            try {
+                slotDto.setCode(slotDto.getCode().toUpperCase());
+                slotDto.setName(slotDto.getName().toUpperCase());
+                return slotDao.save(slotDto);
+            } catch (Exception ex) {
+                log.info("Error saving slot.", ex);
+                throw new InvalidReqPayloadException("Same 'name', 'code', 'start time' and/or 'end time' already exists");
+            }
         }
         // else updating existing record.
 

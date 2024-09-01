@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -82,8 +81,8 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
     public Page<Slot> getAllByPage(Pageable pageable) {
         try {
             return this.slotRepository.findByDeletedFalse(pageable);
-        } catch (PropertyReferenceException ex) {
-            throw new GenericException(ERROR_MSG);
+        } catch (Exception ex) {
+            throw new InvalidReqPayloadException(ERROR_MSG);
         }
     }
 }

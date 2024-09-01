@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 public class Bootstrap implements CommandLineRunner {
     static final Map<String, String> roleCodeNameMap;
     static final Map<String, String> regionCodeNameMap;
-    static final Map<String, String> examSlotCodeNameMap;
+    static final Map<String, String> slotCodeNameMap;
     static final Map<String, String> fileTypeCodeNameMap;
     static final Map<Integer, String> examCentreCodeNameMap;
 
@@ -73,11 +73,11 @@ public class Bootstrap implements CommandLineRunner {
         regionCodeNameMap.put("3", "SOUTH");
         regionCodeNameMap.put("4", "WEST");
 
-        examSlotCodeNameMap = new TreeMap<>();
-        examSlotCodeNameMap.put("1", "SLOT 1");
-        examSlotCodeNameMap.put("2", "SLOT 2");
-        examSlotCodeNameMap.put("3", "SLOT 3");
-        examSlotCodeNameMap.put("4", "SLOT 4");
+        slotCodeNameMap = new TreeMap<>();
+        slotCodeNameMap.put("1", "SLOT 1");
+        slotCodeNameMap.put("2", "SLOT 2");
+        slotCodeNameMap.put("3", "SLOT 3");
+        slotCodeNameMap.put("4", "SLOT 4");
 
         fileTypeCodeNameMap = new TreeMap<>();
         fileTypeCodeNameMap.put("1", "PXE LOG");
@@ -147,14 +147,14 @@ public class Bootstrap implements CommandLineRunner {
 
         if (slotService.count() == 0L) {
             List<Slot> slots = new ArrayList<>();
-            LocalTime eightAm = LocalTime.of(8, 0, 0);
-            examSlotCodeNameMap.forEach((code, name) -> {
+            slotCodeNameMap.forEach((code, name) -> {
                 var examSlot = new Slot();
                 examSlot.setCode(code);
                 examSlot.setName(name);
-                long startHour = Long.parseLong(code);
-                examSlot.setStartTime(eightAm.plusHours(startHour));
-                examSlot.setEndTime(eightAm.plusHours(startHour + 1)); // one hour duration
+                int startHour = 8 + Integer.parseInt(code);
+                LocalTime startTime = LocalTime.of(startHour, 0, 0);
+                examSlot.setStartTime(startTime);
+                examSlot.setEndTime(startTime.plusHours(1)); // one hour duration
                 slots.add(examSlot);
             });
             slotService.save(slots);

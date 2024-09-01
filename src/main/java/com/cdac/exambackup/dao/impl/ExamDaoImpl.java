@@ -6,6 +6,7 @@ import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamDate;
 import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +56,8 @@ public class ExamDaoImpl extends AbstractBaseDao<Exam, Long> implements ExamDao 
     public Page<Exam> getByExamCentreId(Long examCentreId, Pageable pageable) {
         try {
             return this.examRepository.findByExamCentreIdAndDeletedFalse(examCentreId, pageable);
-        } catch (PropertyReferenceException ex) {
-            throw new GenericException(ERROR_MSG);
+        } catch (Exception ex) {
+            throw new InvalidReqPayloadException(ERROR_MSG);
         }
     }
 }

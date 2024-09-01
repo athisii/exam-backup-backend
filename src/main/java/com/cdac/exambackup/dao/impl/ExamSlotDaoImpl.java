@@ -6,6 +6,7 @@ import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamSlot;
 import com.cdac.exambackup.entity.Slot;
 import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements ExamSlotDao {
+    private static final String ERROR_MSG = "Invalid sorting field name or sorting direction. Must be sort:['fieldName,asc','fieldName,desc']";
 
     @Autowired
     ExamSlotRepository examSlotRepository;
@@ -49,8 +51,8 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
     public Page<ExamSlot> findByExamId(Long examId, Pageable pageable) {
         try {
             return this.examSlotRepository.findByExamIdAndDeletedFalse(examId, pageable);
-        } catch (PropertyReferenceException ex) {
-            throw new GenericException(ex.getMessage());
+        } catch (Exception ex) {
+            throw new InvalidReqPayloadException(ERROR_MSG);
         }
     }
 
