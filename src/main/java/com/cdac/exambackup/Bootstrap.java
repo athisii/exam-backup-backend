@@ -26,6 +26,7 @@ import java.util.stream.IntStream;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
 public class Bootstrap implements CommandLineRunner {
+    static final String COMMON_FIELDS = "name,code";
     static final Map<String, String> roleCodeNameMap;
     static final Map<String, String> regionCodeNameMap;
     static final Map<String, String> slotCodeNameMap;
@@ -100,12 +101,12 @@ public class Bootstrap implements CommandLineRunner {
 
         if (searchConfigService.count() == 0L) {
             List<SearchConfig> searchConfigs = new ArrayList<>();
-            searchConfigs.add(new SearchConfig("Role", "name,code"));
-            searchConfigs.add(new SearchConfig("Region", "name,code"));
-            searchConfigs.add(new SearchConfig("Slot", "name,code"));
-            searchConfigs.add(new SearchConfig("FileType", "name,code"));
+            searchConfigs.add(new SearchConfig("Role", COMMON_FIELDS));
+            searchConfigs.add(new SearchConfig("Region", COMMON_FIELDS));
+            searchConfigs.add(new SearchConfig("Slot", COMMON_FIELDS));
+            searchConfigs.add(new SearchConfig("FileType", COMMON_FIELDS));
+            searchConfigs.add(new SearchConfig("ExamCentre", COMMON_FIELDS));
             searchConfigs.add(new SearchConfig("ExamFile", "contentType,userUploadedFilename"));
-            searchConfigs.add(new SearchConfig("ExamCentre", "name,code"));
             searchConfigs.add(new SearchConfig("AppUser", "userId,name,email,mobileNumber"));
             searchConfigs.add(new SearchConfig("ExamDate", "date"));
             searchConfigs.add(new SearchConfig("Exam", ""));

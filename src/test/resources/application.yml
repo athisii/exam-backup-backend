@@ -23,3 +23,11 @@ spring:
       mode: always
 
 
+jwt:
+  secret: secret
+  access:
+    token:
+      validity: 3
+  refresh:
+    token:
+      validity: 10

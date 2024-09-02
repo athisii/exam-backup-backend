@@ -4,7 +4,6 @@ import com.cdac.exambackup.dao.SlotDao;
 import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.dao.repo.SlotRepository;
 import com.cdac.exambackup.entity.Slot;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -50,25 +49,26 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
     @Override
     public void softDelete(Slot slot) {
         if (examSlotRepository.existsBySlotIdAndDeletedFalse(slot.getId())) {
-            throw new InvalidReqPayloadException("Slot id: " + slot.getId() + " is associated with some exams. Cannot delete it.");
+            throw new InvalidReqPayloadException("Slot code: " + slot.getCode() + " is associated with some exams. Cannot delete it.");
         }
-        if (slot != null) {
-            slot.setDeleted(true);
-            slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
-            slot.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getName());
-            slotRepository.save(slot);
-        }
+        slot.setDeleted(true);
+        slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
+        slot.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getName());
+        slotRepository.save(slot);
     }
 
     @Override
-    public void softDelete(Collection<Slot> entities) {
-        if (entities != null && !entities.isEmpty()) {
-            entities.forEach(entity -> {
-                entity.setDeleted(true);
-                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
+    public void softDelete(Collection<Slot> slots) {
+        if (slots != null && !slots.isEmpty()) {
+            slots.forEach(slot -> {
+                if (examSlotRepository.existsBySlotIdAndDeletedFalse(slot.getId())) {
+                    throw new InvalidReqPayloadException("Slot code: " + slot.getCode() + " is associated with some exams. Cannot delete it.");
+                }
+                slot.setDeleted(true);
+                slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
+                slot.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getName());
             });
-            slotRepository.saveAll(entities);
+            slotRepository.saveAll(slots);
         }
     }
 

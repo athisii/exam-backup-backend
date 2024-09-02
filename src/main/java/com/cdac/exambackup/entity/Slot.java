@@ -24,7 +24,7 @@ import java.time.LocalTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"code", "name", "start_time", "end_time"})
+                @UniqueConstraint(columnNames = {"start_time", "end_time"})
         })
 public class Slot extends AuditModel {
     @Column(nullable = false, unique = true)

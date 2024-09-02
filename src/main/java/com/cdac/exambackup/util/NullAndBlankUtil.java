@@ -1,5 +1,7 @@
 package com.cdac.exambackup.util;
 
+import java.time.LocalTime;
+
 /**
  * @author athisii
  * @version 1.0
@@ -23,6 +25,15 @@ public class NullAndBlankUtil {
         int count = args.length;
         for (String arg : args) {
             if (arg == null || arg.isBlank()) {
+                count--;
+            }
+        }
+        return count == 0;
+    }
+    public static boolean isAllNull(LocalTime... args) {
+        int count = args.length;
+        for (LocalTime arg : args) {
+            if (arg == null) {
                 count--;
             }
         }

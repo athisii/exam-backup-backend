@@ -1,12 +1,10 @@
 package com.cdac.exambackup.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author athisii
@@ -29,9 +27,4 @@ public class ExamCentre extends AuditModel {
 
     @ManyToOne // do nothing for the other side of the relation.
     Region region;
-
-
-    @OneToMany(mappedBy = "examCentre", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    List<ExamFile> examFiles;
 }

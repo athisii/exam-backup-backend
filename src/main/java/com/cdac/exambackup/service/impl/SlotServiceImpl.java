@@ -8,7 +8,6 @@ import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamSlot;
 import com.cdac.exambackup.entity.Slot;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.SlotService;
 import com.cdac.exambackup.util.NullAndBlankUtil;
@@ -51,21 +50,11 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
     @Transactional
     @Override
     public Slot save(Slot slotDto) {
-        /*
-             if id not present in dto:
-                  add new record after passing the constraint check.
-             else:
-                  if entity exist in table for passed id:
-                       update only {code} and {name} after passing the constraint check. // other fields have separate API.
-                  else:
-                       throw exception.
-         */
-
         // new record entry
         if (slotDto.getId() == null) {
             // if both values are invalid, throw exception
             if (NullAndBlankUtil.isAnyNullOrBlank(slotDto.getCode(), slotDto.getName())) {
-                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank");
             }
             if (slotDto.getStartTime() == null || slotDto.getEndTime() == null) {
                 throw new InvalidReqPayloadException("'Start Time' and 'End Time' cannot be null");
@@ -73,55 +62,58 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
             if (slotDto.getStartTime().isAfter(slotDto.getEndTime()) || slotDto.getStartTime().equals(slotDto.getEndTime())) {
                 throw new InvalidReqPayloadException("'Start Time' cannot be greater or equal to 'End Time'");
             }
-            // brute force add to for performance
+            // try adding a new record (more performant)
+            // if violation constraint exception is thrown then duplicate exists.
             try {
-                slotDto.setCode(slotDto.getCode().toUpperCase());
-                slotDto.setName(slotDto.getName().toUpperCase());
+                slotDto.setCode(slotDto.getCode().toUpperCase().trim());
+                slotDto.setName(slotDto.getName().toUpperCase().trim());
                 return slotDao.save(slotDto);
             } catch (Exception ex) {
-                log.info("Error saving slot.", ex);
-                throw new InvalidReqPayloadException("Same 'name', 'code', 'start time' and/or 'end time' already exists");
+                log.info("Error occurred while creating a new slot: {}", ex.getMessage());
+                throw new InvalidReqPayloadException("Same 'name', 'code', or same 'start time - end time' already exists.");
             }
         }
         // else updating existing record.
 
+        // if both values are invalid, one should be valid
+        if (NullAndBlankUtil.isAllNullOrBlank(slotDto.getCode(), slotDto.getName()) && NullAndBlankUtil.isAllNull(slotDto.getStartTime(), slotDto.getEndTime())) {
+            throw new InvalidReqPayloadException("One value must be not null or blank");
+        }
+
         Slot daoSlot = slotDao.findById(slotDto.getId());
         if (daoSlot == null) {
-            throw new EntityNotFoundException("ExamSlot with id: " + slotDto.getId() + " not found.");
-        }
-        if (Boolean.FALSE.equals(daoSlot.getActive())) {
-            throw new EntityNotFoundException("ExamSlot with id: " + daoSlot.getId() + " is not active. Must activate first.");
-        }
-
-        // if both values are invalid, one should be valid
-        if ((slotDto.getCode() == null && slotDto.getName() == null) || (slotDto.getCode() != null && slotDto.getCode().isBlank() && slotDto.getName() != null && slotDto.getName().isBlank())) {
-            throw new GenericException("Both 'code' and 'name' cannot be null or empty");
-        }
-
-        List<Slot> daoOtherSlots;
-        if (slotDto.getName() == null) {
-            daoOtherSlots = slotDao.findByCodeOrName(slotDto.getCode(), null);
-        } else {
-            daoOtherSlots = slotDao.findByCodeOrName(slotDto.getCode(), slotDto.getName().trim());
-        }
-        // check if it's the different object
-        if ((daoOtherSlots != null && daoOtherSlots.size() > 1) || daoOtherSlots != null && !daoOtherSlots.isEmpty() && !daoSlot.getId().equals(daoOtherSlots.getFirst().getId())) {
-            throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
+            throw new EntityNotFoundException("Slot with id: " + slotDto.getId() + " not found.");
         }
 
         if (slotDto.getCode() != null) {
             if (slotDto.getCode().isBlank()) {
-                throw new InvalidReqPayloadException("code cannot be empty.");
+                throw new InvalidReqPayloadException("code cannot be blank.");
             }
-            daoSlot.setCode(slotDto.getCode());
+            daoSlot.setCode(slotDto.getCode().trim().toUpperCase());
         }
         if (slotDto.getName() != null) {
             if (slotDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("name cannot be empty.");
+                throw new InvalidReqPayloadException("name cannot be blank.");
             }
             daoSlot.setName(slotDto.getName().trim().toUpperCase());
         }
-        return slotDao.save(daoSlot);
+        if (slotDto.getStartTime() != null) {
+            daoSlot.setStartTime(slotDto.getStartTime());
+        }
+        if (slotDto.getEndTime() != null) {
+            daoSlot.setEndTime(slotDto.getEndTime());
+        }
+        if (daoSlot.getStartTime().isAfter(daoSlot.getEndTime()) || daoSlot.getStartTime().equals(daoSlot.getEndTime())) {
+            throw new InvalidReqPayloadException("'Start Time' cannot be greater or equal to 'End Time'");
+        }
+        // try adding a new record (more performant)
+        // if violation constraint exception is thrown then duplicate is found.
+        try {
+            return slotDao.save(daoSlot);
+        } catch (Exception ex) {
+            log.info("Error occurred while updating slot: {}", ex.getMessage());
+            throw new InvalidReqPayloadException("Same 'name', 'code', or same 'start time - end time' already exists.");
+        }
     }
 
     @Transactional(readOnly = true)

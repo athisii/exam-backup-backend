@@ -3,9 +3,9 @@ package com.cdac.exambackup.service.impl;
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.RoleDao;
 import com.cdac.exambackup.entity.Role;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.RoleService;
+import com.cdac.exambackup.util.NullAndBlankUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -13,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -36,70 +34,51 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
     @Transactional
     @Override
     public Role save(Role roleDto) {
-        /*
-             if id not present in dto:
-                  add new record after passing the constraint check.
-             else:
-                  if entity exist in table for passed id:
-                       update only {code} and {name} after passing the constraint check. // other fields have separate API.
-                  else:
-                       throw exception.
-         */
-
         // new record entry
         if (roleDto.getId() == null) {
             // if both values are invalid, throw exception
-            if (roleDto.getCode() == null || roleDto.getCode().isBlank() || roleDto.getName() == null || roleDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty.");
+            if (NullAndBlankUtil.isAnyNullOrBlank(roleDto.getCode(), roleDto.getName())) {
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank.");
             }
-            List<Role> daoRoles = roleDao.findByCodeOrName(roleDto.getCode(), roleDto.getName().trim());
-            if (!daoRoles.isEmpty()) {
-                throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
+            // try adding a new record (more performant)
+            // if violation constraint exception is thrown then duplicate exists.
+            try {
+                roleDto.setCode(roleDto.getCode().toUpperCase().trim());
+                roleDto.setName(roleDto.getName().toUpperCase().trim());
+                return roleDao.save(roleDto);
+            } catch (Exception ex) {
+                log.info("Error occurred while creating a new role: {}", ex.getMessage());
+                throw new InvalidReqPayloadException("Same 'name' or/and 'code' already exists.");
             }
-            // now remove the unnecessary fields if present or create new object.
-            Role role = new Role();
-            role.setCode(roleDto.getCode());
-            role.setName(roleDto.getName().trim().toUpperCase());
-            return roleDao.save(role);
         }
         // else updating existing record.
+        // if both values are invalid, one should be valid
+        if (NullAndBlankUtil.isAllNullOrBlank(roleDto.getCode(), roleDto.getName())) {
+            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank");
+        }
 
         Role daoRole = roleDao.findById(roleDto.getId());
         if (daoRole == null) {
             throw new EntityNotFoundException("Role with id: " + roleDto.getId() + " not found.");
         }
-        if (Boolean.FALSE.equals(daoRole.getActive())) {
-            throw new EntityNotFoundException("Role with id: " + daoRole.getId() + " is not active. Must activate first.");
-        }
-
-        // if both values are invalid, one should be valid
-        if ((roleDto.getCode() == null && roleDto.getName() == null) || (roleDto.getCode() != null && roleDto.getCode().isBlank() && roleDto.getName() != null && roleDto.getName().isBlank())) {
-            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
-        }
-
-        List<Role> daoOtherRoles;
-        if (roleDto.getName() == null) {
-            daoOtherRoles = roleDao.findByCodeOrName(roleDto.getCode(), null);
-        } else {
-            daoOtherRoles = roleDao.findByCodeOrName(roleDto.getCode(), roleDto.getName().trim());
-        }
-        // check if it's the different object
-        if ((daoOtherRoles != null && daoOtherRoles.size() > 1) || daoOtherRoles != null && !daoOtherRoles.isEmpty() && !daoRole.getId().equals(daoOtherRoles.getFirst().getId())) {
-            throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
-        }
 
         if (roleDto.getCode() != null) {
             if (roleDto.getCode().isBlank()) {
-                throw new InvalidReqPayloadException("code must be greater than 0");
+                throw new InvalidReqPayloadException("code cannot be blank");
             }
-            daoRole.setCode(roleDto.getCode());
+            daoRole.setCode(roleDto.getCode().trim().toUpperCase());
         }
         if (roleDto.getName() != null) {
             if (roleDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("name cannot be empty.");
+                throw new InvalidReqPayloadException("name cannot be blank.");
             }
             daoRole.setName(roleDto.getName().trim().toUpperCase());
         }
-        return roleDao.save(daoRole);
+        try {
+            return roleDao.save(daoRole);
+        } catch (Exception ex) {
+            log.info("Error occurred while updating a role: {}", ex.getMessage());
+            throw new InvalidReqPayloadException("Same 'name' or/and 'code' already exists.");
+        }
     }
 }
