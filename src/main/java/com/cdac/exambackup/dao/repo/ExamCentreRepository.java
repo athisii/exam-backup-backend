@@ -40,4 +40,6 @@ public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
     Page<ExamCentre> findByRegionIdAndNameIgnoreCaseAndDeletedFalse(Long regionId, String name, Pageable pageable);
 
     List<ExamCentre> findByRegionIdAndDeletedFalse(Long regionId);
+
+    boolean existsByRegionIdAndDeletedFalse(Long regionId);
 }

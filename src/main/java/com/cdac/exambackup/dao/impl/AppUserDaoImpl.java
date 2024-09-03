@@ -34,6 +34,6 @@ public class AppUserDaoImpl extends AbstractBaseDao<AppUser, Long> implements Ap
 
     @Override
     public AppUser findByUserId(String userId) {
-        return this.appUserRepository.findFirstByUserId(userId);
+        return this.appUserRepository.findFirstByUserIdAndDeletedFalseAndActiveTrue(userId);
     }
 }

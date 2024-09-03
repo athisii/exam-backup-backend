@@ -3,6 +3,8 @@ package com.cdac.exambackup.dao.impl;
 import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.dao.ExamCentreDao;
 import com.cdac.exambackup.dao.repo.ExamCentreRepository;
+import com.cdac.exambackup.dao.repo.ExamRepository;
+import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Date;
@@ -37,6 +40,12 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     @Autowired
     AppUserDao appUserDao;
 
+    @Autowired
+    ExamRepository examRepository;
+
+    @Autowired
+    ExamSlotRepository examSlotRepository;
+
     @Override
     public JpaRepository<ExamCentre, Long> getRepository() {
         return this.examCentreRepository;
@@ -47,42 +56,44 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
         return ExamCentre.class;
     }
 
-    @Override
-    public void softDelete(ExamCentre entity) {
-        if (entity != null) {
-            AppUser appUser = appUserDao.findByUserId(entity.getCode());
-            appUser.setDeleted(true);
-            appUser.setActive(false);
-
-            entity.setDeleted(true);
-            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-
-            appUser.setUserId(entity.getCode());
-            appUser.setName(entity.getName());
-            appUserDao.save(appUser);
-
-            examCentreRepository.save(entity);
+    private void markDeletedAndAddSuffixAndRemoveAppUser(ExamCentre examCentre) {
+        AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
+        if (appUser == null) {
+            throw new InvalidReqPayloadException("User with userId: " + examCentre.getCode() + " not found.");
         }
+        // delete examCentre-user map from app_user table.
+        appUserDao.delete(appUser);
+
+
+        // find and delete related records in exam and exam_slot tables.
+        List<Long> examIds = examRepository.findIdsByExamCentreId(examCentre.getId());
+        examSlotRepository.deleteByExamIdIn(examIds);
+        examRepository.deleteByIdIn(examIds);
+
+        //TODO: should delete exam files already uploaded by this exam centre?
+
+        // finally mark this exam centre as deleted
+        examCentre.setDeleted(true);
+        // user should be allowed to add same name after deleted
+        // add suffix to avoid unique constraint violation for code
+        examCentre.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + examCentre.getCode());
+        // add suffix to avoid unique constraint violation for name
+        examCentre.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + examCentre.getName());
     }
 
+    @Transactional
     @Override
-    public void softDelete(Collection<ExamCentre> entities) {
-        if (entities != null && !entities.isEmpty()) {
-            entities.forEach(entity -> {
-                AppUser appUser = appUserDao.findByUserId(entity.getCode());
-                appUser.setDeleted(true);
-                appUser.setActive(false);
+    public void softDelete(ExamCentre examCentre) {
+        markDeletedAndAddSuffixAndRemoveAppUser(examCentre);
+        examCentreRepository.save(examCentre);
+    }
 
-                entity.setDeleted(true);
-                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-
-                appUser.setUserId(entity.getCode());
-                appUser.setName(entity.getName());
-                appUserDao.save(appUser);
-            });
-            examCentreRepository.saveAll(entities);
+    @Transactional
+    @Override
+    public void softDelete(Collection<ExamCentre> examCentres) {
+        if (examCentres != null && !examCentres.isEmpty()) {
+            examCentres.forEach(this::markDeletedAndAddSuffixAndRemoveAppUser);
+            examCentreRepository.saveAll(examCentres);
         }
     }
 

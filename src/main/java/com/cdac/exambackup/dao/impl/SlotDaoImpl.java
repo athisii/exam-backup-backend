@@ -30,6 +30,7 @@ import java.util.List;
 public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao {
     private static final String ERROR_MSG = "Invalid sorting field name or sorting direction. Must be sort:['fieldName,asc','fieldName,desc']";
 
+
     @Autowired
     SlotRepository slotRepository;
 
@@ -46,28 +47,31 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
         return Slot.class;
     }
 
-    @Override
-    public void softDelete(Slot slot) {
+    private void markDeletedAndAddSuffix(Slot slot) {
         if (examSlotRepository.existsBySlotIdAndDeletedFalse(slot.getId())) {
             throw new InvalidReqPayloadException("Slot code: " + slot.getCode() + " is associated with some exams. Cannot delete it.");
         }
         slot.setDeleted(true);
+        // user should be allowed to add same name after deleted
+        // add suffix to avoid unique constraint violation for code
         slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
+        // add suffix to avoid unique constraint violation for name
         slot.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getName());
+        // add nanoseconds to start and end time to avoid unique constraint violation
+        slot.setStartTime(slot.getStartTime().plusNanos(slot.getId().intValue()));
+        slot.setEndTime(slot.getEndTime().plusNanos(slot.getId().intValue()));
+    }
+
+    @Override
+    public void softDelete(Slot slot) {
+        markDeletedAndAddSuffix(slot);
         slotRepository.save(slot);
     }
 
     @Override
     public void softDelete(Collection<Slot> slots) {
         if (slots != null && !slots.isEmpty()) {
-            slots.forEach(slot -> {
-                if (examSlotRepository.existsBySlotIdAndDeletedFalse(slot.getId())) {
-                    throw new InvalidReqPayloadException("Slot code: " + slot.getCode() + " is associated with some exams. Cannot delete it.");
-                }
-                slot.setDeleted(true);
-                slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
-                slot.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getName());
-            });
+            slots.forEach(this::markDeletedAndAddSuffix);
             slotRepository.saveAll(slots);
         }
     }

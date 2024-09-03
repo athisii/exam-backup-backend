@@ -1,8 +1,10 @@
 package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.RegionDao;
+import com.cdac.exambackup.dao.repo.ExamCentreRepository;
 import com.cdac.exambackup.dao.repo.RegionRepository;
 import com.cdac.exambackup.entity.Region;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,8 @@ import java.util.List;
 public class RegionDaoImpl extends AbstractBaseDao<Region, Long> implements RegionDao {
     @Autowired
     RegionRepository regionRepository;
+    @Autowired
+    ExamCentreRepository examCentreRepository;
 
     @Override
     public JpaRepository<Region, Long> getRepository() {
@@ -37,25 +41,29 @@ public class RegionDaoImpl extends AbstractBaseDao<Region, Long> implements Regi
         return Region.class;
     }
 
-    @Override
-    public void softDelete(Region entity) {
-        if (entity != null) {
-            entity.setDeleted(true);
-            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-            regionRepository.save(entity);
+    private void markDeletedAndAddSuffix(Region region) {
+        if (examCentreRepository.existsByRegionIdAndDeletedFalse(region.getId())) {
+            throw new InvalidReqPayloadException("Region code: " + region.getCode() + " is associated with some exam centres. Cannot delete it.");
         }
+        region.setDeleted(true);
+        // user should be allowed to add same name after deleted
+        // add suffix to avoid unique constraint violation for code
+        region.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + region.getCode());
+        // add suffix to avoid unique constraint violation for name
+        region.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + region.getName());
     }
 
     @Override
-    public void softDelete(Collection<Region> entities) {
-        if (entities != null && !entities.isEmpty()) {
-            entities.forEach(entity -> {
-                entity.setDeleted(true);
-                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-            });
-            regionRepository.saveAll(entities);
+    public void softDelete(Region region) {
+        markDeletedAndAddSuffix(region);
+        regionRepository.save(region);
+    }
+
+    @Override
+    public void softDelete(Collection<Region> regions) {
+        if (regions != null && !regions.isEmpty()) {
+            regions.forEach(this::markDeletedAndAddSuffix);
+            regionRepository.saveAll(regions);
         }
     }
 

@@ -31,10 +31,9 @@ public class AppUser extends AuditModel {
     @Column
     String name;
 
-    @Column(length = 50)
     String email;
 
-    @Column(length = 20)
+    @Column(length = 14)
     String mobileNumber; // +0918132813456
 
     @JsonIgnore

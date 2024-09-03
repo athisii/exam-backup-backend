@@ -1,5 +1,7 @@
 package com.cdac.exambackup;
 
+import com.cdac.exambackup.dao.repo.ExamRepository;
+import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.service.*;
 import lombok.AccessLevel;
@@ -53,6 +55,10 @@ public class Bootstrap implements CommandLineRunner {
 
     @Autowired
     ExamDateService examDateService;
+    @Autowired
+    ExamRepository examRepository;
+    @Autowired
+    ExamSlotRepository examSlotRepository;
 
     @Autowired
     AppUserService appUserService;
@@ -97,7 +103,6 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-
 
         if (searchConfigService.count() == 0L) {
             List<SearchConfig> searchConfigs = new ArrayList<>();
@@ -202,5 +207,18 @@ public class Bootstrap implements CommandLineRunner {
             }
             examDateService.save(examDates);
         }
+
+        examRepository.saveAll(List.of(
+                new Exam(examCentreService.getById(1L), examDateService.getById(1L)),
+                new Exam(examCentreService.getById(1L), examDateService.getById(2L)),
+                new Exam(examCentreService.getById(2L), examDateService.getById(1L)),
+                new Exam(examCentreService.getById(2L), examDateService.getById(2L))));
+
+        examSlotRepository.saveAll(List.of(
+                new ExamSlot(examRepository.findById(1L).get(), slotService.getById(1L)),
+                new ExamSlot(examRepository.findById(1L).get(), slotService.getById(2L)),
+                new ExamSlot(examRepository.findById(3L).get(), slotService.getById(1L)),
+                new ExamSlot(examRepository.findById(3L).get(), slotService.getById(2L))
+        ));
     }
 }

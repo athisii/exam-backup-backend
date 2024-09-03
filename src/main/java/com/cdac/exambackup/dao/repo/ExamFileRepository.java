@@ -19,4 +19,6 @@ public interface ExamFileRepository extends JpaRepository<ExamFile, Long> {
     List<ExamFile> findByExamCentreIdAndExamDateIdAndSlotIdAndDeletedFalse(Long examCentreId, Long examDateId, Long slotId);
 
     ExamFile findFirstByExamCentreAndExamDateAndSlotAndFileTypeAndDeletedFalse(ExamCentre examCentre, ExamDate examDate, Slot slot, FileType fileType);
+
+    boolean existsByFileTypeIdAndDeletedFalse(Long fileTypeId);
 }

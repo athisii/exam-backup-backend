@@ -1,8 +1,10 @@
 package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.FileTypeDao;
+import com.cdac.exambackup.dao.repo.ExamFileRepository;
 import com.cdac.exambackup.dao.repo.FileTypeRepository;
 import com.cdac.exambackup.entity.FileType;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,9 @@ public class FileTypeDaoImpl extends AbstractBaseDao<FileType, Long> implements 
     @Autowired
     FileTypeRepository fileTypeRepository;
 
+    @Autowired
+    ExamFileRepository examFileRepository;
+
     @Override
     public JpaRepository<FileType, Long> getRepository() {
         return this.fileTypeRepository;
@@ -37,25 +42,29 @@ public class FileTypeDaoImpl extends AbstractBaseDao<FileType, Long> implements 
         return FileType.class;
     }
 
-    @Override
-    public void softDelete(FileType entity) {
-        if (entity != null) {
-            entity.setDeleted(true);
-            entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-            entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-            fileTypeRepository.save(entity);
+    private void markDeletedAndAddSuffix(FileType fileType) {
+        if (examFileRepository.existsByFileTypeIdAndDeletedFalse(fileType.getId())) {
+            throw new InvalidReqPayloadException("FileType code: " + fileType.getCode() + " is associated with some exam files. Cannot delete it.");
         }
+        fileType.setDeleted(true);
+        // user should be allowed to add same name after deleted
+        // add suffix to avoid unique constraint violation for code
+        fileType.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + fileType.getCode());
+        // add suffix to avoid unique constraint violation for name
+        fileType.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + fileType.getName());
     }
 
     @Override
-    public void softDelete(Collection<FileType> entities) {
-        if (entities != null && !entities.isEmpty()) {
-            entities.forEach(entity -> {
-                entity.setDeleted(true);
-                entity.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getCode());
-                entity.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + entity.getName());
-            });
-            fileTypeRepository.saveAll(entities);
+    public void softDelete(FileType fileType) {
+        markDeletedAndAddSuffix(fileType);
+        fileTypeRepository.save(fileType);
+    }
+
+    @Override
+    public void softDelete(Collection<FileType> fileTypes) {
+        if (fileTypes != null && !fileTypes.isEmpty()) {
+            fileTypes.forEach(this::markDeletedAndAddSuffix);
+            fileTypeRepository.saveAll(fileTypes);
         }
     }
 

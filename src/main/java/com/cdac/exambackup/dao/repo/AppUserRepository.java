@@ -12,5 +12,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
-    AppUser findFirstByUserId(String userId);
+    AppUser findFirstByUserIdAndDeletedFalseAndActiveTrue(String userId);
+
+    boolean existsByRoleIdAndDeletedFalse(Long roleId);
 }
