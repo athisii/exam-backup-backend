@@ -3,9 +3,9 @@ package com.cdac.exambackup.service.impl;
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.FileTypeDao;
 import com.cdac.exambackup.entity.FileType;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.FileTypeService;
+import com.cdac.exambackup.util.NullAndBlankUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -13,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -35,71 +33,48 @@ public class FileTypeServiceImpl extends AbstractBaseService<FileType, Long> imp
 
     @Transactional
     @Override
-    public FileType save(FileType fileTypeDto) {
-        /*
-             if id not present in dto:
-                  add new record after passing the constraint check.
-             else:
-                  if entity exist in table for passed id:
-                       update only {code} and {name} after passing the constraint check. // other fields have separate API.
-                  else:
-                       throw exception.
-         */
-
+    public FileType save(FileType fileType) {
         // new record entry
-        if (fileTypeDto.getId() == null) {
+        if (fileType.getId() == null) {
             // if both values are invalid, throw exception
-            if (fileTypeDto.getCode() == null || fileTypeDto.getCode().isBlank() || fileTypeDto.getName() == null || fileTypeDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
+            if (NullAndBlankUtil.isAnyNullOrBlank(fileType.getCode(), fileType.getName())) {
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank.");
             }
-            List<FileType> daoFileTypes = fileTypeDao.findByCodeOrName(fileTypeDto.getCode(), fileTypeDto.getName().trim());
-            if (!daoFileTypes.isEmpty()) {
-                throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
+            // try adding a new record (more performant)
+            // if violation constraint exception is thrown then duplicate exists.
+            try {
+                fileType.setCode(fileType.getCode().toUpperCase().trim());
+                fileType.setName(fileType.getName().toUpperCase().trim());
+                return fileTypeDao.save(fileType);
+            } catch (Exception ex) {
+                log.info("Error occurred while creating a new fileType: {}", ex.getMessage());
+                throw new InvalidReqPayloadException("Same 'name' or/and 'code' already exists.");
             }
-            // now remove the unnecessary fields if present or create new object.
-            FileType fileType = new FileType();
-            fileType.setCode(fileTypeDto.getCode());
-            fileType.setName(fileTypeDto.getName().trim().toUpperCase());
-            return fileTypeDao.save(fileType);
         }
         // else updating existing record.
-
-        FileType daoFileType = fileTypeDao.findById(fileTypeDto.getId());
+        // if both values are invalid throw error; one should be valid
+        if (NullAndBlankUtil.isAllNullOrBlank(fileType.getCode(), fileType.getName())) {
+            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank");
+        }
+        FileType daoFileType = fileTypeDao.findById(fileType.getId());
         if (daoFileType == null) {
-            throw new EntityNotFoundException("FileType with id: " + fileTypeDto.getId() + " not found.");
+            throw new EntityNotFoundException("FileType with id: " + fileType.getId() + " not found.");
         }
-        if (Boolean.FALSE.equals(daoFileType.getActive())) {
-            throw new EntityNotFoundException("FileType with id: " + daoFileType.getId() + " is not active. Must activate first.");
-        }
-
-        // if both values are invalid; one should be valid
-        if ((fileTypeDto.getCode() == null && fileTypeDto.getName() == null) || (fileTypeDto.getCode() != null && fileTypeDto.getCode().isBlank() && fileTypeDto.getName() != null && fileTypeDto.getName().isBlank())) {
-            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
-        }
-
-        List<FileType> daoOtherFileTypes;
-        if (fileTypeDto.getName() == null) {
-            daoOtherFileTypes = fileTypeDao.findByCodeOrName(fileTypeDto.getCode(), null);
-        } else {
-            daoOtherFileTypes = fileTypeDao.findByCodeOrName(fileTypeDto.getCode(), fileTypeDto.getName().trim());
-        }
-        // check if it's the different object
-        if ((daoOtherFileTypes != null && daoOtherFileTypes.size() > 1) || daoOtherFileTypes != null && !daoOtherFileTypes.isEmpty() && !daoFileType.getId().equals(daoOtherFileTypes.getFirst().getId())) {
-            throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
-        }
-
-        if (fileTypeDto.getCode() != null) {
-            if (fileTypeDto.getCode().isBlank()) {
-                throw new InvalidReqPayloadException("code cannot be empty.");
+        if (fileType.getCode() != null) {
+            if (fileType.getCode().isBlank()) {
+                throw new InvalidReqPayloadException("code cannot be blank");
             }
-            daoFileType.setCode(fileTypeDto.getCode());
+            daoFileType.setCode(fileType.getCode().trim().toUpperCase());
         }
-        if (fileTypeDto.getName() != null) {
-            if (fileTypeDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("name cannot be empty.");
+        if (fileType.getName() != null) {
+            if (fileType.getName().isBlank()) {
+                throw new InvalidReqPayloadException("name cannot be blank.");
             }
-            daoFileType.setName(fileTypeDto.getName().trim().toUpperCase());
+            daoFileType.setName(fileType.getName().trim().toUpperCase());
         }
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
         return fileTypeDao.save(daoFileType);
     }
 }

@@ -3,9 +3,9 @@ package com.cdac.exambackup.service.impl;
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.RegionDao;
 import com.cdac.exambackup.entity.Region;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.RegionService;
+import com.cdac.exambackup.util.NullAndBlankUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -13,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * @author athisii
@@ -35,71 +33,48 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
 
     @Transactional
     @Override
-    public Region save(Region regionDto) {
-        /*
-             if id not present in dto:
-                  add new record after passing the constraint check.
-             else:
-                  if entity exist in table for passed id:
-                       update only {code} and {name} after passing the constraint check. // other fields have separate API.
-                  else:
-                       throw exception.
-         */
-
+    public Region save(Region region) {
         // new record entry
-        if (regionDto.getId() == null) {
+        if (region.getId() == null) {
             // if both values are invalid, throw exception
-            if (regionDto.getCode() == null || regionDto.getCode().isBlank() || regionDto.getName() == null || regionDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty");
+            if (NullAndBlankUtil.isAnyNullOrBlank(region.getCode(), region.getName())) {
+                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank.");
             }
-            List<Region> daoRegions = regionDao.findByCodeOrName(regionDto.getCode(), regionDto.getName().trim());
-            if (!daoRegions.isEmpty()) {
-                throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
+            // try adding a new record (more performant)
+            // if violation constraint exception is thrown then duplicate exists.
+            try {
+                region.setCode(region.getCode().toUpperCase().trim());
+                region.setName(region.getName().toUpperCase().trim());
+                return regionDao.save(region);
+            } catch (Exception ex) {
+                log.info("Error occurred while creating a new region: {}", ex.getMessage());
+                throw new InvalidReqPayloadException("Same 'name' or/and 'code' already exists.");
             }
-            // now remove the unnecessary fields if present or create new object.
-            Region region = new Region();
-            region.setCode(regionDto.getCode());
-            region.setName(regionDto.getName().trim().toUpperCase());
-            return regionDao.save(region);
         }
         // else updating existing record.
-
-        Region daoRegion = regionDao.findById(regionDto.getId());
+        // if both values are invalid throw error; one should be valid
+        if (NullAndBlankUtil.isAllNullOrBlank(region.getCode(), region.getName())) {
+            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank");
+        }
+        Region daoRegion = regionDao.findById(region.getId());
         if (daoRegion == null) {
-            throw new EntityNotFoundException("Region with id: " + regionDto.getId() + " not found.");
+            throw new EntityNotFoundException("Region with id: " + region.getId() + " not found.");
         }
-        if (Boolean.FALSE.equals(daoRegion.getActive())) {
-            throw new EntityNotFoundException("Region with id: " + daoRegion.getId() + " is not active. Must activate first.");
-        }
-
-        // if both values are invalid, one should be valid
-        if ((regionDto.getCode() == null && regionDto.getName() == null) || (regionDto.getCode() != null && regionDto.getCode().isBlank() && regionDto.getName() != null && regionDto.getName().isBlank())) {
-            throw new GenericException("Both 'code' and 'name' cannot be null or empty");
-        }
-
-        List<Region> daoOtherRegions;
-        if (regionDto.getName() == null) {
-            daoOtherRegions = regionDao.findByCodeOrName(regionDto.getCode(), null);
-        } else {
-            daoOtherRegions = regionDao.findByCodeOrName(regionDto.getCode(), regionDto.getName().trim());
-        }
-        // check if it's the different object
-        if ((daoOtherRegions != null && daoOtherRegions.size() > 1) || daoOtherRegions != null && !daoOtherRegions.isEmpty() && !daoRegion.getId().equals(daoOtherRegions.getFirst().getId())) {
-            throw new InvalidReqPayloadException("Same 'code' or 'name' already exists");
-        }
-
-        if (regionDto.getCode() != null) {
-            if (regionDto.getCode().isBlank()) {
-                throw new InvalidReqPayloadException("code cannot be empty.");
+        if (region.getCode() != null) {
+            if (region.getCode().isBlank()) {
+                throw new InvalidReqPayloadException("code cannot be blank");
             }
-            daoRegion.setCode(regionDto.getCode());
+            daoRegion.setCode(region.getCode().trim().toUpperCase());
         }
-        if (regionDto.getName() != null) {
-            if (regionDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("name cannot be empty.");
+        if (region.getName() != null) {
+            if (region.getName().isBlank()) {
+                throw new InvalidReqPayloadException("name cannot be blank.");
             }
-            daoRegion.setName(regionDto.getName().trim().toUpperCase());
+            daoRegion.setName(region.getName().trim().toUpperCase());
         }
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
         return regionDao.save(daoRegion);
     }
 }

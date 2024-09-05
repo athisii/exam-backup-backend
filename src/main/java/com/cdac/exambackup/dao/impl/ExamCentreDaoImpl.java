@@ -70,8 +70,6 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
         examSlotRepository.deleteByExamIdIn(examIds);
         examRepository.deleteByIdIn(examIds);
 
-        //TODO: should delete exam files already uploaded by this exam centre?
-
         // finally mark this exam centre as deleted
         examCentre.setDeleted(true);
         // user should be allowed to add same name after deleted

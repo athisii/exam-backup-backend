@@ -75,7 +75,7 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
         }
         // else updating existing record.
 
-        // if both values are invalid, one should be valid
+        // if both values are invalid throw error; one should be valid
         if (NullAndBlankUtil.isAllNullOrBlank(slotDto.getCode(), slotDto.getName()) && NullAndBlankUtil.isAllNull(slotDto.getStartTime(), slotDto.getEndTime())) {
             throw new InvalidReqPayloadException("One value must be not null or blank");
         }
@@ -106,14 +106,10 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
         if (daoSlot.getStartTime().isAfter(daoSlot.getEndTime()) || daoSlot.getStartTime().equals(daoSlot.getEndTime())) {
             throw new InvalidReqPayloadException("'Start Time' cannot be greater or equal to 'End Time'");
         }
-        // try adding a new record (more performant)
-        // if violation constraint exception is thrown then duplicate is found.
-        try {
-            return slotDao.save(daoSlot);
-        } catch (Exception ex) {
-            log.info("Error occurred while updating slot: {}", ex.getMessage());
-            throw new InvalidReqPayloadException("Same 'name', 'code', or same 'start time - end time' already exists.");
-        }
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
+        return slotDao.save(daoSlot);
     }
 
     @Transactional(readOnly = true)

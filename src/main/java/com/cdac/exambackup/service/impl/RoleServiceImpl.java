@@ -2,6 +2,7 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.RoleDao;
+import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.Role;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.RoleService;
@@ -11,8 +12,12 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -33,52 +38,57 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
 
     @Transactional
     @Override
-    public Role save(Role roleDto) {
+    public Role save(Role role) {
         // new record entry
-        if (roleDto.getId() == null) {
+        if (role.getId() == null) {
             // if both values are invalid, throw exception
-            if (NullAndBlankUtil.isAnyNullOrBlank(roleDto.getCode(), roleDto.getName())) {
+            if (NullAndBlankUtil.isAnyNullOrBlank(role.getCode(), role.getName())) {
                 throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank.");
             }
             // try adding a new record (more performant)
             // if violation constraint exception is thrown then duplicate exists.
             try {
-                roleDto.setCode(roleDto.getCode().toUpperCase().trim());
-                roleDto.setName(roleDto.getName().toUpperCase().trim());
-                return roleDao.save(roleDto);
+                role.setCode(role.getCode().toUpperCase().trim());
+                role.setName(role.getName().toUpperCase().trim());
+                return roleDao.save(role);
             } catch (Exception ex) {
                 log.info("Error occurred while creating a new role: {}", ex.getMessage());
                 throw new InvalidReqPayloadException("Same 'name' or/and 'code' already exists.");
             }
         }
         // else updating existing record.
-        // if both values are invalid, one should be valid
-        if (NullAndBlankUtil.isAllNullOrBlank(roleDto.getCode(), roleDto.getName())) {
+        // if both values are invalid throw error; one should be valid
+        if (NullAndBlankUtil.isAllNullOrBlank(role.getCode(), role.getName())) {
             throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank");
         }
 
-        Role daoRole = roleDao.findById(roleDto.getId());
+        Role daoRole = roleDao.findById(role.getId());
         if (daoRole == null) {
-            throw new EntityNotFoundException("Role with id: " + roleDto.getId() + " not found.");
+            throw new EntityNotFoundException("Role with id: " + role.getId() + " not found.");
         }
 
-        if (roleDto.getCode() != null) {
-            if (roleDto.getCode().isBlank()) {
+        if (role.getCode() != null) {
+            if (role.getCode().isBlank()) {
                 throw new InvalidReqPayloadException("code cannot be blank");
             }
-            daoRole.setCode(roleDto.getCode().trim().toUpperCase());
+            daoRole.setCode(role.getCode().trim().toUpperCase());
         }
-        if (roleDto.getName() != null) {
-            if (roleDto.getName().isBlank()) {
+        if (role.getName() != null) {
+            if (role.getName().isBlank()) {
                 throw new InvalidReqPayloadException("name cannot be blank.");
             }
-            daoRole.setName(roleDto.getName().trim().toUpperCase());
+            daoRole.setName(role.getName().trim().toUpperCase());
         }
-        try {
-            return roleDao.save(daoRole);
-        } catch (Exception ex) {
-            log.info("Error occurred while updating a role: {}", ex.getMessage());
-            throw new InvalidReqPayloadException("Same 'name' or/and 'code' already exists.");
-        }
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
+        return roleDao.save(daoRole);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PageResDto<List<Role>> getAllByPage(Pageable pageable) {
+        Page<Role> page = roleDao.getAllByPage(pageable);
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent());
     }
 }

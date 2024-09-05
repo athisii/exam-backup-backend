@@ -76,8 +76,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> constraintViolationException(Exception ex) {
-        log.error("-> Some constraint violations occurred: ", ex);
-        return new ResponseDto<>("Constraint violated. Please enter valid data.", false);
+        log.error("-> Some constraint violations occurred: {}", ex.getMessage());
+        return new ResponseDto<>("Unique constraint violated. The data you entered already exists in the system.", false);
     }
 
     @ExceptionHandler(JacksonException.class)

@@ -8,7 +8,9 @@
 spring:
   application:
     name: exam-backup
-
+  threads:
+    virtual:
+      enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5432/exam_backup
     username: ${DB_USERNAME}

@@ -90,11 +90,9 @@ public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> imp
             }
             daoExamSlot.setExam(daoExam);
         }
-        try {
-            return examSlotDao.save(daoExamSlot);
-        } catch (Exception ex) {
-            log.warn("Error: {}", ex.getMessage());
-            throw new InvalidReqPayloadException("Same exam slot already exists.");
-        }
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
+        return examSlotDao.save(daoExamSlot);
     }
 }

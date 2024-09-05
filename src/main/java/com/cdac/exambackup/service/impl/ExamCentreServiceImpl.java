@@ -67,16 +67,6 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     @Transactional
     @Override
     public ExamCentre save(ExamCentre examCentreDto) {
-         /*
-             if id not present in dto:
-                  add new record after passing the constraint check (code&name,region)
-             else:
-                  if entity exist in table for passed id:
-                       update only {code} and {name} after passing the constraint check. // other fields have separate API.
-                  else:
-                       throw exception.
-         */
-
         // new record entry
         if (examCentreDto.getId() == null) {
             // if both values are invalid, throw exception
@@ -304,12 +294,11 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 .stream()
                 .map(examCentre -> {
                     List<Exam> exams = examRepository.findByExamCentreIdAndDeletedFalse(examCentre.getId());
-                    int numberOfExam = exams.size();
                     AtomicLong atomicLong = new AtomicLong(0);
                     exams.forEach(exam -> atomicLong.getAndAdd(examSlotRepository.countByExamIdAndDeletedFalse(exam.getId())));
                     int numberOfSlots = (int) atomicLong.get();
                     long numberOfFileTypes = fileTypeDao.countNonDeleted();
-                    int totalFileCount = (int) (numberOfExam * numberOfSlots * numberOfFileTypes);
+                    int totalFileCount = (int) (numberOfSlots * numberOfFileTypes);
                     int uploadedFileCount = examFileDao.findByExamCentre(examCentre).size();
                     return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount);
                 }).toList();

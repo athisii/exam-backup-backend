@@ -68,11 +68,11 @@ public class ExamDateServiceImpl extends AbstractBaseService<ExamDate, Long> imp
             throw new EntityNotFoundException("ExamDate with id: " + examDateReqDto.id() + " not found.");
         }
         daoExamDate.setDate(examDateReqDto.date());
-        try {
-            return examDateDao.save(daoExamDate);
-        } catch (Exception e) {
-            throw new InvalidReqPayloadException("Same date already exists.");
-        }
+
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
+        return examDateDao.save(daoExamDate);
     }
 
     @Transactional(readOnly = true)

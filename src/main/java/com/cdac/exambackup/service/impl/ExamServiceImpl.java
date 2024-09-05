@@ -91,12 +91,10 @@ public class ExamServiceImpl extends AbstractBaseService<Exam, Long> implements 
             }
             daoExam.setExamDate(daoExamDate);
         }
-        try {
-            return examDao.save(daoExam);
-        } catch (Exception ex) {
-            log.warn("Error: {}", ex.getMessage());
-            throw new InvalidReqPayloadException("Same exam already exists.");
-        }
+        // since transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // this object is already mapped to row in the table (has id)
+        return examDao.save(daoExam);
     }
 
     @Transactional(readOnly = true)
