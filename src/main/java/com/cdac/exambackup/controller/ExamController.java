@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/exams")
 public class ExamController extends AbstractBaseController<Exam, Long> {
+    private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "active", "examDate", "examCentre", "createdDate", "modifiedDate");
 
     @Autowired
@@ -49,14 +50,14 @@ public class ExamController extends AbstractBaseController<Exam, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the Exam entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.getById(id)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the Exam entity in the controller");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.getAll()));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examService.getAll()));
     }
 
     @Override
@@ -96,7 +97,7 @@ public class ExamController extends AbstractBaseController<Exam, Long> {
     public ResponseDto<?> getByExamCentreIdAndExamDateId(@RequestParam Long examCentreId, @RequestParam Long examDateId) {
         log.info("Query Request for the Exam entity in the controller for exam center id:" + examCentreId + " and exam date id: " + examDateId);
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examService.getByExamCentreIdAndExamDateId(examCentreId, examDateId)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examService.getByExamCentreIdAndExamDateId(examCentreId, examDateId)));
     }
 
 }

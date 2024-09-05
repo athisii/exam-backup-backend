@@ -12,4 +12,6 @@ import java.util.List;
 
 public interface FileTypeDao extends BaseDao<FileType, Long> {
     List<FileType> findByCodeOrName(String code, String name);
+
+    long countNonDeleted();
 }

@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/exam-files")
 public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
+    private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "examCentre", "slot", "fileType", "examDate", "filePath", "fileSize", "contentType", "userUploadedFilename");
 
     @Autowired
@@ -50,14 +51,14 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the ExamFile entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getById(id)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the ExamFile entity in the controller");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getAll()));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.getAll()));
     }
 
     @Override
@@ -105,6 +106,6 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     )
     public ResponseDto<?> getByCentreCentreExamDateAndSlot(@RequestParam Long examCentreId, @RequestParam Long examDateId, @RequestParam Long slotId) {
         log.info("Query request for the ExamFile entity in the controller.");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCentreIdExamDateIdAndSlotId(examCentreId, examDateId, slotId)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCentreIdExamDateIdAndSlotId(examCentreId, examDateId, slotId)));
     }
 }

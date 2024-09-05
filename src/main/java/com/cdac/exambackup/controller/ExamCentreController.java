@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/exam-centres")
 public class ExamCentreController extends AbstractBaseController<ExamCentre, Long> {
+    private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "region", "active", "createdDate", "modifiedDate");
 
     @Autowired
@@ -49,7 +50,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the ExamCentre entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getById(id)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getById(id)));
     }
 
     @Override
@@ -85,10 +86,10 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) String examDateId, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
         log.info("Query Request for the ExamCentre entity in the controller for code, name, exam date, and/or region");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId, pageable)));
     }
 
     @GetMapping(value = {"/search"}, produces = {"application/json"})
@@ -120,6 +121,6 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     public ResponseDto<?> getExamCentresOnUploadStatusByPage(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) String filterType, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
         log.info("Filter By Page Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(searchTerm, filterType, regionId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(searchTerm, filterType, regionId, pageable)));
     }
 }

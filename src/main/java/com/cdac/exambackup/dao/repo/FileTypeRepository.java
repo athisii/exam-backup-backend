@@ -15,4 +15,6 @@ import java.util.List;
 @Repository
 public interface FileTypeRepository extends JpaRepository<FileType, Long> {
     List<FileType> findByCodeOrNameIgnoreCaseAndDeletedFalse(String code, String name);
+
+    long countByDeletedFalse();
 }

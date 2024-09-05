@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/exam-slots")
 public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
+    private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "active", "examDate", "examCentre", "createdDate", "modifiedDate");
 
     @Autowired
@@ -45,14 +46,14 @@ public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the ExamSlot entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examSlotService.getById(id)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examSlotService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the ExamSlot entity in the controller");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examSlotService.getAll()));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examSlotService.getAll()));
     }
 
     @Override

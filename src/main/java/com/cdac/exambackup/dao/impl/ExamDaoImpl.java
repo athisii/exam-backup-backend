@@ -5,7 +5,6 @@ import com.cdac.exambackup.dao.repo.ExamRepository;
 import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.entity.ExamDate;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 
 /**

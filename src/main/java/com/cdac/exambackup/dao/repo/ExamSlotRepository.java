@@ -26,6 +26,8 @@ public interface ExamSlotRepository extends JpaRepository<ExamSlot, Long> {
 
     boolean existsBySlotIdAndDeletedFalse(Long slotId);
 
+    long countByExamIdAndDeletedFalse(Long examId);
+
     @Modifying
     @Query("DELETE FROM ExamSlot e WHERE e.exam.id IN :examIds")
     void deleteByExamIdIn(List<Long> examIds);

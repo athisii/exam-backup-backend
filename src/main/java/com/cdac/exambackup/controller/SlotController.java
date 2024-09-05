@@ -1,7 +1,6 @@
 package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.dto.ListRequest;
-import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.Slot;
 import com.cdac.exambackup.service.BaseService;
@@ -9,8 +8,6 @@ import com.cdac.exambackup.service.SlotService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/slots")
 public class SlotController extends AbstractBaseController<Slot, Long> {
+    private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "active", "createdDate", "modifiedDate");
 
     @Autowired
@@ -51,14 +49,14 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
         log.info("Find Request for the Slot entity in the controller with id: {}", id);
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.slotService.getById(id)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.slotService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the Slot entity in the controller");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.slotService.getAll()));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.slotService.getAll()));
     }
 
     @Override
@@ -89,7 +87,7 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
     public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
         log.info("getAllByPage Request for the Slot entity in the controller for code, name");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.getAllByPage(pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.getAllByPage(pageable)));
     }
 
     @GetMapping(value = {"/query"}, produces = {"application/json"})
@@ -105,6 +103,6 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
     public ResponseDto<?> getByExamCentreIdAndExamDateId(@RequestParam Long examCentreId, @RequestParam Long examDateId, @PageableDefault Pageable pageable) {
         log.info("GetByExamId Request for the Slot entity in the controller for code, name");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.getByExamCentreIdAndExamDateId(examCentreId,examDateId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.getByExamCentreIdAndExamDateId(examCentreId, examDateId, pageable)));
     }
 }

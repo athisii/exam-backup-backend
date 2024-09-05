@@ -1,12 +1,11 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.*;
+import com.cdac.exambackup.dao.repo.ExamRepository;
+import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.dto.ExamCentreResDto;
 import com.cdac.exambackup.dto.PageResDto;
-import com.cdac.exambackup.entity.AppUser;
-import com.cdac.exambackup.entity.ExamCentre;
-import com.cdac.exambackup.entity.Region;
-import com.cdac.exambackup.entity.Role;
+import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author athisii
@@ -41,13 +41,8 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     ExamFileDao examFileDao;
 
     @Autowired
-    ExamDateDao examDateDao;
-
-    @Autowired
     FileTypeDao fileTypeDao;
 
-    @Autowired
-    SlotDao slotDao;
 
     @Autowired
     RegionDao regionDao;
@@ -60,6 +55,10 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private ExamRepository examRepository;
+    @Autowired
+    private ExamSlotRepository examSlotRepository;
 
     public ExamCentreServiceImpl(BaseDao<ExamCentre, Long> baseDao) {
         super(baseDao);
@@ -304,14 +303,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return examCentres
                 .stream()
                 .map(examCentre -> {
-//                    int size = examDateDao.findByExamCentre(examCentre).size();
-                    // TODO; check on this.
-                    int size = 1;
-                    if (size == 0) {
-                        size = 1;
-                    }
-                    int totalFileCount = (int) (size * fileTypeDao.count() * slotDao.count());
-
+                    List<Exam> exams = examRepository.findByExamCentreIdAndDeletedFalse(examCentre.getId());
+                    int numberOfExam = exams.size();
+                    AtomicLong atomicLong = new AtomicLong(0);
+                    exams.forEach(exam -> atomicLong.getAndAdd(examSlotRepository.countByExamIdAndDeletedFalse(exam.getId())));
+                    int numberOfSlots = (int) atomicLong.get();
+                    long numberOfFileTypes = fileTypeDao.countNonDeleted();
+                    int totalFileCount = (int) (numberOfExam * numberOfSlots * numberOfFileTypes);
                     int uploadedFileCount = examFileDao.findByExamCentre(examCentre).size();
                     return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount);
                 }).toList();

@@ -72,4 +72,9 @@ public class FileTypeDaoImpl extends AbstractBaseDao<FileType, Long> implements 
     public List<FileType> findByCodeOrName(String code, String name) {
         return fileTypeRepository.findByCodeOrNameIgnoreCaseAndDeletedFalse(code, name);
     }
+
+    @Override
+    public long countNonDeleted() {
+        return fileTypeRepository.countByDeletedFalse();
+    }
 }
