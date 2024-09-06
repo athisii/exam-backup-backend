@@ -192,7 +192,7 @@ public class Bootstrap implements CommandLineRunner {
             IntStream.range(105, 131).forEach(code -> {
                 var examCentre = new ExamCentre();
                 examCentre.setCode(code + "");
-                examCentre.setName("Exam Centre, CDAC Chennai Tidel Park");
+                examCentre.setName("Exam Centre " + code + ", CDAC Chennai Tidel Park");
                 examCentre.setRegion(region);
                 examCentreService.save(examCentre);
             });

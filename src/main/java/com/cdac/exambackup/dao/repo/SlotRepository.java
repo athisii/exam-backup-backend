@@ -18,6 +18,6 @@ import java.util.List;
 @Repository
 public interface SlotRepository extends JpaRepository<Slot, Long> {
     List<Slot> findByCodeOrNameIgnoreCaseAndDeletedFalse(String code, String name);
-    @Query("SELECT es FROM Slot es WHERE es.deleted = false ORDER BY CAST(es.code AS INTEGER) ASC")
+    @Query("SELECT s FROM Slot s WHERE s.deleted = false ORDER BY CAST(s.code AS INTEGER) ASC")
     Page<Slot> findByDeletedFalse(Pageable pageable);
 }

@@ -1,6 +1,11 @@
 package com.cdac.exambackup.service;
 
+import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.Region;
+import com.cdac.exambackup.entity.Role;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -9,4 +14,5 @@ import com.cdac.exambackup.entity.Region;
  */
 
 public interface RegionService extends BaseService<Region, Long> {
+    PageResDto<List<Region>> getAllByPage(Pageable pageable);
 }

@@ -2,6 +2,7 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.BaseDao;
 import com.cdac.exambackup.dao.RegionDao;
+import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.Region;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.RegionService;
@@ -11,8 +12,12 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -76,5 +81,12 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
         // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
         // this object is already mapped to row in the table (has id)
         return regionDao.save(daoRegion);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PageResDto<List<Region>> getAllByPage(Pageable pageable) {
+        Page<Region> page = regionDao.getAllByPage(pageable);
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent());
     }
 }
