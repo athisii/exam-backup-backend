@@ -74,6 +74,7 @@ public class RegionController extends AbstractBaseController<Region, Long> {
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.regionService.save(region)));
     }
+
     @GetMapping(value = {"/page"}, produces = {"application/json"})
     @Operation(
             summary = "Get list of entities by page",
