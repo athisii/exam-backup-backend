@@ -101,4 +101,20 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.getByExamCentreId(examCentreId, pageable)));
     }
+
+    @GetMapping(value = {"/page"}, produces = {"application/json"})
+    @Operation(
+            summary = "Get list of entities by page",
+            description = "Loads a list of entities by page from Database corresponds to requested code, name",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
+                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
+        log.info("getAllByPage Request for the Exam Date entity in the controller for code, name");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.getAllByPage(pageable)));
+    }
 }

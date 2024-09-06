@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Date;
@@ -58,12 +59,14 @@ public class FileTypeDaoImpl extends AbstractBaseDao<FileType, Long> implements 
         fileType.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + fileType.getName());
     }
 
+    @Transactional
     @Override
     public void softDelete(FileType fileType) {
         markDeletedAndAddSuffix(fileType);
         fileTypeRepository.save(fileType);
     }
 
+    @Transactional
     @Override
     public void softDelete(Collection<FileType> fileTypes) {
         if (fileTypes != null && !fileTypes.isEmpty()) {

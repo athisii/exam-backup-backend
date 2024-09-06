@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Date;
@@ -45,12 +46,14 @@ public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao 
         return Role.class;
     }
 
+    @Transactional
     @Override
     public void softDelete(Role role) {
         markDeletedAndAddSuffix(role);
         roleRepository.save(role);
     }
 
+    @Transactional
     @Override
     public void softDelete(Collection<Role> roles) {
         if (roles != null && !roles.isEmpty()) {

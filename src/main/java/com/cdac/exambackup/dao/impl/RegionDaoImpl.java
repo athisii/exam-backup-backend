@@ -4,7 +4,6 @@ import com.cdac.exambackup.dao.RegionDao;
 import com.cdac.exambackup.dao.repo.ExamCentreRepository;
 import com.cdac.exambackup.dao.repo.RegionRepository;
 import com.cdac.exambackup.entity.Region;
-import com.cdac.exambackup.entity.Role;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Date;
@@ -58,12 +58,14 @@ public class RegionDaoImpl extends AbstractBaseDao<Region, Long> implements Regi
         region.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + region.getName());
     }
 
+    @Transactional
     @Override
     public void softDelete(Region region) {
         markDeletedAndAddSuffix(region);
         regionRepository.save(region);
     }
 
+    @Transactional
     @Override
     public void softDelete(Collection<Region> regions) {
         if (regions != null && !regions.isEmpty()) {

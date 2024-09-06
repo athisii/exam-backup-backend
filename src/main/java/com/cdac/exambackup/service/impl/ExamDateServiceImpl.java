@@ -1,13 +1,13 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.BaseDao;
-import com.cdac.exambackup.dao.ExamCentreDao;
 import com.cdac.exambackup.dao.ExamDao;
 import com.cdac.exambackup.dao.ExamDateDao;
 import com.cdac.exambackup.dto.ExamDateReqDto;
 import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamDate;
+import com.cdac.exambackup.entity.FileType;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamDateService;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,8 +34,6 @@ import java.util.List;
 public class ExamDateServiceImpl extends AbstractBaseService<ExamDate, Long> implements ExamDateService {
     @Autowired
     ExamDateDao examDateDao;
-    @Autowired
-    ExamCentreDao examCentreDao;
 
     @Autowired
     ExamDao examDao;
@@ -80,5 +78,12 @@ public class ExamDateServiceImpl extends AbstractBaseService<ExamDate, Long> imp
     public PageResDto<List<ExamDate>> getByExamCentreId(Long examCentreId, Pageable pageable) {
         Page<Exam> page = examDao.getByExamCentreId(examCentreId, pageable);
         return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent().stream().map(Exam::getExamDate).toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PageResDto<List<ExamDate>> getAllByPage(Pageable pageable) {
+        Page<ExamDate> page = examDateDao.getAllByPage(pageable);
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent());
     }
 }

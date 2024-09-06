@@ -1,6 +1,8 @@
 package com.cdac.exambackup.dao;
 
 import com.cdac.exambackup.entity.ExamDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * @author athisii
@@ -9,4 +11,5 @@ import com.cdac.exambackup.entity.ExamDate;
  */
 
 public interface ExamDateDao extends BaseDao<ExamDate, Long> {
+    Page<ExamDate> getAllByPage(Pageable pageable);
 }

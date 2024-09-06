@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Date;
@@ -62,12 +63,14 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
         slot.setEndTime(slot.getEndTime().plusNanos(slot.getId().intValue()));
     }
 
+    @Transactional
     @Override
     public void softDelete(Slot slot) {
         markDeletedAndAddSuffix(slot);
         slotRepository.save(slot);
     }
 
+    @Transactional
     @Override
     public void softDelete(Collection<Slot> slots) {
         if (slots != null && !slots.isEmpty()) {

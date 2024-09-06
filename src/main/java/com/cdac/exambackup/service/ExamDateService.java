@@ -17,4 +17,6 @@ public interface ExamDateService extends BaseService<ExamDate, Long> {
     ExamDate save(ExamDateReqDto examDateReqDto);
 
     PageResDto<List<ExamDate>> getByExamCentreId(Long examCentreId, Pageable pageable);
+
+    PageResDto<List<ExamDate>> getAllByPage(Pageable pageable);
 }
