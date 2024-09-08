@@ -6,6 +6,9 @@ import com.cdac.exambackup.entity.ExamDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -18,4 +21,6 @@ public interface ExamDao extends BaseDao<Exam, Long> {
     Exam findByExamCentreIdAndExamDateId(Long examCentreId, Long examDateId);
 
     Page<Exam> getByExamCentreId(Long examCentreId, Pageable pageable);
+
+    List<Exam> findByExamCentreId(Long id);
 }

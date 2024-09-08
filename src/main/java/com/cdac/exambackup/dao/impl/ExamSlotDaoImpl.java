@@ -5,7 +5,6 @@ import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamSlot;
 import com.cdac.exambackup.entity.Slot;
-import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -14,8 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -57,7 +57,17 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
     }
 
     @Override
+    public List<ExamSlot> findByExamId(Long examId) {
+        return this.examSlotRepository.findByExamIdAndDeletedFalse(examId);
+    }
+
+    @Override
     public boolean checkIfSlotIdExist(Long slotId) {
         return this.examSlotRepository.existsBySlotIdAndDeletedFalse(slotId);
+    }
+
+    @Override
+    public long countByExamId(Long examId) {
+        return this.examSlotRepository.countByExamIdAndDeletedFalse(examId);
     }
 }

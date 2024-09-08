@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -57,5 +59,10 @@ public class ExamDaoImpl extends AbstractBaseDao<Exam, Long> implements ExamDao 
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
+    }
+
+    @Override
+    public List<Exam> findByExamCentreId(Long examCentreId) {
+        return examRepository.findByExamCentreIdAndDeletedFalse(examCentreId);
     }
 }

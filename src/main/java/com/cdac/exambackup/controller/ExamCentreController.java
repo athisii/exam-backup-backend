@@ -1,5 +1,6 @@
 package com.cdac.exambackup.controller;
 
+import com.cdac.exambackup.dto.ExamCentreReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
@@ -7,6 +8,7 @@ import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamCentreService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -57,7 +59,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
         log.info("GetAll Request for the ExamCentre entity in the controller");
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getAll()));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.getAll()));
     }
 
     @Override
@@ -67,12 +69,20 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examCentreService.list(listRequest)));
     }
 
+    @Hidden
     @Override
-    @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
+    @PostMapping(value = {"/hidden-create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamCentre examCentre) {
-        log.info("Create Request for the ExamCentre entity in the controller.");
+        log.info("Simple Create Request for the ExamCentre entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
+    }
+
+    @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
+    public ResponseDto<?> create(@RequestBody ExamCentreReqDto examCentreReqDto) {
+        log.info("Create Request for the ExamCentre entity in the controller.");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
+        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentreReqDto)));
     }
 
 
@@ -105,7 +115,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     public ResponseDto<?> search(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
         log.info("Search Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>("Data fetched successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.search(searchTerm, regionId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.search(searchTerm, regionId, pageable)));
     }
 
     @GetMapping(value = {"/upload-status-filter-page"}, produces = {"application/json"})
@@ -122,5 +132,21 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         log.info("Filter By Page Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(searchTerm, filterType, regionId, pageable)));
+    }
+
+    @GetMapping(value = {"/page"}, produces = {"application/json"})
+    @Operation(
+            summary = "Get list of entities by page",
+            description = "Loads a list of entities by page from Database corresponds to requested code, name",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
+                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
+        log.info("getAllByPage Request for the Exam Centre entity in the controller for code, name");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getAllByPage(pageable)));
     }
 }

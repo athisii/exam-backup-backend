@@ -38,4 +38,6 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
     @Modifying
     @Query("DELETE FROM Exam e WHERE e.id IN :ids")
     void deleteByIdIn(List<Long> ids);
+
+
 }

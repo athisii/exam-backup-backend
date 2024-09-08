@@ -181,4 +181,13 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     public List<ExamCentre> findByRegionId(Long regionId) {
         return this.examCentreRepository.findByRegionIdAndDeletedFalse(regionId);
     }
+
+    @Override
+    public Page<ExamCentre> getAllByPage(Pageable pageable) {
+        try {
+            return this.examCentreRepository.findByDeletedFalse(pageable);
+        } catch (Exception ex) {
+            throw new InvalidReqPayloadException(ERROR_MSG);
+        }
+    }
 }

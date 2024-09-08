@@ -50,28 +50,6 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
     @Transactional(readOnly = true)
     @Override
     public ExamFile save(ExamFile examFileDto) {
-        /*
-           Data needed from the frontend client:
-                    1. exam-centre-id
-                    2. exam-slot-id
-                    3. file-type-id
-                    4. exam-date
-                    5. file
-
-           If all required data received:
-                1. search with combined ids of examCode, examSlot, fileType, exam-date present in dto to row in a table.
-                    if found:
-                        overwrite the existing file in fs with the uploaded file.
-                    else:
-                      save new record
-           **********************************************
-           If all required data received:
-                  1. make directory structure as /data/exam-backup/region/exam-centre-code/date/slot/
-                  2. save the file in the above created path.
-                  3. save this file path, size, name, etc. in the db.
-         */
-        // check exam centre exists and is active; findById() only returns active entity else null
-
         if (examFileDto.getExamCentre() == null || examFileDto.getSlot() == null || examFileDto.getFileType() == null || examFileDto.getExamDate() == null || examFileDto.getFile() == null) {
             throw new InvalidReqPayloadException("Please provide all the required data.");
         }

@@ -42,4 +42,7 @@ public interface ExamCentreRepository extends JpaRepository<ExamCentre, Long> {
     List<ExamCentre> findByRegionIdAndDeletedFalse(Long regionId);
 
     boolean existsByRegionIdAndDeletedFalse(Long regionId);
+
+    @Query("SELECT ec FROM ExamCentre ec WHERE ec.deleted = false ORDER BY CAST(ec.code AS INTEGER) ASC")
+    Page<ExamCentre> findByDeletedFalse(Pageable pageable);
 }

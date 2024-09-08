@@ -2,6 +2,7 @@ package com.cdac.exambackup;
 
 import com.cdac.exambackup.dao.repo.ExamRepository;
 import com.cdac.exambackup.dao.repo.ExamSlotRepository;
+import com.cdac.exambackup.dto.ExamCentreReqDto;
 import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.service.*;
 import lombok.AccessLevel;
@@ -179,22 +180,14 @@ public class Bootstrap implements CommandLineRunner {
 
         if (examCentreService.count() == 0L) {
             examCentreCodeNameMap.forEach((code, name) -> {
-                var examCentre = new ExamCentre();
-                examCentre.setCode(code + "");
-                examCentre.setName(name);
-                Region region = regionService.getById(Long.parseLong(code - 100 + ""));
-                examCentre.setRegion(region);
-                examCentreService.save(examCentre);
+                var examCentreReqDto = new ExamCentreReqDto(null, code + "", name, regionCodeNameMap.get(code - 100 + ""), null);
+                examCentreService.save(examCentreReqDto);
             });
 
             // dummy exam centre for pagination
-            Region region = regionService.getById(Long.parseLong("1"));
             IntStream.range(105, 131).forEach(code -> {
-                var examCentre = new ExamCentre();
-                examCentre.setCode(code + "");
-                examCentre.setName("Exam Centre " + code + ", CDAC Chennai Tidel Park");
-                examCentre.setRegion(region);
-                examCentreService.save(examCentre);
+                var examCentreReqDto = new ExamCentreReqDto(null, code + "", "Exam Centre " + code + ", CDAC Chennai Tidel Park", regionCodeNameMap.get(code % 4 == 0 ? 1 + "" : (code % 4) + ""), null);
+                examCentreService.save(examCentreReqDto);
             });
         }
 

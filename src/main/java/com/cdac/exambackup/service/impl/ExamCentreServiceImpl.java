@@ -1,13 +1,14 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.*;
-import com.cdac.exambackup.dao.repo.ExamRepository;
-import com.cdac.exambackup.dao.repo.ExamSlotRepository;
+import com.cdac.exambackup.dto.ExamCentreReqDto;
 import com.cdac.exambackup.dto.ExamCentreResDto;
+import com.cdac.exambackup.dto.ExamDateSlot;
 import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
+import com.cdac.exambackup.util.NullAndBlankUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -56,9 +58,14 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
-    private ExamRepository examRepository;
+    ExamDao examDao;
     @Autowired
-    private ExamSlotRepository examSlotRepository;
+    ExamSlotDao examSlotDao;
+
+    @Autowired
+    ExamDateDao examDateDao;
+    @Autowired
+    SlotDao slotDao;
 
     public ExamCentreServiceImpl(BaseDao<ExamCentre, Long> baseDao) {
         super(baseDao);
@@ -66,23 +73,21 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
     @Transactional
     @Override
-    public ExamCentre save(ExamCentre examCentreDto) {
+    public ExamCentre save(ExamCentreReqDto examCentreReqDto) {
         // new record entry
-        if (examCentreDto.getId() == null) {
+        if (examCentreReqDto.id() == null) {
             // if both values are invalid, throw exception
-            if (examCentreDto.getCode() == null || examCentreDto.getCode().isBlank() || examCentreDto.getName() == null || examCentreDto.getName().isBlank()) {
-                throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or empty.");
+            if (NullAndBlankUtil.isAnyNullOrBlank(examCentreReqDto.code(), examCentreReqDto.name()) || examCentreReqDto.regionName() == null) {
+                throw new InvalidReqPayloadException("All 'code','name', and 'regionName' cannot be null or empty.");
             }
-            ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreDto.getCode());
+            ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreReqDto.code());
             if (daoExamCentre != null) {
                 throw new InvalidReqPayloadException("Same 'code' already exists");
             }
-            if (examCentreDto.getRegion() == null) {
-                throw new EntityNotFoundException("Region cannot be null.");
-            }
-            Region daoRegion = regionDao.findById(examCentreDto.getRegion().getId());
+
+            Region daoRegion = regionDao.findByName(examCentreReqDto.regionName());
             if (daoRegion == null) {
-                throw new EntityNotFoundException("Region with id: " + examCentreDto.getRegion().getId() + " not found");
+                throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + " not found");
             }
 
             /* before saving need to create User account for this exam centre for login into system.
@@ -95,9 +100,9 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
              */
 
             AppUser appUser = new AppUser();
-            appUser.setName(examCentreDto.getName());
-            appUser.setUserId(examCentreDto.getCode());
-            appUser.setPassword(passwordEncoder.encode(examCentreDto.getCode()));
+            appUser.setName(examCentreReqDto.name().trim());
+            appUser.setUserId(examCentreReqDto.code().trim());
+            appUser.setPassword(passwordEncoder.encode(examCentreReqDto.code().trim()));
 
             Role daoRole = roleDao.findByName("USER"); // default role
             if (daoRole == null) {
@@ -108,15 +113,15 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
             // now remove the unnecessary fields if present or create new object.
             ExamCentre examCentre = new ExamCentre();
-            examCentre.setCode(examCentreDto.getCode());
-            examCentre.setName(examCentreDto.getName().trim());
+            examCentre.setCode(examCentreReqDto.code().trim());
+            examCentre.setName(examCentreReqDto.name().trim());
             examCentre.setRegion(daoRegion);
 
-            return examCentreDao.save(examCentre);
+            ExamCentre savedExamCentre = examCentreDao.save(examCentre);
+            saveExamAndExamSlot(savedExamCentre, examCentreReqDto.examDateSlots());
+            return savedExamCentre;
         }
         // for updating existing record.
-
-        // do the validation/constraint check and update
 
         /*
             1. if examCentreId is updated then userId is also to be updated
@@ -124,59 +129,77 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             3. password need to be reset ?? no
         */
 
-        ExamCentre daoExamCentre = examCentreDao.findById(examCentreDto.getId());
+        ExamCentre daoExamCentre = examCentreDao.findById(examCentreReqDto.id());
         if (daoExamCentre == null) {
-            throw new EntityNotFoundException("ExamCentre with id: " + examCentreDto.getId() + " not found.");
-        }
-        if (Boolean.FALSE.equals(daoExamCentre.getActive())) {
-            throw new EntityNotFoundException("ExamCentre with id: " + examCentreDto.getId() + " is not active. Must activate first.");
+            throw new EntityNotFoundException("ExamCentre with id: " + examCentreReqDto.id() + " not found.");
         }
 
         String oldExamCode = daoExamCentre.getCode();
 
         // if both values are invalid, one should be valid
-        if (examCentreDto.getCode() == null && examCentreDto.getName() == null) {
-            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null");
+        if (NullAndBlankUtil.isAllNullOrBlank(examCentreReqDto.code(), examCentreReqDto.name()) && examCentreReqDto.regionName() == null) {
+            throw new InvalidReqPayloadException("All 'code', 'name' and 'regionName' cannot be null");
         }
 
-        // if both values are invalid, one should be valid
-        if ((examCentreDto.getCode() != null && examCentreDto.getCode().isBlank()) && (examCentreDto.getName() != null && examCentreDto.getName().isBlank())) {
-            throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be  empty");
-        }
-        // examCentreId is change, so userId & name must also be changed
-        // good catch
+        // if examCentre is changed, then userId & name must also be changed accordingly
         AppUser daoAppUser = appUserDao.findByUserId(oldExamCode);
         if (daoAppUser == null) {
             throw new EntityNotFoundException("User with userId: " + oldExamCode + " not found.");
         }
 
-        if (examCentreDto.getCode() != null) {
-            if (examCentreDto.getCode().isBlank()) {
+        if (examCentreReqDto.code() != null) {
+            if (examCentreReqDto.code().isBlank()) {
                 throw new InvalidReqPayloadException("code is empty.");
             }
-            ExamCentre daoOtherExamCentre = examCentreDao.findByCode(examCentreDto.getCode());
-            if (daoOtherExamCentre != null && !daoOtherExamCentre.getId().equals(daoExamCentre.getId())) {
-                throw new InvalidReqPayloadException("Same code already exists");
-            }
-            daoExamCentre.setCode(examCentreDto.getCode());
+            daoExamCentre.setCode(examCentreReqDto.code());
             daoAppUser.setUserId(daoExamCentre.getCode()); // also change userId
         }
-        if (examCentreDto.getName() != null) {
-            if (examCentreDto.getName().isBlank()) {
+        if (examCentreReqDto.name() != null) {
+            if (examCentreReqDto.name().isBlank()) {
                 throw new InvalidReqPayloadException("Name is empty.");
             }
-            daoExamCentre.setName(examCentreDto.getName());
+            daoExamCentre.setName(examCentreReqDto.name());
             daoAppUser.setName(daoExamCentre.getName());
         }
-        if (examCentreDto.getRegion() != null) {
-            Region daoRegion = regionDao.findById(examCentreDto.getRegion().getId());
+        if (examCentreReqDto.regionName() != null) {
+            Region daoRegion = regionDao.findByName(examCentreReqDto.regionName());
             if (daoRegion == null) {
-                throw new EntityNotFoundException("Region with id: " + examCentreDto.getRegion().getId() + " not found");
+                throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + " not found");
             }
             daoExamCentre.setRegion(daoRegion);
         }
         appUserDao.save(daoAppUser);
-        return examCentreDao.save(daoExamCentre);
+        ExamCentre savedExamCentre = examCentreDao.save(daoExamCentre);
+        saveExamAndExamSlot(savedExamCentre, examCentreReqDto.examDateSlots());
+        return savedExamCentre;
+    }
+
+    private void saveExamAndExamSlot(ExamCentre examCentre, List<ExamDateSlot> examDateSlots) {
+        if (examDateSlots != null) {
+            examDateSlots.forEach(examDateSlot -> {
+                ExamDate daoExamDate = examDateDao.findById(examDateSlot.examDateId());
+                if (daoExamDate == null) {
+                    throw new EntityNotFoundException("ExamDate with id: " + examDateSlot.examDateId() + " not found");
+                }
+                Exam daoExam = examDao.findByExamCentreAndExamDate(examCentre, daoExamDate);
+                if (daoExam == null) {
+                    daoExam = examDao.save(new Exam(examCentre, daoExamDate));
+                }
+                List<ExamSlot> examSlots = new ArrayList<>();
+                for (Long slotId : examDateSlot.slotIds()) {
+                    Slot daoSlot = slotDao.findById(slotId);
+                    if (daoSlot == null) {
+                        throw new EntityNotFoundException("Slot with id: " + slotId + " not found");
+                    }
+                    ExamSlot daoExamSlot = examSlotDao.findByExamAndSlot(daoExam, daoSlot);
+                    if (daoExamSlot == null) {
+                        daoExamSlot = new ExamSlot(daoExam, daoSlot);
+                    }
+                    examSlots.add(daoExamSlot);
+                }
+                examSlotDao.save(examSlots);
+            });
+        }
     }
 
     @Transactional(readOnly = true)
@@ -273,6 +296,22 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 examCentreResDtoContent);
     }
 
+    @Override
+    public PageResDto<List<ExamCentreResDto>> getAllByPage(Pageable pageable) {
+        Page<ExamCentre> page = examCentreDao.getAllByPage(pageable);
+        List<ExamCentreResDto> examCentreResDto = page.getContent().stream().map(examCentre -> {
+            List<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
+                    .stream()
+                    .map(exam -> new ExamDateSlot(exam.getExamDate().getId(), examSlotDao.findByExamId(exam.getId())
+                            .stream()
+                            .map(examSlot -> examSlot.getSlot().getId())
+                            .toList())
+                    ).toList();
+            return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), null, null, examDateSlots, examCentre.getCreatedDate(), examCentre.getModifiedDate());
+        }).toList();
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), examCentreResDto);
+    }
+
     private static boolean isUploadCompleted(ExamCentreResDto examCentreResDto) {
         return examCentreResDto.totalFileCount().equals(examCentreResDto.uploadedFileCount());
     }
@@ -293,14 +332,14 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return examCentres
                 .stream()
                 .map(examCentre -> {
-                    List<Exam> exams = examRepository.findByExamCentreIdAndDeletedFalse(examCentre.getId());
+                    List<Exam> exams = examDao.findByExamCentreId(examCentre.getId());
                     AtomicLong atomicLong = new AtomicLong(0);
-                    exams.forEach(exam -> atomicLong.getAndAdd(examSlotRepository.countByExamIdAndDeletedFalse(exam.getId())));
+                    exams.forEach(exam -> atomicLong.getAndAdd(examSlotDao.countByExamId(exam.getId())));
                     int numberOfSlots = (int) atomicLong.get();
                     long numberOfFileTypes = fileTypeDao.countNonDeleted();
                     int totalFileCount = (int) (numberOfSlots * numberOfFileTypes);
                     int uploadedFileCount = examFileDao.findByExamCentre(examCentre).size();
-                    return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount);
+                    return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount, null, examCentre.getCreatedDate(), examCentre.getModifiedDate());
                 }).toList();
     }
 

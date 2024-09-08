@@ -24,6 +24,8 @@ public interface ExamSlotRepository extends JpaRepository<ExamSlot, Long> {
 
     Page<ExamSlot> findByExamIdAndDeletedFalse(Long examId, Pageable pageable);
 
+    List<ExamSlot> findByExamIdAndDeletedFalse(Long examId);
+
     boolean existsBySlotIdAndDeletedFalse(Long slotId);
 
     long countByExamIdAndDeletedFalse(Long examId);

@@ -80,6 +80,11 @@ public class RegionDaoImpl extends AbstractBaseDao<Region, Long> implements Regi
     }
 
     @Override
+    public Region findByName(String name) {
+        return this.regionRepository.findFirstByNameIgnoreCaseAndDeletedFalse(name);
+    }
+
+    @Override
     public Page<Region> getAllByPage(Pageable pageable) {
         try {
             return this.regionRepository.findByDeletedFalse(pageable);

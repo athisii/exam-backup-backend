@@ -14,6 +14,7 @@ import java.util.List;
 
 public interface RegionDao extends BaseDao<Region, Long> {
     List<Region> findByCodeOrName(String code, String name);
+    Region findByName(String name);
 
     Page<Region> getAllByPage(Pageable pageable);
 }
