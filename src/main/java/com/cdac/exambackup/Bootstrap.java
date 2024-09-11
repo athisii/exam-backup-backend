@@ -180,13 +180,13 @@ public class Bootstrap implements CommandLineRunner {
 
         if (examCentreService.count() == 0L) {
             examCentreCodeNameMap.forEach((code, name) -> {
-                var examCentreReqDto = new ExamCentreReqDto(null, code + "", name, regionCodeNameMap.get(code - 100 + ""), null);
+                var examCentreReqDto = new ExamCentreReqDto(null, code + "", name, regionCodeNameMap.get(code - 100 + ""), "8132817645", code + "@email.com", null);
                 examCentreService.save(examCentreReqDto);
             });
 
             // dummy exam centre for pagination
             IntStream.range(105, 131).forEach(code -> {
-                var examCentreReqDto = new ExamCentreReqDto(null, code + "", "Exam Centre " + code + ", CDAC Chennai Tidel Park", regionCodeNameMap.get(code % 4 == 0 ? 1 + "" : (code % 4) + ""), null);
+                var examCentreReqDto = new ExamCentreReqDto(null, code + "", "Exam Centre " + code + ", CDAC Chennai Tidel Park", regionCodeNameMap.get(code % 4 == 0 ? 1 + "" : (code % 4) + ""), "7005701479", code + "@email.com", null);
                 examCentreService.save(examCentreReqDto);
             });
         }

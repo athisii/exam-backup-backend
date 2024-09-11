@@ -13,7 +13,8 @@ import java.util.List;
  */
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ExamCentreResDto(Long id, String code, String name, String regionName, Integer totalFileCount,
+public record ExamCentreResDto(Long id, String code, String name, String regionName, String mobileNumber, String email,
+                               Integer totalFileCount,
                                Integer uploadedFileCount, List<ExamDateSlot> examDateSlots,
                                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm") LocalDateTime createdDate,
                                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm") LocalDateTime modifiedDate) {

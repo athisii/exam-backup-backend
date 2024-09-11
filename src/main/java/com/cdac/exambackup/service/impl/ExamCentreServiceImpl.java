@@ -103,6 +103,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             appUser.setName(examCentreReqDto.name().trim());
             appUser.setUserId(examCentreReqDto.code().trim());
             appUser.setPassword(passwordEncoder.encode(examCentreReqDto.code().trim()));
+            // TODO: mobile and email mandatory or not to be decided
+            if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
+                appUser.setEmail(examCentreReqDto.email());
+            }
+            if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
+                appUser.setMobileNumber(examCentreReqDto.mobileNumber());
+            }
 
             Role daoRole = roleDao.findByName("USER"); // default role
             if (daoRole == null) {
@@ -167,6 +174,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + " not found");
             }
             daoExamCentre.setRegion(daoRegion);
+        }
+
+        if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
+            daoAppUser.setEmail(examCentreReqDto.email());
+        }
+        if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
+            daoAppUser.setMobileNumber(examCentreReqDto.mobileNumber());
         }
         appUserDao.save(daoAppUser);
         ExamCentre savedExamCentre = examCentreDao.save(daoExamCentre);
@@ -300,6 +314,10 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
     public PageResDto<List<ExamCentreResDto>> getAllByPage(Pageable pageable) {
         Page<ExamCentre> page = examCentreDao.getAllByPage(pageable);
         List<ExamCentreResDto> examCentreResDto = page.getContent().stream().map(examCentre -> {
+            AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
+            if (appUser == null) {
+                throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + " not found.");
+            }
             List<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
                     .stream()
                     .map(exam -> new ExamDateSlot(exam.getExamDate().getId(), examSlotDao.findByExamId(exam.getId())
@@ -307,7 +325,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                             .map(examSlot -> examSlot.getSlot().getId())
                             .toList())
                     ).toList();
-            return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), null, null, examDateSlots, examCentre.getCreatedDate(), examCentre.getModifiedDate());
+            return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), appUser.getMobileNumber(), appUser.getEmail(), null, null, examDateSlots, examCentre.getCreatedDate(), examCentre.getModifiedDate());
         }).toList();
         return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), examCentreResDto);
     }
@@ -332,6 +350,10 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return examCentres
                 .stream()
                 .map(examCentre -> {
+                    AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
+                    if (appUser == null) {
+                        throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + " not found.");
+                    }
                     List<Exam> exams = examDao.findByExamCentreId(examCentre.getId());
                     AtomicLong atomicLong = new AtomicLong(0);
                     exams.forEach(exam -> atomicLong.getAndAdd(examSlotDao.countByExamId(exam.getId())));
@@ -339,7 +361,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                     long numberOfFileTypes = fileTypeDao.countNonDeleted();
                     int totalFileCount = (int) (numberOfSlots * numberOfFileTypes);
                     int uploadedFileCount = examFileDao.findByExamCentre(examCentre).size();
-                    return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), totalFileCount, uploadedFileCount, null, examCentre.getCreatedDate(), examCentre.getModifiedDate());
+                    return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), appUser.getMobileNumber(), appUser.getEmail(), totalFileCount, uploadedFileCount, null, examCentre.getCreatedDate(), examCentre.getModifiedDate());
                 }).toList();
     }
 
