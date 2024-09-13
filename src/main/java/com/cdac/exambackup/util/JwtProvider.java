@@ -9,6 +9,7 @@ import com.cdac.exambackup.enums.TokenType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class JwtProvider {
         }
     }
 
-    public String generateTokenFromRefreshToken(String refreshToken) {
+    public String generateTokenFromToken(String refreshToken, Long validity) {
         checkTokenValidity(refreshToken);
         Algorithm algorithm = Algorithm.HMAC512(secret.getBytes());
         JWTVerifier verifier = getJWTVerifier();
@@ -70,7 +71,7 @@ public class JwtProvider {
                 .withSubject(getSubjectFromToken(refreshToken))
                 .withIssuer(verifier.verify(refreshToken).getIssuer())
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenValidity))
+                .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(validity).toMillis()))
                 .withClaim(PERMISSIONS, findListValueFromToken(refreshToken, PERMISSIONS))
                 .withClaim("id", findLongValueFromToken(refreshToken, "id"))
                 .withClaim("name", findStringValueFromToken(refreshToken, "name"))

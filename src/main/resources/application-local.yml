@@ -66,4 +66,4 @@ jwt:
       validity: 3
   refresh:
     token:
-      validity: 360
+      validity: 10
