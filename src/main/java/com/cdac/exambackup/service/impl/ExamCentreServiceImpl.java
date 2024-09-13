@@ -177,7 +177,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         }
 
         if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
-            daoAppUser.setEmail(examCentreReqDto.email());
+            daoAppUser.setEmail(examCentreReqDto.email().trim());
         }
         if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
             daoAppUser.setMobileNumber(examCentreReqDto.mobileNumber());

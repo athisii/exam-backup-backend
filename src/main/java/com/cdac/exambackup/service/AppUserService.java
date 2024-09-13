@@ -1,6 +1,7 @@
 package com.cdac.exambackup.service;
 
 import com.cdac.exambackup.dto.PasswordChangeDto;
+import com.cdac.exambackup.dto.ResetPasswordDto;
 import com.cdac.exambackup.entity.AppUser;
 
 /**
@@ -11,4 +12,8 @@ import com.cdac.exambackup.entity.AppUser;
 
 public interface AppUserService extends BaseService<AppUser, Long> {
     void changePassword(PasswordChangeDto passwordChangeDto);
+
+    void resetPassword(ResetPasswordDto resetPasswordDto);
+
+    void confirmPasswordReset(ResetPasswordDto resetPasswordDto);
 }

@@ -1,11 +1,11 @@
 package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.dto.PasswordChangeDto;
+import com.cdac.exambackup.dto.ResetPasswordDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.service.AppUserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +30,20 @@ public class AuthController {
     AppUserService appUserService;
 
     @PostMapping(value = "/change-password", produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> changePassword(@RequestBody @Valid PasswordChangeDto passwordChangeDto) {
+    public ResponseDto<?> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
         appUserService.changePassword(passwordChangeDto);
         return new ResponseDto<>("Password changed successfully.", null);
+    }
+
+    @PostMapping("/password-reset/initiate")
+    public ResponseDto<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
+        appUserService.resetPassword(resetPasswordDto);
+        return new ResponseDto<>("OTP sent successfully.", null);
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseDto<?> confirmPasswordReset(@RequestBody ResetPasswordDto resetPasswordDto) {
+        appUserService.confirmPasswordReset(resetPasswordDto);
+        return new ResponseDto<>("Password reset successfully.", null);
     }
 }

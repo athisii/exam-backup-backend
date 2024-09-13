@@ -2,7 +2,9 @@ package com.cdac.exambackup.dao.impl;
 
 import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.dao.repo.AppUserRepository;
+import com.cdac.exambackup.dao.repo.PasswordResetOtpRepository;
 import com.cdac.exambackup.entity.AppUser;
+import com.cdac.exambackup.entity.PasswordResetOtp;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 public class AppUserDaoImpl extends AbstractBaseDao<AppUser, Long> implements AppUserDao {
     @Autowired
     AppUserRepository appUserRepository;
+    @Autowired
+    PasswordResetOtpRepository passwordResetOtpRepository;
 
     @Override
     public JpaRepository<AppUser, Long> getRepository() {
@@ -35,5 +39,20 @@ public class AppUserDaoImpl extends AbstractBaseDao<AppUser, Long> implements Ap
     @Override
     public AppUser findByUserId(String userId) {
         return this.appUserRepository.findFirstByUserIdAndDeletedFalseAndActiveTrue(userId);
+    }
+
+    @Override
+    public void resetPassword(PasswordResetOtp passwordResetOtp) {
+        passwordResetOtpRepository.save(passwordResetOtp);
+    }
+
+    @Override
+    public PasswordResetOtp findPasswordResetOtp(String userId) {
+        return this.passwordResetOtpRepository.findFirstByUserIdAndDeletedFalse(userId);
+    }
+
+    @Override
+    public void deletePasswordResetOtpByUserId(String userId) {
+        this.passwordResetOtpRepository.deleteByUserId(userId);
     }
 }
