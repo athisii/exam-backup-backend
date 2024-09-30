@@ -103,6 +103,9 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         if (passwordChangeDto == null || passwordChangeDto.userId() == null || passwordChangeDto.oldPassword() == null || passwordChangeDto.newPassword() == null) {
             throw new GenericException("userId, oldPassword and newPassword can not be null or empty");
         }
+        if (passwordChangeDto.oldPassword().equals(passwordChangeDto.newPassword())) {
+            throw new GenericException("oldPassword and newPassword should not match.");
+        }
         AppUser daoAppUser = appUserDao.findByUserId(passwordChangeDto.userId());
         if (daoAppUser == null || Boolean.TRUE.equals(daoAppUser.getDeleted()) || Boolean.FALSE.equals(daoAppUser.getActive())) {
             throw new EntityNotFoundException("User not found with userId: " + passwordChangeDto.userId());
@@ -145,7 +148,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
                 Dear user,
                 We have received a request to reset your password. To proceed, please use the following One-Time Password(OTP): %s
                 If you did not request this, please contact our support team immediately.
-
+                
                 Best regards,
                 Exam Backup Team
                 """;
