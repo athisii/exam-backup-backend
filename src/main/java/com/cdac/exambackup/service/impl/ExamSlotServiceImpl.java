@@ -14,7 +14,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,16 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamSlotServiceImpl extends AbstractBaseService<ExamSlot, Long> implements ExamSlotService {
-    @Autowired
-    ExamDao examDao;
-    @Autowired
-    SlotDao slotDao;
-    @Autowired
-    ExamSlotDao examSlotDao;
+    final ExamDao examDao;
+    final SlotDao slotDao;
+    final ExamSlotDao examSlotDao;
 
-
-    public ExamSlotServiceImpl(BaseDao<ExamSlot, Long> baseDao) {
+    public ExamSlotServiceImpl(BaseDao<ExamSlot, Long> baseDao, ExamDao examDao, SlotDao slotDao, ExamSlotDao examSlotDao) {
         super(baseDao);
+        this.examDao = examDao;
+        this.slotDao = slotDao;
+        this.examSlotDao = examSlotDao;
     }
 
     @Transactional

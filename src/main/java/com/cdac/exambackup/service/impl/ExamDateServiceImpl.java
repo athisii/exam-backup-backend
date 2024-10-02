@@ -7,14 +7,12 @@ import com.cdac.exambackup.dto.ExamDateReqDto;
 import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.Exam;
 import com.cdac.exambackup.entity.ExamDate;
-import com.cdac.exambackup.entity.FileType;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamDateService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,15 +30,13 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamDateServiceImpl extends AbstractBaseService<ExamDate, Long> implements ExamDateService {
-    @Autowired
-    ExamDateDao examDateDao;
+    final ExamDateDao examDateDao;
+    final ExamDao examDao;
 
-    @Autowired
-    ExamDao examDao;
-
-
-    public ExamDateServiceImpl(BaseDao<ExamDate, Long> baseDao) {
+    public ExamDateServiceImpl(BaseDao<ExamDate, Long> baseDao, ExamDateDao examDateDao, ExamDao examDao) {
         super(baseDao);
+        this.examDateDao = examDateDao;
+        this.examDao = examDao;
     }
 
     @Transactional

@@ -8,7 +8,6 @@ import com.cdac.exambackup.service.SearchConfigService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +23,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class SearchConfigServiceImpl extends AbstractBaseService<SearchConfig, Long> implements SearchConfigService {
-    @Autowired
-    SearchConfigDao searchConfigDao;
+    final SearchConfigDao searchConfigDao;
 
-
-    public SearchConfigServiceImpl(BaseDao<SearchConfig, Long> baseService) {
+    public SearchConfigServiceImpl(BaseDao<SearchConfig, Long> baseService, SearchConfigDao searchConfigDao) {
         super(baseService);
+        this.searchConfigDao = searchConfigDao;
     }
 
     @Transactional

@@ -15,7 +15,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,23 +34,24 @@ import java.util.Random;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> implements AppUserService {
-    private static final char[] ALPHANUMERIC = {
+    static final String USER_NOT_FOUND = "User not found with userId: ";
+
+    static final char[] ALPHANUMERIC = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
     };
-    private static final int OTP_LENGTH = 6;
-    private static final Random random = new Random();
+    static final int OTP_LENGTH = 6;
+    static final Random random = new Random();
 
-    @Autowired
-    AppUserDao appUserDao;
+    final AppUserDao appUserDao;
+    final PasswordEncoder passwordEncoder;
+    final EmailService emailService;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    EmailService emailService;
-
-    public AppUserServiceImpl(BaseDao<AppUser, Long> baseDao) {
+    public AppUserServiceImpl(BaseDao<AppUser, Long> baseDao, AppUserDao appUserDao, PasswordEncoder passwordEncoder, EmailService emailService) {
         super(baseDao);
+        this.appUserDao = appUserDao;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -108,7 +108,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         }
         AppUser daoAppUser = appUserDao.findByUserId(passwordChangeDto.userId());
         if (daoAppUser == null || Boolean.TRUE.equals(daoAppUser.getDeleted()) || Boolean.FALSE.equals(daoAppUser.getActive())) {
-            throw new EntityNotFoundException("User not found with userId: " + passwordChangeDto.userId());
+            throw new EntityNotFoundException(USER_NOT_FOUND + passwordChangeDto.userId());
         }
 
         if (!passwordEncoder.matches(passwordChangeDto.oldPassword(), daoAppUser.getPassword())) {
@@ -126,7 +126,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         }
         AppUser appUser = appUserDao.findByUserId(resetPasswordDto.userId());
         if (appUser == null) {
-            throw new EntityNotFoundException("User not found with userId: " + resetPasswordDto.userId());
+            throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDto.userId());
         }
         if (NullAndBlankUtil.isAnyNullOrBlank(appUser.getEmail())) {
             throw new EntityNotFoundException("User userId: " + resetPasswordDto.userId() + " does not have registered email.");
@@ -178,7 +178,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         }
         AppUser daoAppUser = appUserDao.findByUserId(resetPasswordDto.userId());
         if (daoAppUser == null) {
-            throw new EntityNotFoundException("User not found with userId: " + resetPasswordDto.userId());
+            throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDto.userId());
         }
         daoAppUser.setPassword(passwordEncoder.encode(resetPasswordDto.password()));
         appUserDao.save(daoAppUser);

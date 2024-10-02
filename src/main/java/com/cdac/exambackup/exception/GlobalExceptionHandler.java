@@ -83,7 +83,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(JacksonException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> parsingError(Exception ex) {
-        log.error("-> Some error occured: ", ex);
+        log.error("-> Some error occurred: ", ex);
         return new ResponseDto<>("Error parsing json data.", false);
     }
 

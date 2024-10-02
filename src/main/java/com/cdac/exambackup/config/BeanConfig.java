@@ -1,6 +1,5 @@
 package com.cdac.exambackup.config;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,8 +36,8 @@ public class BeanConfig {
     @Bean
     public MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize(DataSize.ofGigabytes(10));
-        factory.setMaxRequestSize(DataSize.ofGigabytes(10));
+        factory.setMaxFileSize(DataSize.ofGigabytes(2));
+        factory.setMaxRequestSize(DataSize.ofGigabytes(2));
         return factory.createMultipartConfig();
     }
 }

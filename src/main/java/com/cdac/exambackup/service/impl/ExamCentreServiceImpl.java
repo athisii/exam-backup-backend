@@ -8,20 +8,24 @@ import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
+import com.cdac.exambackup.util.CsvUtil;
 import com.cdac.exambackup.util.NullAndBlankUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -36,39 +40,35 @@ import java.util.concurrent.atomic.AtomicLong;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long> implements ExamCentreService {
-    @Autowired
-    ExamCentreDao examCentreDao;
+    static final String NOT_FOUND = " not found";
+    static final String[] HEADER = {"Center_Code", "Name", "Region", "Mobile", "Email"};
+    final ApplicationContext applicationContext;
+    final ExamCentreDao examCentreDao;
+    final ExamFileDao examFileDao;
+    final FileTypeDao fileTypeDao;
+    final RegionDao regionDao;
+    final RoleDao roleDao;
+    final AppUserDao appUserDao;
+    final PasswordEncoder passwordEncoder;
+    final ExamDao examDao;
+    final ExamSlotDao examSlotDao;
+    final ExamDateDao examDateDao;
+    final SlotDao slotDao;
 
-    @Autowired
-    ExamFileDao examFileDao;
-
-    @Autowired
-    FileTypeDao fileTypeDao;
-
-
-    @Autowired
-    RegionDao regionDao;
-
-    @Autowired
-    RoleDao roleDao;
-
-    @Autowired
-    AppUserDao appUserDao;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    ExamDao examDao;
-    @Autowired
-    ExamSlotDao examSlotDao;
-
-    @Autowired
-    ExamDateDao examDateDao;
-    @Autowired
-    SlotDao slotDao;
-
-    public ExamCentreServiceImpl(BaseDao<ExamCentre, Long> baseDao) {
+    public ExamCentreServiceImpl(BaseDao<ExamCentre, Long> baseDao, ExamFileDao examFileDao, ExamCentreDao examCentreDao, FileTypeDao fileTypeDao, RegionDao regionDao, RoleDao roleDao, AppUserDao appUserDao, PasswordEncoder passwordEncoder, ExamDao examDao, ExamSlotDao examSlotDao, ExamDateDao examDateDao, SlotDao slotDao, ApplicationContext applicationContext) {
         super(baseDao);
+        this.examFileDao = examFileDao;
+        this.examCentreDao = examCentreDao;
+        this.fileTypeDao = fileTypeDao;
+        this.regionDao = regionDao;
+        this.roleDao = roleDao;
+        this.appUserDao = appUserDao;
+        this.passwordEncoder = passwordEncoder;
+        this.examDao = examDao;
+        this.examSlotDao = examSlotDao;
+        this.examDateDao = examDateDao;
+        this.slotDao = slotDao;
+        this.applicationContext = applicationContext;
     }
 
     @Transactional
@@ -85,12 +85,12 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 throw new InvalidReqPayloadException("Same 'code' already exists");
             }
 
-            Region daoRegion = regionDao.findByName(examCentreReqDto.regionName());
+            Region daoRegion = regionDao.findByName(examCentreReqDto.regionName().trim());
             if (daoRegion == null) {
-                throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + " not found");
+                throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + NOT_FOUND);
             }
 
-            /* before saving need to create User account for this exam centre for login into system.
+            /* before saving need to create a User account for this exam centre for login into the system.
                 1. create a user:
                         1. with role as `USER`
                         2. userId as examCentreId
@@ -131,8 +131,8 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         // for updating existing record.
 
         /*
-            1. if examCentreId is updated then userId is also to be updated
-            2. if examCentreName is updated then userName is also to be updated
+            1. if examCentreId is updated, then userId is also to be updated
+            2. if examCentreName is updated, then the userName is also to be updated
             3. password need to be reset ?? no
         */
 
@@ -171,7 +171,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         if (examCentreReqDto.regionName() != null) {
             Region daoRegion = regionDao.findByName(examCentreReqDto.regionName());
             if (daoRegion == null) {
-                throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + " not found");
+                throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + NOT_FOUND);
             }
             daoExamCentre.setRegion(daoRegion);
         }
@@ -193,7 +193,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             examDateSlots.forEach(examDateSlot -> {
                 ExamDate daoExamDate = examDateDao.findById(examDateSlot.examDateId());
                 if (daoExamDate == null) {
-                    throw new EntityNotFoundException("ExamDate with id: " + examDateSlot.examDateId() + " not found");
+                    throw new EntityNotFoundException("ExamDate with id: " + examDateSlot.examDateId() + NOT_FOUND);
                 }
                 Exam daoExam = examDao.findByExamCentreAndExamDate(examCentre, daoExamDate);
                 if (daoExam == null) {
@@ -203,7 +203,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 for (Long slotId : examDateSlot.slotIds()) {
                     Slot daoSlot = slotDao.findById(slotId);
                     if (daoSlot == null) {
-                        throw new EntityNotFoundException("Slot with id: " + slotId + " not found");
+                        throw new EntityNotFoundException("Slot with id: " + slotId + NOT_FOUND);
                     }
                     ExamSlot daoExamSlot = examSlotDao.findByExamAndSlot(daoExam, daoSlot);
                     if (daoExamSlot == null) {
@@ -316,7 +316,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         List<ExamCentreResDto> examCentreResDto = page.getContent().stream().map(examCentre -> {
             AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
             if (appUser == null) {
-                throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + " not found.");
+                throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + NOT_FOUND);
             }
             List<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
                     .stream()
@@ -352,7 +352,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 .map(examCentre -> {
                     AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
                     if (appUser == null) {
-                        throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + " not found.");
+                        throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + NOT_FOUND);
                     }
                     List<Exam> exams = examDao.findByExamCentreId(examCentre.getId());
                     AtomicLong atomicLong = new AtomicLong(0);
@@ -365,4 +365,38 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 }).toList();
     }
 
+    @Transactional
+    @Override
+    public void bulkUpload(MultipartFile csvFile) {
+        if (csvFile == null || !CsvUtil.hasCsvFormat(csvFile)) {
+            throw new InvalidReqPayloadException("Empty or invalid CSV format.");
+        }
+        byte[] bytes;
+        try {
+            bytes = csvFile.getBytes();
+        } catch (Exception ex) {
+            log.info(ex.getMessage(), ex);
+            throw new InvalidReqPayloadException("Invalid csv payload.");
+        }
+        String completeData = new String(bytes, StandardCharsets.UTF_8);
+        String[] rows = completeData.split("\n");
+        String[] header = rows[0].split(",");
+        if (HEADER.length != header.length) {
+            throw new InvalidReqPayloadException("Invalid csv header; Should be- " + Arrays.toString(HEADER));
+        }
+
+        var examCentreService = applicationContext.getBean(ExamCentreService.class);
+
+        for (int i = 1; i < rows.length; i++) {
+            if (!rows[i].isBlank()) {
+                String[] row = rows[i].split(",");
+                if (HEADER.length != row.length) {
+                    throw new InvalidReqPayloadException("Invalid csv row at index " + i + "; Should be- " + Arrays.toString(HEADER));
+                }
+                // "Center_Code", "Name", "Region", "Mobile", "Email"
+                var examCentreReqDto = new ExamCentreReqDto(null, row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim(), row[4].trim(), null);
+                examCentreService.save(examCentreReqDto);
+            }
+        }
+    }
 }

@@ -22,7 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author athisii
@@ -148,5 +150,12 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         log.info("getAllByPage Request for the Exam Centre entity in the controller for code, name");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getAllByPage(pageable)));
+    }
+
+    @PostMapping(value = {"/bulk-upload"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseDto<?> bulkUpload(MultipartFile file) {
+        log.info("Bulk Upload Request for the ExamCentre entity in the controller.");
+        this.examCentreService.bulkUpload(file);
+        return new ResponseDto<>("Your data has been saved successfully.", true);
     }
 }

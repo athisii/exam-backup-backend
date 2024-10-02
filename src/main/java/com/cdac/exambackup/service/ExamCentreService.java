@@ -5,6 +5,7 @@ import com.cdac.exambackup.dto.ExamCentreResDto;
 import com.cdac.exambackup.dto.PageResDto;
 import com.cdac.exambackup.entity.ExamCentre;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,4 +25,6 @@ public interface ExamCentreService extends BaseService<ExamCentre, Long> {
     PageResDto<List<ExamCentreResDto>> getAllByPage(Pageable pageable);
 
     ExamCentre save(ExamCentreReqDto examCentreReqDto);
+
+    void bulkUpload(MultipartFile csvFile);
 }

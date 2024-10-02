@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,11 +28,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements RoleService {
-    @Autowired
-    RoleDao roleDao;
+    final RoleDao roleDao;
 
-    public RoleServiceImpl(BaseDao<Role, Long> baseDao) {
+    public RoleServiceImpl(BaseDao<Role, Long> baseDao, RoleDao roleDao) {
         super(baseDao);
+        this.roleDao = roleDao;
     }
 
     @Transactional
@@ -79,8 +78,8 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
             }
             daoRole.setName(role.getName().trim().toUpperCase());
         }
-        // since transaction is enabled, unique constraints violation will be caught at commit phase,
-        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // since the transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore, catch it in global exception handler (ControllerAdvice)
         // this object is already mapped to row in the table (has id)
         return roleDao.save(daoRole);
     }

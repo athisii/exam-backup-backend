@@ -6,7 +6,6 @@ import com.cdac.exambackup.entity.AppUserDetails;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,8 +21,11 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class AppUserDetailsService implements UserDetailsService {
-    @Autowired
-    AppUserDao appUserDao;
+    final AppUserDao appUserDao;
+
+    public AppUserDetailsService(AppUserDao appUserDao) {
+        this.appUserDao = appUserDao;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

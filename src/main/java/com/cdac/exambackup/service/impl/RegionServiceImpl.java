@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,11 +28,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class RegionServiceImpl extends AbstractBaseService<Region, Long> implements RegionService {
-    @Autowired
-    RegionDao regionDao;
+    final RegionDao regionDao;
 
-    public RegionServiceImpl(BaseDao<Region, Long> baseDao) {
+    public RegionServiceImpl(BaseDao<Region, Long> baseDao, RegionDao regionDao) {
         super(baseDao);
+        this.regionDao = regionDao;
     }
 
     @Transactional
@@ -77,8 +76,8 @@ public class RegionServiceImpl extends AbstractBaseService<Region, Long> impleme
             }
             daoRegion.setName(region.getName().trim().toUpperCase());
         }
-        // since transaction is enabled, unique constraints violation will be caught at commit phase,
-        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // since the transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore, catch it in global exception handler (ControllerAdvice)
         // this object is already mapped to row in the table (has id)
         return regionDao.save(daoRegion);
     }

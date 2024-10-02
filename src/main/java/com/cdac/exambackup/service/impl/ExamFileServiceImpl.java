@@ -9,7 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,23 +28,23 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> implements ExamFileService {
-    @Autowired
-    ExamFileDao examFileDao;
+    static final String NOT_FOUND = " not found";
 
-    @Autowired
-    ExamCentreDao examCentreDao;
+    final ApplicationContext applicationContext;
+    final ExamFileDao examFileDao;
+    final ExamCentreDao examCentreDao;
+    final SlotDao slotDao;
+    final ExamDateDao examDateDao;
+    final FileTypeDao fileTypeDao;
 
-    @Autowired
-    SlotDao slotDao;
-
-    @Autowired
-    ExamDateDao examDateDao;
-
-    @Autowired
-    FileTypeDao fileTypeDao;
-
-    public ExamFileServiceImpl(BaseDao<ExamFile, Long> baseDao) {
+    public ExamFileServiceImpl(BaseDao<ExamFile, Long> baseDao, ExamFileDao examFileDao, ExamCentreDao examCentreDao, SlotDao slotDao, ExamDateDao examDateDao, FileTypeDao fileTypeDao, ApplicationContext applicationContext) {
         super(baseDao);
+        this.examFileDao = examFileDao;
+        this.examCentreDao = examCentreDao;
+        this.slotDao = slotDao;
+        this.examDateDao = examDateDao;
+        this.fileTypeDao = fileTypeDao;
+        this.applicationContext = applicationContext;
     }
 
     @Transactional(readOnly = true)
@@ -65,21 +65,21 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
 
         ExamCentre daoExamCentre = examCentreDao.findById(examFileDto.getExamCentre().getId());
         if (daoExamCentre == null) {
-            throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getId() + " not found");
+            throw new EntityNotFoundException("ExamCentre with id: " + examFileDto.getExamCentre().getId() + NOT_FOUND);
         }
         Slot daoSlot = slotDao.findById(examFileDto.getSlot().getId());
         if (daoSlot == null) {
-            throw new EntityNotFoundException("Slot with id: " + examFileDto.getSlot().getId() + " not found");
+            throw new EntityNotFoundException("Slot with id: " + examFileDto.getSlot().getId() + NOT_FOUND);
         }
 
         FileType daoFileType = fileTypeDao.findById(examFileDto.getFileType().getId());
         if (daoFileType == null) {
-            throw new EntityNotFoundException("FileType with id: " + examFileDto.getFileType().getId() + " not found");
+            throw new EntityNotFoundException("FileType with id: " + examFileDto.getFileType().getId() + NOT_FOUND);
         }
 
         ExamDate daoExamDate = examDateDao.findById(examFileDto.getExamDate().getId());
         if (daoExamDate == null) {
-            throw new EntityNotFoundException("ExamDate with id: " + examFileDto.getExamDate().getId() + " not found");
+            throw new EntityNotFoundException("ExamDate with id: " + examFileDto.getExamDate().getId() + NOT_FOUND);
         }
 
         /* prepares for folder structure and filename
@@ -87,7 +87,6 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
            check and create if not existed
         */
 
-        // TODO: when retrieving exam file, code must be replaced like how it is replaced during creation.
         // to avoid issues while creating folder.
         String regionCode = daoExamCentre.getRegion().getCode().replaceAll("[^a-zA-Z0-9.-]", "_");
         String examCentreCode = daoExamCentre.getCode().replaceAll("[^a-zA-Z0-9.-]", "_");
@@ -131,7 +130,8 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
             // else directory already exists
         } catch (Exception ex) {
             log.error("Error creating directory.", ex);
-            // RuntimeException will be handled by Controller Advice and will be sent to client as INTERNAL_SERVER_ERROR
+            // RuntimeException will be handled by Controller Advice
+            // and will be sent to the client as INTERNAL_SERVER_ERROR
             throw new RuntimeException("Error occurred while creating directory.");
         }
 
@@ -211,13 +211,14 @@ public class ExamFileServiceImpl extends AbstractBaseService<ExamFile, Long> imp
         examFile.setExamDate(examDate);
 
         examFile.setFile(examFileReqDto.file());
-        return save(examFile);
+        var examFileService = applicationContext.getBean(ExamFileService.class);
+        return examFileService.save(examFile);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ExamFile> findByCentreCentreIdExamDateIdAndSlotId(Long examCentreId, Long examDateId, Long slotId) {
-        // check exam centre exists and is active; findById() only returns active entity else null
+        // checks an exam centre exists and is active; findById() only returns active entity else null
         return examFileDao.findByExamCentreIdExamDateIdAndSlotId(examCentreId, examDateId, slotId);
     }
 }

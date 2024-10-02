@@ -15,7 +15,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,18 +32,15 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements SlotService {
+    final SlotDao slotDao;
+    final ExamSlotDao examSlotDao;
+    final ExamDao examDao;
 
-    @Autowired
-    SlotDao slotDao;
-
-    @Autowired
-    ExamSlotDao examSlotDao;
-
-    @Autowired
-    ExamDao examDao;
-
-    public SlotServiceImpl(BaseDao<Slot, Long> baseDao) {
+    public SlotServiceImpl(BaseDao<Slot, Long> baseDao, SlotDao slotDao, ExamSlotDao examSlotDao, ExamDao examDao) {
         super(baseDao);
+        this.slotDao = slotDao;
+        this.examSlotDao = examSlotDao;
+        this.examDao = examDao;
     }
 
     @Transactional
@@ -106,8 +102,8 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
         if (daoSlot.getStartTime().isAfter(daoSlot.getEndTime()) || daoSlot.getStartTime().equals(daoSlot.getEndTime())) {
             throw new InvalidReqPayloadException("'Start Time' cannot be greater or equal to 'End Time'");
         }
-        // since transaction is enabled, unique constraints violation will be caught at commit phase,
-        // so can't be caught, therefore catch it in global exception handler (ControllerAdvice)
+        // since the transaction is enabled, unique constraints violation will be caught at commit phase,
+        // so can't be caught, therefore, catch it in global exception handler (ControllerAdvice)
         // this object is already mapped to row in the table (has id)
         return slotDao.save(daoSlot);
     }
