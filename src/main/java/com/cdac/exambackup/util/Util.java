@@ -1,5 +1,7 @@
 package com.cdac.exambackup.util;
 
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
+
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -29,6 +31,14 @@ public class Util {
 
     public static boolean validateMobileNumber(String mobileNumber) {
         return VALID_MOBILE_NUMBER_REGEX.matcher(mobileNumber).matches();
+    }
+
+    public static void isConvertibleToNumberElseThrowException(String fieldName, String value) {
+        try {
+            Integer.parseInt(value);
+        } catch (Exception e) {
+            throw new InvalidReqPayloadException("'" + fieldName + "' must be a number.");
+        }
     }
 
     public static String generateRandomString(int length) {

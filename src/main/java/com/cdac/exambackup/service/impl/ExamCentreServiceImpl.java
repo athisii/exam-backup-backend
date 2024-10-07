@@ -7,6 +7,7 @@ import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
 import com.cdac.exambackup.util.CsvUtil;
 import com.cdac.exambackup.util.NullAndBlankUtil;
+import com.cdac.exambackup.util.Util;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -75,6 +76,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             if (NullAndBlankUtil.isAnyNullOrBlank(examCentreReqDto.code(), examCentreReqDto.name()) || examCentreReqDto.regionName() == null) {
                 throw new InvalidReqPayloadException("All 'code','name', and 'regionName' cannot be null or empty.");
             }
+            Util.isConvertibleToNumberElseThrowException("code", examCentreReqDto.code());
             ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreReqDto.code());
             if (daoExamCentre != null) {
                 throw new InvalidReqPayloadException("Same 'code' already exists");
@@ -100,9 +102,15 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             appUser.setPassword(passwordEncoder.encode(examCentreReqDto.code().trim()));
             // TODO: mobile and email mandatory or not to be decided
             if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
+                if (!Util.validateEmail(examCentreReqDto.email())) {
+                    throw new InvalidReqPayloadException("Malformed email address.");
+                }
                 appUser.setEmail(examCentreReqDto.email());
             }
             if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
+                if (!Util.validateMobileNumber(examCentreReqDto.mobileNumber())) {
+                    throw new InvalidReqPayloadException("Malformed mobile number.");
+                }
                 appUser.setMobileNumber(examCentreReqDto.mobileNumber());
             }
 
@@ -153,6 +161,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             if (examCentreReqDto.code().isBlank()) {
                 throw new InvalidReqPayloadException("code is empty.");
             }
+            Util.isConvertibleToNumberElseThrowException("code", examCentreReqDto.code());
             daoExamCentre.setCode(examCentreReqDto.code());
             daoAppUser.setUserId(daoExamCentre.getCode()); // also change userId
         }
@@ -172,9 +181,15 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         }
 
         if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
+            if (!Util.validateEmail(examCentreReqDto.email())) {
+                throw new InvalidReqPayloadException("Malformed email address.");
+            }
             daoAppUser.setEmail(examCentreReqDto.email().trim());
         }
         if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
+            if (!Util.validateMobileNumber(examCentreReqDto.mobileNumber())) {
+                throw new InvalidReqPayloadException("Malformed mobile number.");
+            }
             daoAppUser.setMobileNumber(examCentreReqDto.mobileNumber());
         }
         appUserDao.save(daoAppUser);

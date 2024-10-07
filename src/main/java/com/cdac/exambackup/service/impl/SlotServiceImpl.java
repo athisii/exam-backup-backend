@@ -11,6 +11,7 @@ import com.cdac.exambackup.entity.Slot;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.SlotService;
 import com.cdac.exambackup.util.NullAndBlankUtil;
+import com.cdac.exambackup.util.Util;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -60,6 +61,7 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
             }
             // try adding a new record (more performant)
             // if violation constraint exception is thrown then duplicate exists.
+            Util.isConvertibleToNumberElseThrowException("code", slotDto.getCode());
             try {
                 slotDto.setCode(slotDto.getCode().toUpperCase().trim());
                 slotDto.setName(slotDto.getName().toUpperCase().trim());
@@ -85,6 +87,7 @@ public class SlotServiceImpl extends AbstractBaseService<Slot, Long> implements 
             if (slotDto.getCode().isBlank()) {
                 throw new InvalidReqPayloadException("code cannot be blank.");
             }
+            Util.isConvertibleToNumberElseThrowException("code", slotDto.getCode());
             daoSlot.setCode(slotDto.getCode().trim().toUpperCase());
         }
         if (slotDto.getName() != null) {

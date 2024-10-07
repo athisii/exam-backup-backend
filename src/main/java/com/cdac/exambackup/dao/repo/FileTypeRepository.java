@@ -23,4 +23,6 @@ public interface FileTypeRepository extends JpaRepository<FileType, Long> {
 
     @Query("SELECT ft FROM FileType ft WHERE ft.deleted = false ORDER BY CAST(ft.code AS INTEGER) ASC")
     Page<FileType> findByDeletedFalse(Pageable pageable);
+
+    boolean existsByFileExtensionIdAndDeletedFalse(Long fileExtensionId);
 }

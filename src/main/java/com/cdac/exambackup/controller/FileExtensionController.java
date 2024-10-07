@@ -1,14 +1,12 @@
 package com.cdac.exambackup.controller;
 
-import com.cdac.exambackup.dto.FileTypeReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
-import com.cdac.exambackup.entity.FileType;
+import com.cdac.exambackup.entity.FileExtension;
 import com.cdac.exambackup.service.BaseService;
-import com.cdac.exambackup.service.FileTypeService;
+import com.cdac.exambackup.service.FileExtensionService;
 import com.cdac.exambackup.util.JsonNodeUtil;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,7 +17,6 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
@@ -31,58 +28,49 @@ import org.springframework.web.bind.annotation.*;
  */
 
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "File Type")
+@Tag(name = "File Extension")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
-@RequestMapping("/file-types")
-public class FileTypeController extends AbstractBaseController<FileType, Long> {
+@RequestMapping("/file-extensions")
+public class FileExtensionController extends AbstractBaseController<FileExtension, Long> {
     private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
-    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "active", "fileExtension", "createdDate", "modifiedDate");
+    static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "active", "createdDate", "modifiedDate");
 
-    @Autowired
-    FileTypeService fileTypeService;
+    final FileExtensionService fileExtensionService;
 
-    public FileTypeController(BaseService<FileType, Long> baseService) {
+    public FileExtensionController(BaseService<FileExtension, Long> baseService, FileExtensionService fileExtensionService) {
         super(baseService);
+        this.fileExtensionService = fileExtensionService;
     }
-
 
     @Override
     @GetMapping(value = {"/{id}"}, produces = {"application/json"})
     public ResponseDto<?> get(@PathVariable("id") @Valid Long id) {
-        log.info("Find Request for the FileType entity in the controller with id: {}", id);
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.getById(id)));
+        log.info("Find Request for the FileExtension entity in the controller with id: {}", id);
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileExtensionService.getById(id)));
     }
 
     @Override
     @GetMapping(produces = {"application/json"})
     public ResponseDto<?> getAll() {
-        log.info("GetAll Request for the FileType entity in the controller");
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.getAll()));
+        log.info("GetAll Request for the FileExtension entity in the controller");
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileExtensionService.getAll()));
     }
 
     @Override
     @PostMapping(value = {"/filtered-list"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> list(@RequestBody ListRequest listRequest) {
-        log.info("List Request for the FileType entity in the controller");
-        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileTypeService.list(listRequest)));
+        log.info("List Request for the FileExtension entity in the controller");
+        return new ResponseDto<>("Filtered List fetched successfully.", JsonNodeUtil.getJsonNode(commonPropertyFilter, this.fileExtensionService.list(listRequest)));
     }
 
-    @Hidden
     @Override
-    @PostMapping(value = {"/hidden-create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody FileType fileType) {
-        log.info("Simple Create Request for the  FileType entity in the controller.");
-        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileType)));
-    }
-
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseDto<?> create(@RequestBody FileTypeReqDto fileTypeReqDto) {
-        log.info("Create Request for the FileType entity in the controller.");
+    public ResponseDto<?> create(@RequestBody FileExtension entity) {
+        log.info("Create Request for the FileExtension entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileTypeReqDto)));
+        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileExtensionService.save(entity)));
     }
 
     @GetMapping(value = {"/page"}, produces = {"application/json"})
@@ -96,8 +84,8 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
             }
     )
     public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
-        log.info("getAllByPage Request for the FileType entity in the controller for code, name");
+        log.info("getAllByPage Request for the FileExtension entity in the controller for code, name");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.getAllByPage(pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileExtensionService.getAllByPage(pageable)));
     }
 }

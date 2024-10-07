@@ -1,7 +1,5 @@
 package com.cdac.exambackup;
 
-import com.cdac.exambackup.dao.repo.ExamRepository;
-import com.cdac.exambackup.dao.repo.ExamSlotRepository;
 import com.cdac.exambackup.dto.ExamCentreReqDto;
 import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.service.*;
@@ -34,6 +32,7 @@ public class Bootstrap implements CommandLineRunner {
     static final Map<String, String> regionCodeNameMap;
     static final Map<String, String> slotCodeNameMap;
     static final Map<String, String> fileTypeCodeNameMap;
+    static final Map<String, String> fileExtensionCodeNameMap;
     static final Map<Integer, String> examCentreCodeNameMap;
 
     @Autowired
@@ -56,10 +55,9 @@ public class Bootstrap implements CommandLineRunner {
 
     @Autowired
     ExamDateService examDateService;
+
     @Autowired
-    ExamRepository examRepository;
-    @Autowired
-    ExamSlotRepository examSlotRepository;
+    FileExtensionService fileExtensionService;
 
     @Autowired
     AppUserService appUserService;
@@ -73,13 +71,13 @@ public class Bootstrap implements CommandLineRunner {
         roleCodeNameMap.put("1", "ADMIN");
         roleCodeNameMap.put("2", "STAFF");
         roleCodeNameMap.put("3", "USER");
-        roleCodeNameMap.put("4", "OTHER");
+//        roleCodeNameMap.put("4", "OTHER")
 
         regionCodeNameMap = new TreeMap<>();
         regionCodeNameMap.put("1", "NORTH");
         regionCodeNameMap.put("2", "EAST");
-        regionCodeNameMap.put("3", "SOUTH");
-        regionCodeNameMap.put("4", "WEST");
+//        regionCodeNameMap.put("3", "SOUTH")
+//        regionCodeNameMap.put("4", "WEST")
 
         slotCodeNameMap = new TreeMap<>();
         slotCodeNameMap.put("1", "SLOT 1");
@@ -94,6 +92,11 @@ public class Bootstrap implements CommandLineRunner {
         fileTypeCodeNameMap.put("4", "RESPONSE SHEET");
         fileTypeCodeNameMap.put("5", "ATTENDANCE SHEET");
         fileTypeCodeNameMap.put("6", "BIOMETRIC DATA");
+
+        fileExtensionCodeNameMap = new TreeMap<>();
+        fileExtensionCodeNameMap.put("1", "pdf");
+        fileExtensionCodeNameMap.put("2", "zip");
+
 
         examCentreCodeNameMap = new TreeMap<>();
         examCentreCodeNameMap.put(101, "Exam Centre 1");
@@ -112,6 +115,7 @@ public class Bootstrap implements CommandLineRunner {
             searchConfigs.add(new SearchConfig("Slot", COMMON_FIELDS));
             searchConfigs.add(new SearchConfig("FileType", COMMON_FIELDS));
             searchConfigs.add(new SearchConfig("ExamCentre", COMMON_FIELDS));
+            searchConfigs.add(new SearchConfig("FileExtension", COMMON_FIELDS));
             searchConfigs.add(new SearchConfig("ExamFile", "contentType,userUploadedFilename"));
             searchConfigs.add(new SearchConfig("AppUser", "userId,name,email,mobileNumber"));
             searchConfigs.add(new SearchConfig("ExamDate", "date"));
@@ -152,6 +156,17 @@ public class Bootstrap implements CommandLineRunner {
             regionService.save(regions);
         }
 
+        if (fileExtensionService.count() == 0L) {
+            List<FileExtension> fileExtensions = new ArrayList<>();
+            fileExtensionCodeNameMap.forEach((code, name) -> {
+                FileExtension fileExtension = new FileExtension();
+                fileExtension.setCode(code);
+                fileExtension.setName(name);
+                fileExtensions.add(fileExtension);
+            });
+            fileExtensionService.save(fileExtensions);
+        }
+
         if (slotService.count() == 0L) {
             List<Slot> slots = new ArrayList<>();
             slotCodeNameMap.forEach((code, name) -> {
@@ -164,7 +179,7 @@ public class Bootstrap implements CommandLineRunner {
                 examSlot.setEndTime(startTime.plusHours(1)); // one hour duration
                 slots.add(examSlot);
             });
-            slotService.save(slots);
+//            slotService.save(slots);
         }
 
         if (fileTypeService.count() == 0L) {
@@ -175,19 +190,19 @@ public class Bootstrap implements CommandLineRunner {
                 fileType.setName(name);
                 fileTypes.add(fileType);
             });
-            fileTypeService.save(fileTypes);
+//            fileTypeService.save(fileTypes);
         }
 
         if (examCentreService.count() == 0L) {
             examCentreCodeNameMap.forEach((code, name) -> {
                 var examCentreReqDto = new ExamCentreReqDto(null, code + "", name, regionCodeNameMap.get(code - 100 + ""), "8132817645", code + "@email.com", null);
-                examCentreService.save(examCentreReqDto);
+//                examCentreService.save(examCentreReqDto);
             });
 
             // dummy exam centre for pagination
             IntStream.range(105, 131).forEach(code -> {
                 var examCentreReqDto = new ExamCentreReqDto(null, code + "", "Exam Centre " + code + ", CDAC Chennai Tidel Park", regionCodeNameMap.get(code % 4 == 0 ? 1 + "" : (code % 4) + ""), "7005701479", code + "@email.com", null);
-                examCentreService.save(examCentreReqDto);
+//                examCentreService.save(examCentreReqDto);
             });
         }
 
@@ -198,20 +213,20 @@ public class Bootstrap implements CommandLineRunner {
                 examDate.setDate(LocalDate.now().plusDays(i));
                 examDates.add(examDate);
             }
-            examDateService.save(examDates);
+//            examDateService.save(examDates);
         }
 
-        examRepository.saveAll(List.of(
-                new Exam(examCentreService.getById(1L), examDateService.getById(1L)),
-                new Exam(examCentreService.getById(1L), examDateService.getById(2L)),
-                new Exam(examCentreService.getById(2L), examDateService.getById(1L)),
-                new Exam(examCentreService.getById(2L), examDateService.getById(2L))));
-
-        examSlotRepository.saveAll(List.of(
-                new ExamSlot(examRepository.findById(1L).get(), slotService.getById(1L)),
-                new ExamSlot(examRepository.findById(1L).get(), slotService.getById(2L)),
-                new ExamSlot(examRepository.findById(3L).get(), slotService.getById(1L)),
-                new ExamSlot(examRepository.findById(3L).get(), slotService.getById(2L))
-        ));
+//        examRepository.saveAll(List.of(
+//                new Exam(examCentreService.getById(1L), examDateService.getById(1L)),
+//                new Exam(examCentreService.getById(1L), examDateService.getById(2L)),
+//                new Exam(examCentreService.getById(2L), examDateService.getById(1L)),
+//                new Exam(examCentreService.getById(2L), examDateService.getById(2L))));
+//
+//        examSlotRepository.saveAll(List.of(
+//                new ExamSlot(examRepository.findById(1L).get(), slotService.getById(1L)),
+//                new ExamSlot(examRepository.findById(1L).get(), slotService.getById(2L)),
+//                new ExamSlot(examRepository.findById(3L).get(), slotService.getById(1L)),
+//                new ExamSlot(examRepository.findById(3L).get(), slotService.getById(2L))
+//        ));
     }
 }

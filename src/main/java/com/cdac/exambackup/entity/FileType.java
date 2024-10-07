@@ -2,6 +2,8 @@ package com.cdac.exambackup.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -37,5 +39,9 @@ public class FileType extends AuditModel {
 
     @Column(nullable = false, unique = true)
     String name;
+
+    @NotNull
+    @ManyToOne
+    FileExtension fileExtension;
 }
 

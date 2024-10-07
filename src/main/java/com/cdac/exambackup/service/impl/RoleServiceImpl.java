@@ -7,6 +7,7 @@ import com.cdac.exambackup.entity.Role;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.RoleService;
 import com.cdac.exambackup.util.NullAndBlankUtil;
+import com.cdac.exambackup.util.Util;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -44,6 +45,7 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
             if (NullAndBlankUtil.isAnyNullOrBlank(role.getCode(), role.getName())) {
                 throw new InvalidReqPayloadException("Both 'code' and 'name' cannot be null or blank.");
             }
+            Util.isConvertibleToNumberElseThrowException("code", role.getCode());
             // try adding a new record (more performant)
             // if violation constraint exception is thrown then duplicate exists.
             try {
@@ -70,6 +72,7 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
             if (role.getCode().isBlank()) {
                 throw new InvalidReqPayloadException("code cannot be blank");
             }
+            Util.isConvertibleToNumberElseThrowException("code", role.getCode());
             daoRole.setCode(role.getCode().trim().toUpperCase());
         }
         if (role.getName() != null) {
