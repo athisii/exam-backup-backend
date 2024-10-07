@@ -33,7 +33,9 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
 
     boolean existsByExamDateIdAndDeletedFalse(Long examDateId);
 
-    long deleteByExamCentreId(Long examCentreId);
+    @Modifying
+    @Query("DELETE FROM Exam e WHERE e.examCentre IN :examCentre")
+    void deleteByExamCentre(ExamCentre examCentre);
 
     @Modifying
     @Query("DELETE FROM Exam e WHERE e.id IN :ids")

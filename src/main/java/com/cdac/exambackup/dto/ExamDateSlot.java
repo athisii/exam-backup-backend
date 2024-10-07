@@ -1,6 +1,6 @@
 package com.cdac.exambackup.dto;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author athisii
@@ -8,5 +8,5 @@ import java.util.List;
  * @since 5/12/24
  */
 
-public record ExamDateSlot(Long examDateId, List<Long> slotIds) {
+public record ExamDateSlot(Long examDateId, Set<Long> slotIds) {
 }

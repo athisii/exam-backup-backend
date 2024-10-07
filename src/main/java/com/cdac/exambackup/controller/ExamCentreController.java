@@ -1,6 +1,7 @@
 package com.cdac.exambackup.controller;
 
 import com.cdac.exambackup.dto.ExamCentreReqDto;
+import com.cdac.exambackup.dto.ExamCentreSlotUpdateReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
@@ -39,7 +40,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/exam-centres")
 public class ExamCentreController extends AbstractBaseController<ExamCentre, Long> {
-    private static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
+    static final String FETCH_SUCCESS_MSG = "Data fetched successfully.";
+    static final String SAVE_SUCCESS_MSG = "Your data has been saved successfully.";
+
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "region", "active", "createdDate", "modifiedDate");
 
     @Autowired
@@ -77,14 +80,14 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     public ResponseDto<?> create(@RequestBody ExamCentre examCentre) {
         log.info("Simple Create Request for the ExamCentre entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
+        return new ResponseDto<>(SAVE_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
     }
 
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamCentreReqDto examCentreReqDto) {
         log.info("Create Request for the ExamCentre entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
-        return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentreReqDto)));
+        return new ResponseDto<>(SAVE_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentreReqDto)));
     }
 
 
@@ -152,10 +155,17 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getAllByPage(pageable)));
     }
 
-    @PostMapping(value = {"/bulk-upload"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseDto<?> bulkUpload(MultipartFile file) {
-        log.info("Bulk Upload Request for the ExamCentre entity in the controller.");
+    @PostMapping(value = {"/create-from-csv-file"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseDto<?> createFromCsvFile(MultipartFile file) {
+        log.info("createFromCsvFile Request for the ExamCentre entity in the controller.");
         this.examCentreService.bulkUpload(file);
-        return new ResponseDto<>("Your data has been saved successfully.", true);
+        return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
+    }
+
+    @PostMapping(value = {"/update-only-slot"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseDto<?> updateOnlySlot(@RequestBody ExamCentreSlotUpdateReqDto examCentreSlotUpdateReqDto) {
+        log.info("updateOnlySlot Request for the ExamCentre entity in the controller.");
+        this.examCentreService.updateOnlySlot(examCentreSlotUpdateReqDto);
+        return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
     }
 }

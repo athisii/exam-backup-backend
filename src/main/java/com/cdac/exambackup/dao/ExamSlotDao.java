@@ -18,9 +18,12 @@ public interface ExamSlotDao extends BaseDao<ExamSlot, Long> {
     ExamSlot findByExamAndSlot(Exam exam, Slot slot);
 
     Page<ExamSlot> findByExamId(Long examId, Pageable pageable);
+
     List<ExamSlot> findByExamId(Long examId);
 
     boolean checkIfSlotIdExist(Long slotId);
 
     long countByExamId(Long examId);
+
+    void deleteByExamIdIn(List<Long> examIds);
 }

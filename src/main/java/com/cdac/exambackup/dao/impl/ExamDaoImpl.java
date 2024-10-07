@@ -65,4 +65,14 @@ public class ExamDaoImpl extends AbstractBaseDao<Exam, Long> implements ExamDao 
     public List<Exam> findByExamCentreId(Long examCentreId) {
         return examRepository.findByExamCentreIdAndDeletedFalse(examCentreId);
     }
+
+    @Override
+    public List<Long> findIdsByExamCentreId(Long examCentreId) {
+        return examRepository.findIdsByExamCentreId(examCentreId);
+    }
+
+    @Override
+    public void deleteByExamCentre(ExamCentre examCentre) {
+        examRepository.deleteByExamCentre(examCentre);
+    }
 }

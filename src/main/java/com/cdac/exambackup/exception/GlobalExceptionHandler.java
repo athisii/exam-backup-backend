@@ -42,14 +42,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleNoResourceFoundException(
             NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         HttpServletRequest httpServletRequest = ((ServletWebRequest) request).getRequest();
-        log.error("**NoResourceFound exception occurred. Requested resource: ", httpServletRequest.getRequestURL());
+        log.error("**NoResourceFound exception occurred", ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto<>("No resource found for path: " + httpServletRequest.getRequestURL(), false));
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("**HttpMessageNotReadable exception occurred: ", ex.getMessage());
+        log.error("**HttpMessageNotReadable exception occurred: ", ex);
         return ResponseEntity.badRequest().body(new ResponseDto<>("Required request body is missing or invalid json data.", false));
     }
 
@@ -90,28 +90,28 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({EntityNotFoundException.class, UsernameNotFoundException.class, JpaObjectRetrievalFailureException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> invalidRequest(Exception exception) {
-        log.error("Entity Not Found -->", exception.getMessage());
+        log.error("Entity Not Found -->", exception);
         return new ResponseDto<>(exception.getMessage(), false);
     }
 
     @ExceptionHandler(InvalidReqPayloadException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<?> handleInvalidReqPayloadException(InvalidReqPayloadException ex) {
-        log.info("**Invalid request payload exception occurred: ", ex.getMessage());
+        log.info("**Invalid request payload exception occurred: ", ex);
         return new ResponseDto<>(ex.getMessage(), false);
     }
 
     @ExceptionHandler(GenericException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<?> handleGenericException(GenericException ex) {
-        log.info("**Generic exception occurred: ", ex.getMessage());
+        log.info("**Generic exception occurred: ", ex);
         return new ResponseDto<>(ex.getMessage(), false);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseDto<?> handleBadCredentialsException(BadCredentialsException ex) {
-        log.info("**Bad credentials exception occurred: ", ex.getMessage());
+        log.info("**Bad credentials exception occurred: ", ex);
         return new ResponseDto<>(ex.getMessage(), false);
     }
 

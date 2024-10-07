@@ -1,10 +1,7 @@
 package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.*;
-import com.cdac.exambackup.dto.ExamCentreReqDto;
-import com.cdac.exambackup.dto.ExamCentreResDto;
-import com.cdac.exambackup.dto.ExamDateSlot;
-import com.cdac.exambackup.dto.PageResDto;
+import com.cdac.exambackup.dto.*;
 import com.cdac.exambackup.entity.*;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
@@ -24,11 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * @author athisii
@@ -143,9 +138,9 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
         String oldExamCode = daoExamCentre.getCode();
 
-        // if both values are invalid, one should be valid
-        if (NullAndBlankUtil.isAllNullOrBlank(examCentreReqDto.code(), examCentreReqDto.name()) && examCentreReqDto.regionName() == null) {
-            throw new InvalidReqPayloadException("All 'code', 'name' and 'regionName' cannot be null");
+        // if all values are invalid, one should be valid
+        if (NullAndBlankUtil.isAllNullOrBlank(examCentreReqDto.code(), examCentreReqDto.name()) && examCentreReqDto.regionName() == null && examCentreReqDto.email() == null && examCentreReqDto.mobileNumber() == null && examCentreReqDto.examDateSlots() == null) {
+            throw new InvalidReqPayloadException("All 'code', 'name', 'regionName', 'email', 'mobileNumber' and 'examDateSlot' cannot be null");
         }
 
         // if examCentre is changed, then userId & name must also be changed accordingly
@@ -188,27 +183,26 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         return savedExamCentre;
     }
 
-    private void saveExamAndExamSlot(ExamCentre examCentre, List<ExamDateSlot> examDateSlots) {
+    private void saveExamAndExamSlot(ExamCentre examCentre, Set<ExamDateSlot> examDateSlots) {
         if (examDateSlots != null) {
+            // delete previous exams and slots
+            List<Long> examIds = examDao.findIdsByExamCentreId(examCentre.getId());
+            examSlotDao.deleteByExamIdIn(examIds);
+            examDao.deleteByExamCentre(examCentre);
+
             examDateSlots.forEach(examDateSlot -> {
                 ExamDate daoExamDate = examDateDao.findById(examDateSlot.examDateId());
                 if (daoExamDate == null) {
                     throw new EntityNotFoundException("ExamDate with id: " + examDateSlot.examDateId() + NOT_FOUND);
                 }
-                Exam daoExam = examDao.findByExamCentreAndExamDate(examCentre, daoExamDate);
-                if (daoExam == null) {
-                    daoExam = examDao.save(new Exam(examCentre, daoExamDate));
-                }
+                Exam savedExam = examDao.save(new Exam(examCentre, daoExamDate));
                 List<ExamSlot> examSlots = new ArrayList<>();
                 for (Long slotId : examDateSlot.slotIds()) {
                     Slot daoSlot = slotDao.findById(slotId);
                     if (daoSlot == null) {
                         throw new EntityNotFoundException("Slot with id: " + slotId + NOT_FOUND);
                     }
-                    ExamSlot daoExamSlot = examSlotDao.findByExamAndSlot(daoExam, daoSlot);
-                    if (daoExamSlot == null) {
-                        daoExamSlot = new ExamSlot(daoExam, daoSlot);
-                    }
+                    ExamSlot daoExamSlot = new ExamSlot(savedExam, daoSlot);
                     examSlots.add(daoExamSlot);
                 }
                 examSlotDao.save(examSlots);
@@ -318,13 +312,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             if (appUser == null) {
                 throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + NOT_FOUND);
             }
-            List<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
+            Set<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
                     .stream()
                     .map(exam -> new ExamDateSlot(exam.getExamDate().getId(), examSlotDao.findByExamId(exam.getId())
                             .stream()
                             .map(examSlot -> examSlot.getSlot().getId())
-                            .toList())
-                    ).toList();
+                            .collect(Collectors.toSet()))
+                    ).collect(Collectors.toSet());
             return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), appUser.getMobileNumber(), appUser.getEmail(), null, null, examDateSlots, examCentre.getCreatedDate(), examCentre.getModifiedDate());
         }).toList();
         return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), examCentreResDto);
@@ -398,5 +392,23 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 examCentreService.save(examCentreReqDto);
             }
         }
+    }
+
+    @Transactional
+    @Override
+    public void updateOnlySlot(ExamCentreSlotUpdateReqDto examCentreSlotUpdateReqDto) {
+        if (examCentreSlotUpdateReqDto.examCentreIds() == null || examCentreSlotUpdateReqDto.examDateIds() == null || examCentreSlotUpdateReqDto.slotIds() == null) {
+            throw new InvalidReqPayloadException("All 'examCentreIds', 'examDateIds' and 'slotIds' cannot be null.");
+        }
+        if (examCentreSlotUpdateReqDto.examCentreIds().isEmpty() || examCentreSlotUpdateReqDto.examDateIds().isEmpty() || examCentreSlotUpdateReqDto.slotIds().isEmpty()) {
+            throw new InvalidReqPayloadException("All 'examCentreIds', 'examDateIds' and 'slotIds' cannot be empty.");
+        }
+        var examCentreService = applicationContext.getBean(ExamCentreService.class);
+        examCentreSlotUpdateReqDto.examCentreIds().forEach(examCentreId -> {
+            Set<ExamDateSlot> examDateSlots = new HashSet<>();
+            examCentreSlotUpdateReqDto.examDateIds().forEach(examDateId -> examDateSlots.add(new ExamDateSlot(examDateId, examCentreSlotUpdateReqDto.slotIds())));
+            var examCentreReqDto = new ExamCentreReqDto(examCentreId, null, null, null, null, null, examDateSlots);
+            examCentreService.save(examCentreReqDto);
+        });
     }
 }

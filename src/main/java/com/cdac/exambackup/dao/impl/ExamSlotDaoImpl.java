@@ -70,4 +70,9 @@ public class ExamSlotDaoImpl extends AbstractBaseDao<ExamSlot, Long> implements 
     public long countByExamId(Long examId) {
         return this.examSlotRepository.countByExamIdAndDeletedFalse(examId);
     }
+
+    @Override
+    public void deleteByExamIdIn(List<Long> examIds) {
+        this.examSlotRepository.deleteByExamIdIn(examIds);
+    }
 }

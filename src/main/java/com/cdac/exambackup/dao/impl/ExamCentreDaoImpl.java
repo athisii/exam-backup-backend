@@ -70,7 +70,7 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
         examSlotRepository.deleteByExamIdIn(examIds);
         examRepository.deleteByIdIn(examIds);
 
-        // finally mark this exam centre as deleted
+        // finally, mark this exam centre as deleted
         examCentre.setDeleted(true);
         // user should be allowed to add same name after deleted
         // add suffix to avoid unique constraint violation for code

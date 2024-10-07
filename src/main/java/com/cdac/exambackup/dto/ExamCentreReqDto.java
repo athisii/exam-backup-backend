@@ -2,7 +2,7 @@ package com.cdac.exambackup.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author athisii
@@ -12,5 +12,5 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ExamCentreReqDto(Long id, String code, String name, String regionName, String mobileNumber, String email,
-                               List<ExamDateSlot> examDateSlots) {
+                               Set<ExamDateSlot> examDateSlots) {
 }
