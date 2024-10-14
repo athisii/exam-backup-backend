@@ -79,7 +79,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             Util.isConvertibleToNumberElseThrowException("code", examCentreReqDto.code());
             ExamCentre daoExamCentre = examCentreDao.findByCode(examCentreReqDto.code());
             if (daoExamCentre != null) {
-                throw new InvalidReqPayloadException("Same 'code' already exists");
+                throw new InvalidReqPayloadException("Same code: " + examCentreReqDto.code() + " already exists");
             }
 
             Region daoRegion = regionDao.findByName(examCentreReqDto.regionName().trim());
@@ -103,13 +103,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             // TODO: mobile and email mandatory or not to be decided
             if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
                 if (!Util.validateEmail(examCentreReqDto.email())) {
-                    throw new InvalidReqPayloadException("Malformed email address.");
+                    throw new InvalidReqPayloadException("Malformed email address: " + examCentreReqDto.email());
                 }
                 appUser.setEmail(examCentreReqDto.email());
             }
             if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
                 if (!Util.validateMobileNumber(examCentreReqDto.mobileNumber())) {
-                    throw new InvalidReqPayloadException("Malformed mobile number.");
+                    throw new InvalidReqPayloadException("Malformed mobile number: " + examCentreReqDto.mobileNumber());
                 }
                 appUser.setMobileNumber(examCentreReqDto.mobileNumber());
             }
@@ -121,7 +121,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             appUser.setRole(daoRole);
             appUserDao.save(appUser);
 
-            // now remove the unnecessary fields if present or create new object.
+            // now remove the unnecessary fields if present or create a new object.
             ExamCentre examCentre = new ExamCentre();
             examCentre.setCode(examCentreReqDto.code().trim());
             examCentre.setName(examCentreReqDto.name().trim());
@@ -182,13 +182,13 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
         if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
             if (!Util.validateEmail(examCentreReqDto.email())) {
-                throw new InvalidReqPayloadException("Malformed email address.");
+                throw new InvalidReqPayloadException("Malformed email address: " + examCentreReqDto.email());
             }
             daoAppUser.setEmail(examCentreReqDto.email().trim());
         }
         if (examCentreReqDto.mobileNumber() != null && !examCentreReqDto.mobileNumber().isBlank()) {
             if (!Util.validateMobileNumber(examCentreReqDto.mobileNumber())) {
-                throw new InvalidReqPayloadException("Malformed mobile number.");
+                throw new InvalidReqPayloadException("Malformed mobile number: " + examCentreReqDto.mobileNumber());
             }
             daoAppUser.setMobileNumber(examCentreReqDto.mobileNumber());
         }
@@ -401,6 +401,12 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 String[] row = rows[i].split(",");
                 if (HEADER.length != row.length) {
                     throw new InvalidReqPayloadException("Invalid csv row at index " + i + "; Should be- " + Arrays.toString(HEADER));
+                }
+                // remove double quotes in the ends
+                for (int j = 0; j < row.length; j++) {
+                    if (row[j].startsWith("\"") && row[j].endsWith("\"")) {
+                        row[j] = row[j].substring(1, row[j].length() - 1);
+                    }
                 }
                 // "Center_Code", "Name", "Region", "Mobile", "Email"
                 var examCentreReqDto = new ExamCentreReqDto(null, row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim(), row[4].trim(), null);
