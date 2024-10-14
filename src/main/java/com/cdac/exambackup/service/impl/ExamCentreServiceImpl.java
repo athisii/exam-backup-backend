@@ -426,4 +426,9 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             examCentreService.save(examCentreReqDto);
         });
     }
+
+    @Override
+    public List<ExamCentreResDto> getAllByRegionIds(List<Long> regionIds) {
+        return examCentreDao.getAllByRegionIds(regionIds).stream().map(examCentre -> new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), null, null, null, null, null, null, null, null)).toList();
+    }
 }

@@ -190,4 +190,10 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
     }
+
+    @Override
+    public List<ExamCentre> getAllByRegionIds(List<Long> regionIds) {
+        return this.examCentreRepository.getAllByRegionIdInAndDeletedFalse(regionIds);
+
+    }
 }

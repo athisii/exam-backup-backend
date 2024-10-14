@@ -30,4 +30,6 @@ public interface ExamCentreService extends BaseService<ExamCentre, Long> {
     void bulkUpload(MultipartFile csvFile);
 
     void updateOnlySlot(ExamCentreSlotUpdateReqDto examCentreSlotUpdateReqDto);
+
+    List<ExamCentreResDto> getAllByRegionIds(List<Long> regionIds);
 }

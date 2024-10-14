@@ -27,6 +27,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * @author athisii
  * @version 1.0
@@ -142,7 +144,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @GetMapping(value = {"/page"}, produces = {"application/json"})
     @Operation(
             summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to requested code, name",
+            description = "Loads a list of entities by page from Database",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
@@ -150,7 +152,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
             }
     )
     public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
-        log.info("getAllByPage Request for the Exam Centre entity in the controller for code, name");
+        log.info("getAllByPage Request for the Exam Centre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getAllByPage(pageable)));
     }
@@ -167,5 +169,21 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
         log.info("updateOnlySlot Request for the ExamCentre entity in the controller.");
         this.examCentreService.updateOnlySlot(examCentreSlotUpdateReqDto);
         return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
+    }
+
+    @PostMapping(value = {"/all-by-region-ids"}, produces = {"application/json"})
+    @Operation(
+            summary = "Get all entities by region id(s)",
+            description = "Loads all entities from Database corresponds to requested region id(s)",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
+                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> getAllByRegionIds(@RequestBody List<Long> regionIds) {
+        log.info("getAllByRegion Request for the Exam Centre entity in the controller");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getAllByRegionIds(regionIds)));
     }
 }

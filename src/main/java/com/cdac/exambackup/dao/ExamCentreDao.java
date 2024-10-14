@@ -27,6 +27,7 @@ public interface ExamCentreDao extends BaseDao<ExamCentre, Long> {
     Page<ExamCentre> findByRegionId(Long regionId, Pageable pageable);
 
     Page<ExamCentre> searchWithRegionId(String searchTerm, Long regionId, Pageable pageable);
+
     Page<ExamCentre> search(String searchTerm, Pageable pageable);
 
     Page<ExamCentre> findByRegionIdAndCode(Long regionId, String code, Pageable pageable);
@@ -36,4 +37,6 @@ public interface ExamCentreDao extends BaseDao<ExamCentre, Long> {
     List<ExamCentre> findByRegionId(Long regionId);
 
     Page<ExamCentre> getAllByPage(Pageable pageable);
+
+    List<ExamCentre> getAllByRegionIds(List<Long> regionIds);
 }
