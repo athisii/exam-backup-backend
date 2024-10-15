@@ -71,8 +71,8 @@ jwt:
 
 role:
   admin:
-    code: ${ADMIN_CODE}
+    code: ${ADMIN_CODE:1}
   staff:
-    code: ${STAFF_CODE}
+    code: ${STAFF_CODE:2}
   user:
-    code: ${USER_CODE}
+    code: ${USER_CODE:3}
