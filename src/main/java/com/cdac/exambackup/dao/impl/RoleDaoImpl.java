@@ -69,7 +69,7 @@ public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao 
 
     @Override
     public Role findByName(String name) {
-        return this.roleRepository.findFirstByNameIgnoreCase(name);
+        return this.roleRepository.findFirstByNameIgnoreCaseAndDeletedFalse(name);
     }
 
     private void markDeletedAndAddSuffix(Role role) {
@@ -91,5 +91,10 @@ public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao 
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
+    }
+
+    @Override
+    public Role getByCode(String code) {
+        return this.roleRepository.findFirstByCodeIgnoreCaseAndDeletedFalse(code);
     }
 }

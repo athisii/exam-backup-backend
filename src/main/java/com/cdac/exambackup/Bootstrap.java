@@ -6,6 +6,7 @@ import com.cdac.exambackup.service.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -27,13 +28,15 @@ import java.util.stream.IntStream;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
 public class Bootstrap implements CommandLineRunner {
-    static final String COMMON_FIELDS = "name,code";
-    static final Map<String, String> roleCodeNameMap;
-    static final Map<String, String> regionCodeNameMap;
-    static final Map<String, String> slotCodeNameMap;
-    static final Map<String, String> fileTypeCodeNameMap;
-    static final Map<String, String> fileExtensionCodeNameMap;
-    static final Map<Integer, String> examCentreCodeNameMap;
+
+    @Value("${role.admin.code}")
+    String adminCode;
+
+    @Value("${role.staff.code}")
+    String staffCode;
+
+    @Value("${role.user.code}")
+    String userCode;
 
     @Autowired
     SearchConfigService searchConfigService;
@@ -65,13 +68,22 @@ public class Bootstrap implements CommandLineRunner {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Override
+    public void run(String... args) {
+        String commonFields = "name,code";
+        Map<String, String> roleCodeNameMap;
+        Map<String, String> regionCodeNameMap;
+        Map<String, String> slotCodeNameMap;
+        Map<String, String> fileTypeCodeNameMap;
+        Map<String, String> fileExtensionCodeNameMap;
+        Map<Integer, String> examCentreCodeNameMap;
 
-    static {
+
         roleCodeNameMap = new TreeMap<>();
-        roleCodeNameMap.put("1", "ADMIN");
-        roleCodeNameMap.put("2", "STAFF");
-        roleCodeNameMap.put("3", "USER");
-//        roleCodeNameMap.put("4", "OTHER")
+        roleCodeNameMap.put(adminCode, "ADMIN");
+        roleCodeNameMap.put(staffCode, "STAFF");
+        roleCodeNameMap.put(userCode, "USER");
+//            roleCodeNameMap.put("4", "OTHER")
 
         regionCodeNameMap = new TreeMap<>();
         regionCodeNameMap.put("1", "NORTH");
@@ -103,19 +115,16 @@ public class Bootstrap implements CommandLineRunner {
         examCentreCodeNameMap.put(102, "Exam Centre 2");
         examCentreCodeNameMap.put(103, "Exam Centre 3");
         examCentreCodeNameMap.put(104, "Exam Centre 4");
-    }
 
-    @Override
-    public void run(String... args) {
 
         if (searchConfigService.count() == 0L) {
             List<SearchConfig> searchConfigs = new ArrayList<>();
-            searchConfigs.add(new SearchConfig("Role", COMMON_FIELDS));
-            searchConfigs.add(new SearchConfig("Region", COMMON_FIELDS));
-            searchConfigs.add(new SearchConfig("Slot", COMMON_FIELDS));
-            searchConfigs.add(new SearchConfig("FileType", COMMON_FIELDS));
-            searchConfigs.add(new SearchConfig("ExamCentre", COMMON_FIELDS));
-            searchConfigs.add(new SearchConfig("FileExtension", COMMON_FIELDS));
+            searchConfigs.add(new SearchConfig("Role", commonFields));
+            searchConfigs.add(new SearchConfig("Region", commonFields));
+            searchConfigs.add(new SearchConfig("Slot", commonFields));
+            searchConfigs.add(new SearchConfig("FileType", commonFields));
+            searchConfigs.add(new SearchConfig("ExamCentre", commonFields));
+            searchConfigs.add(new SearchConfig("FileExtension", commonFields));
             searchConfigs.add(new SearchConfig("ExamFile", "contentType,userUploadedFilename"));
             searchConfigs.add(new SearchConfig("AppUser", "userId,name,email,mobileNumber"));
             searchConfigs.add(new SearchConfig("ExamDate", "date"));
@@ -140,7 +149,7 @@ public class Bootstrap implements CommandLineRunner {
             appUser.setUserId("admin");
             appUser.setPassword(passwordEncoder.encode("admin"));
             appUser.setEmail("admin@cdac.in");
-            appUser.setRole(roleService.getById(Integer.toUnsignedLong(1))); // user `ADMIN`
+            appUser.setRole(roleService.getByCode(adminCode)); // user `ADMIN`
             appUserService.save(appUser);
         }
 

@@ -15,4 +15,6 @@ import java.util.List;
 public interface RoleService extends BaseService<Role, Long> {
 
     PageResDto<List<Role>> getAllByPage(Pageable pageable);
+
+    Role getByCode(String code);
 }

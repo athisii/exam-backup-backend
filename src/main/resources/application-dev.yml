@@ -58,3 +58,11 @@ jwt:
   refresh:
     token:
       validity: 10
+
+role:
+  admin:
+    code: ${ADMIN_CODE}
+  staff:
+    code: ${STAFF_CODE}
+  user:
+    code: ${USER_CODE}

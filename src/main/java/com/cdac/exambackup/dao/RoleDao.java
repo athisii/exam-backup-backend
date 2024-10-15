@@ -18,4 +18,6 @@ public interface RoleDao extends BaseDao<Role, Long> {
     Role findByName(String name);
 
     Page<Role> getAllByPage(Pageable pageable);
+
+    Role getByCode(String code);
 }

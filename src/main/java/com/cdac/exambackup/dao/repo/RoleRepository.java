@@ -19,8 +19,10 @@ import java.util.List;
 public interface RoleRepository extends JpaRepository<Role, Long> {
     List<Role> findByCodeOrNameIgnoreCaseAndDeletedFalse(String code, String name);
 
-    Role findFirstByNameIgnoreCase(String name);
+    Role findFirstByNameIgnoreCaseAndDeletedFalse(String name);
 
     @Query("SELECT r FROM Role r WHERE r.deleted = false ORDER BY CAST(r.code AS INTEGER) ASC")
     Page<Role> findByDeletedFalse(Pageable pageable);
+
+    Role findFirstByCodeIgnoreCaseAndDeletedFalse(String code);
 }

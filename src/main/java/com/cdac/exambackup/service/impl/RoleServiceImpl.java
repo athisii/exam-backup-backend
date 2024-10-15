@@ -93,4 +93,9 @@ public class RoleServiceImpl extends AbstractBaseService<Role, Long> implements 
         Page<Role> page = roleDao.getAllByPage(pageable);
         return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), page.getContent());
     }
+
+    @Override
+    public Role getByCode(String code) {
+        return roleDao.getByCode(code);
+    }
 }
