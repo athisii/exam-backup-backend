@@ -149,6 +149,7 @@ public class Bootstrap implements CommandLineRunner {
             appUser.setUserId("admin");
             appUser.setPassword(passwordEncoder.encode("admin"));
             appUser.setEmail("admin@cdac.in");
+            appUser.setIsRegionHead(false);
             appUser.setRole(roleService.getByCode(adminCode)); // user `ADMIN`
             appUserService.save(appUser);
         }

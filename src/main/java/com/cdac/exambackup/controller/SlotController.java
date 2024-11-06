@@ -69,7 +69,7 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
     @Override
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody Slot entity) {
-        log.info("Create Request for the SLot entity in the controller.");
+        log.info("Create Request for the Slot entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.save(entity)));
     }
@@ -93,7 +93,7 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
     @GetMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
             summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to requested exam id.",
+            description = "Loads a list of entities by page from Database corresponds.",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
@@ -101,7 +101,7 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
             }
     )
     public ResponseDto<?> getByExamCentreIdAndExamDateId(@RequestParam Long examCentreId, @RequestParam Long examDateId, @PageableDefault Pageable pageable) {
-        log.info("GetByExamId Request for the Slot entity in the controller for code, name");
+        log.info("getByExamCentreIdAndExamDateId Request for the Slot entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.getByExamCentreIdAndExamDateId(examCentreId, examDateId, pageable)));
     }

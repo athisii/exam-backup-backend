@@ -1,8 +1,10 @@
 package com.cdac.exambackup.service;
 
-import com.cdac.exambackup.dto.PasswordChangeDto;
-import com.cdac.exambackup.dto.ResetPasswordDto;
+import com.cdac.exambackup.dto.*;
 import com.cdac.exambackup.entity.AppUser;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -16,4 +18,8 @@ public interface AppUserService extends BaseService<AppUser, Long> {
     void resetPassword(ResetPasswordDto resetPasswordDto);
 
     void confirmPasswordReset(ResetPasswordDto resetPasswordDto);
+
+    AppUser save(AppUserReqDto appUserReqDto);
+
+    PageResDto<List<AppUserResDto>> getAllByPage(Pageable pageable);
 }

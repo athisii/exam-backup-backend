@@ -76,7 +76,7 @@ public class FileExtensionController extends AbstractBaseController<FileExtensio
     @GetMapping(value = {"/page"}, produces = {"application/json"})
     @Operation(
             summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to requested code, name",
+            description = "Loads a list of entities by page from Database corresponds",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
@@ -84,7 +84,7 @@ public class FileExtensionController extends AbstractBaseController<FileExtensio
             }
     )
     public ResponseDto<?> getAllByPage(@PageableDefault Pageable pageable) {
-        log.info("getAllByPage Request for the FileExtension entity in the controller for code, name");
+        log.info("getAllByPage Request for the FileExtension entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileExtensionService.getAllByPage(pageable)));
     }

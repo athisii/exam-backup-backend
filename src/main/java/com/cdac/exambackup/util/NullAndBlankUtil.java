@@ -39,4 +39,13 @@ public class NullAndBlankUtil {
         }
         return count == 0;
     }
+
+    public static boolean isNonNullAndBlank(String... args) {
+        for (String arg : args) {
+            if (arg != null && arg.isBlank()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

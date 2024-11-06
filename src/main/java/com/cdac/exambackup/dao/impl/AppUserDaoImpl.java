@@ -5,12 +5,17 @@ import com.cdac.exambackup.dao.repo.AppUserRepository;
 import com.cdac.exambackup.dao.repo.PasswordResetOtpRepository;
 import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.PasswordResetOtp;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author athisii
@@ -21,6 +26,8 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class AppUserDaoImpl extends AbstractBaseDao<AppUser, Long> implements AppUserDao {
+    private static final String ERROR_MSG = "Invalid sorting field name or sorting direction. Must be sort:['fieldName,asc','fieldName,desc']";
+
     @Autowired
     AppUserRepository appUserRepository;
     @Autowired
@@ -54,5 +61,19 @@ public class AppUserDaoImpl extends AbstractBaseDao<AppUser, Long> implements Ap
     @Override
     public void deletePasswordResetOtpByUserId(String userId) {
         this.passwordResetOtpRepository.deleteByUserId(userId);
+    }
+
+    @Override
+    public Page<AppUser> getAllByPage(Pageable pageable, List<String> roleCodes) {
+        try {
+            return this.appUserRepository.findByDeletedFalse(pageable, roleCodes);
+        } catch (Exception ex) {
+            throw new InvalidReqPayloadException(ERROR_MSG);
+        }
+    }
+
+    @Override
+    public List<AppUser> getAllRegionHead() {
+        return this.appUserRepository.findByIsRegionHeadTrueAndDeletedFalse();
     }
 }

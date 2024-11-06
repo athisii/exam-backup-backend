@@ -100,6 +100,8 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
             appUser.setName(examCentreReqDto.name().trim());
             appUser.setUserId(examCentreReqDto.code().trim());
             appUser.setPassword(passwordEncoder.encode(examCentreReqDto.code().trim()));
+            appUser.setIsRegionHead(false);
+            appUser.setRegionId(daoRegion.getId());
             // TODO: mobile and email mandatory or not to be decided
             if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {
                 if (!Util.validateEmail(examCentreReqDto.email())) {
@@ -178,6 +180,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 throw new EntityNotFoundException("Region with id: " + examCentreReqDto.regionName() + NOT_FOUND);
             }
             daoExamCentre.setRegion(daoRegion);
+            daoAppUser.setRegionId(daoRegion.getId());
         }
 
         if (examCentreReqDto.email() != null && !examCentreReqDto.email().isBlank()) {

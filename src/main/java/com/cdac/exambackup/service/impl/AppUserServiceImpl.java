@@ -2,11 +2,15 @@ package com.cdac.exambackup.service.impl;
 
 import com.cdac.exambackup.dao.AppUserDao;
 import com.cdac.exambackup.dao.BaseDao;
-import com.cdac.exambackup.dto.PasswordChangeDto;
-import com.cdac.exambackup.dto.ResetPasswordDto;
+import com.cdac.exambackup.dao.RegionDao;
+import com.cdac.exambackup.dao.RoleDao;
+import com.cdac.exambackup.dto.*;
 import com.cdac.exambackup.entity.AppUser;
 import com.cdac.exambackup.entity.PasswordResetOtp;
+import com.cdac.exambackup.entity.Region;
+import com.cdac.exambackup.entity.Role;
 import com.cdac.exambackup.exception.GenericException;
+import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.AppUserService;
 import com.cdac.exambackup.service.EmailService;
 import com.cdac.exambackup.util.NullAndBlankUtil;
@@ -15,6 +19,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -34,6 +43,9 @@ import java.util.Random;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> implements AppUserService {
+    @Value("${role.user.code}")
+    String userCode;
+
     static final String USER_NOT_FOUND = "User not found with userId: ";
 
     static final char[] ALPHANUMERIC = {
@@ -46,56 +58,138 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
     final AppUserDao appUserDao;
     final PasswordEncoder passwordEncoder;
     final EmailService emailService;
+    final ApplicationContext applicationContext;
+    final RegionDao regionDao;
+    final RoleDao roleDao;
 
-    public AppUserServiceImpl(BaseDao<AppUser, Long> baseDao, AppUserDao appUserDao, PasswordEncoder passwordEncoder, EmailService emailService) {
+
+    public AppUserServiceImpl(BaseDao<AppUser, Long> baseDao, AppUserDao appUserDao, PasswordEncoder passwordEncoder, EmailService emailService, ApplicationContext applicationContext, RegionDao regionDao, RoleDao roleDao) {
         super(baseDao);
         this.appUserDao = appUserDao;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.applicationContext = applicationContext;
+        this.regionDao = regionDao;
+        this.roleDao = roleDao;
     }
 
     @Transactional
     @Override
-    public AppUser save(AppUser appUserDto) {
-        // for admin
-        if ("admin".equals(appUserDto.getUserId()) && appUserDao.count() == 0L) {
-            appUserDao.save(appUserDto);
-            return appUserDto;
+    public AppUser save(AppUser appUser) {
+        // new record entry
+        if (appUser.getId() == null) {
+            return createNewAppUser(appUser);
         }
+        // else update
+        if (NullAndBlankUtil.isAllNullOrBlank(appUser.getName(), appUser.getEmail(), appUser.getMobileNumber()) && appUser.getPassword() == null && appUser.getRegionId() == null && appUser.getRole() == null) {
+            throw new GenericException("All 'name', 'email', 'mobile', 'roleId','isRegionHead', and 'regionId' cannot be null or empty. At least one of them must be provided");
+        }
+        AppUser daoAppUser = appUserDao.findById(appUser.getId());
 
-        if (appUserDto.getId() == null && appUserDto.getUserId() == null) {
-            throw new GenericException("Both id and userId can not be null or empty");
-        }
-        if ((appUserDto.getEmail() == null || appUserDto.getEmail().isBlank()) && (appUserDto.getMobileNumber() == null || appUserDto.getMobileNumber().isBlank())) {
-            throw new GenericException("Both email and mobile can not be null or empty. At least one of them must be provided");
-        }
-        AppUser daoAppUser = null;
-        if (appUserDto.getId() != null) {
-            daoAppUser = appUserDao.findById(appUserDto.getId());
-        }
         //  if not found with id, search with userId
-        if (daoAppUser == null && appUserDto.getUserId() != null) {
-            daoAppUser = appUserDao.findByUserId(appUserDto.getUserId());
+        if (daoAppUser == null && appUser.getUserId() != null) {
+            daoAppUser = appUserDao.findByUserId(appUser.getUserId());
         }
         if (daoAppUser == null || Boolean.TRUE.equals(daoAppUser.getDeleted())) {
             throw new EntityNotFoundException("User not found.");
         }
         if (Boolean.FALSE.equals(daoAppUser.getActive())) {
-            throw new EntityNotFoundException("ExamCentre with id: " + daoAppUser.getId() + " is not active. Must activate first.");
+            throw new EntityNotFoundException("User with id: " + daoAppUser.getId() + " is not active. Must activate first.");
         }
-        if (appUserDto.getMobileNumber() != null) {
-            if (!Util.validateMobileNumber(appUserDto.getMobileNumber())) {
-                throw new GenericException("Malformed mobile number.");
-            }
-            daoAppUser.setMobileNumber(appUserDto.getMobileNumber());
+
+        if (appUser.getRole() != null) {
+            daoAppUser.setRole(appUser.getRole());
         }
-        if (appUserDto.getEmail() != null) {
-            if (!Util.validateEmail(appUserDto.getEmail())) {
-                throw new GenericException("Malformed email address.");
+
+        if (appUser.getName() != null) {
+            if (appUser.getName().isBlank()) {
+                throw new InvalidReqPayloadException("'name' must not be blank.");
             }
-            daoAppUser.setEmail(appUserDto.getEmail().trim());
+            daoAppUser.setName(appUser.getName());
+        }
+
+        if (appUser.getMobileNumber() != null) {
+            if (!Util.validateMobileNumber(appUser.getMobileNumber())) {
+                throw new InvalidReqPayloadException("Malformed mobile number.");
+            }
+            daoAppUser.setMobileNumber(appUser.getMobileNumber());
+        }
+        if (appUser.getEmail() != null) {
+            if (!Util.validateEmail(appUser.getEmail())) {
+                throw new InvalidReqPayloadException("Malformed email address.");
+            }
+            daoAppUser.setEmail(appUser.getEmail().trim());
+        }
+
+        if (appUser.getIsRegionHead() != null) {
+            // allow only one region head
+            if (Boolean.TRUE.equals(appUser.getIsRegionHead())) {
+                checkIfRegionHeadAlreadyExist(daoAppUser);
+                daoAppUser.setIsRegionHead(true);
+            } else {
+                daoAppUser.setIsRegionHead(false);
+            }
+        }
+        if (appUser.getRegionId() != null) {
+            // allow only one region head
+            if (Boolean.TRUE.equals(daoAppUser.getIsRegionHead())) {
+                checkIfRegionHeadAlreadyExist(daoAppUser);
+            }
+            daoAppUser.setRegionId(appUser.getRegionId());
         }
         return appUserDao.save(daoAppUser);
+    }
+
+    private AppUser createNewAppUser(AppUser appUser) {
+        if (NullAndBlankUtil.isAnyNullOrBlank(appUser.getUserId())) {
+            throw new InvalidReqPayloadException("'userId' cannot be null or blank.");
+        }
+        appUser.setPassword(passwordEncoder.encode(appUser.getUserId()));
+
+        if (appUser.getRole() == null) {
+            throw new EntityNotFoundException("Role not found");
+        }
+
+        if (NullAndBlankUtil.isNonNullAndBlank(appUser.getName())) {
+            throw new InvalidReqPayloadException("'name' cannot be blank.");
+        }
+
+        if (appUser.getMobileNumber() != null && !Util.validateMobileNumber(appUser.getMobileNumber())) {
+            throw new InvalidReqPayloadException("Malformed mobile number.");
+        }
+
+        if (appUser.getEmail() != null && !Util.validateEmail(appUser.getEmail())) {
+            throw new InvalidReqPayloadException("Malformed email address.");
+        }
+
+        if (appUser.getIsRegionHead() != null && appUser.getIsRegionHead()) {
+            if (appUser.getRegionId() == null) {
+                throw new InvalidReqPayloadException("'regionId' cannot be null.");
+            }
+            checkIfRegionHeadAlreadyExist(appUser);
+        } else {
+            appUser.setIsRegionHead(false);
+        }
+        // try adding a new record (more performant)
+        // if violation constraint exception is thrown then duplicate exists.
+        try {
+            return appUserDao.save(appUser);
+        } catch (Exception ex) {
+            log.info("Error occurred while creating a new AppUser: {}", ex.getMessage());
+            throw new InvalidReqPayloadException("Same 'userId' already exists.");
+        }
+    }
+
+    private void checkIfRegionHeadAlreadyExist(AppUser appUser) {
+        Region daoRegion = regionDao.findById(appUser.getRegionId());
+        if (daoRegion == null) {
+            throw new EntityNotFoundException("Region with id: " + appUser.getRegionId() + " not found");
+        }
+        appUserDao.getAllRegionHead().forEach(tempAppUser -> {
+            if (!tempAppUser.getId().equals(appUser.getId()) && tempAppUser.getRegionId().equals(daoRegion.getId())) {
+                throw new InvalidReqPayloadException("Region Head already exists for region id: " + daoRegion.getId());
+            }
+        });
     }
 
     @Override
@@ -183,5 +277,31 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         daoAppUser.setPassword(passwordEncoder.encode(resetPasswordDto.password()));
         appUserDao.save(daoAppUser);
         appUserDao.deletePasswordResetOtpByUserId(daoPasswordResetOtp.getUserId());
+    }
+
+    @Transactional
+    @Override
+    public AppUser save(AppUserReqDto appUserReqDto) {
+        AppUser appUser = new AppUser();
+        appUser.setUserId(appUserReqDto.userId());
+        appUser.setName(appUserReqDto.name());
+        appUser.setEmail(appUserReqDto.email());
+        appUser.setMobileNumber(appUserReqDto.mobileNumber());
+        Role daoRole = roleDao.findById(appUserReqDto.roleId()); // could be null
+        appUser.setRole(daoRole);
+        appUser.setIsRegionHead(appUserReqDto.isRegionHead());
+        appUser.setRegionId(appUserReqDto.regionId());
+        var appUserService = applicationContext.getBean(AppUserService.class);
+        return appUserService.save(appUser);
+    }
+
+    @Override
+    public PageResDto<List<AppUserResDto>> getAllByPage(Pageable pageable) {
+        Page<AppUser> page = appUserDao.getAllByPage(pageable, List.of(userCode));
+        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), convertAppUsersToAppUserResDto(page.getContent()));
+    }
+
+    private List<AppUserResDto> convertAppUsersToAppUserResDto(List<AppUser> appUsers) {
+        return appUsers.stream().map(appUser -> new AppUserResDto(appUser.getId(), appUser.getUserId(), appUser.getName(), appUser.getRegionId(), appUser.getMobileNumber(), appUser.getEmail(), appUser.getRole().getId(), appUser.getIsRegionHead(), appUser.getCreatedDate(), appUser.getModifiedDate())).toList();
     }
 }

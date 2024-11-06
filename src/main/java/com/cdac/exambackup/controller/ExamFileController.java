@@ -96,7 +96,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
 
     @GetMapping(value = {"/query"}, produces = {"application/json"})
     @Operation(
-            summary = "Returns list of ExamFiles matching centre code, exam date and slot",
+            summary = "Returns list of ExamFiles matching centre Id, exam date and slot",
             description = "Loads all the active available entities based on requested centre code, exam date and slot",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched successfully.\", \"status\": true, \"data\": [{}]}"))),

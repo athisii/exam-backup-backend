@@ -55,4 +55,9 @@ public class AppUser extends AuditModel {
 
     @ManyToOne
     Role role;
+
+    @Column(nullable = false)
+    Boolean isRegionHead = false;
+
+    Long regionId;
 }
