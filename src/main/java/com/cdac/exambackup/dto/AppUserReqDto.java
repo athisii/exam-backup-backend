@@ -2,8 +2,6 @@ package com.cdac.exambackup.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.Set;
-
 /**
  * @author athisii
  * @version 1.0
@@ -11,5 +9,6 @@ import java.util.Set;
  */
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record AppUserReqDto(Long id, String userId, String name, String mobileNumber, String email, Boolean isRegionHead, Long regionId, Long roleId) {
+public record AppUserReqDto(Long id, String userId, String name, String mobileNumber, String email,
+                            Boolean isRegionHead, Long regionId, Long roleId) {
 }

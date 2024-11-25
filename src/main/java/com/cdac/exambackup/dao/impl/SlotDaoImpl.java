@@ -53,7 +53,7 @@ public class SlotDaoImpl extends AbstractBaseDao<Slot, Long> implements SlotDao 
             throw new InvalidReqPayloadException("Slot code: " + slot.getCode() + " is associated with some exams. Cannot delete it.");
         }
         slot.setDeleted(true);
-        // user should be allowed to add same name after deleted
+        // user should be allowed to add the same name after deleted
         // add suffix to avoid unique constraint violation for code
         slot.setCode("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + slot.getCode());
         // add suffix to avoid unique constraint violation for name

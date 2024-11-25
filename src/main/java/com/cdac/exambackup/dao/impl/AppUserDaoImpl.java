@@ -14,7 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -75,5 +78,30 @@ public class AppUserDaoImpl extends AbstractBaseDao<AppUser, Long> implements Ap
     @Override
     public List<AppUser> getAllRegionHead() {
         return this.appUserRepository.findByIsRegionHeadTrueAndDeletedFalse();
+    }
+
+    private void markDeletedAndAddSuffix(AppUser appUser) {
+        appUser.setDeleted(true);
+        // user should be allowed to add the same name after deleted
+        // add suffix to avoid unique constraint violation for code
+        appUser.setUserId("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + appUser.getUserId());
+        // add suffix to avoid unique constraint violation for name
+        appUser.setName("_deleted_" + new Date().toInstant().getEpochSecond() + "_" + appUser.getName());
+    }
+
+    @Transactional
+    @Override
+    public void softDelete(AppUser appUser) {
+        markDeletedAndAddSuffix(appUser);
+        appUserRepository.save(appUser);
+    }
+
+    @Transactional
+    @Override
+    public void softDelete(Collection<AppUser> appUsers) {
+        if (appUsers != null && !appUsers.isEmpty()) {
+            appUsers.forEach(this::markDeletedAndAddSuffix);
+            appUserRepository.saveAll(appUsers);
+        }
     }
 }

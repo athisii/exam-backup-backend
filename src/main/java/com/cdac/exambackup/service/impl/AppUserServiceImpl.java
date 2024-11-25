@@ -45,6 +45,8 @@ import java.util.Random;
 public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> implements AppUserService {
     @Value("${role.user.code}")
     String userCode;
+    @Value("${role.admin.code}")
+    String adminCode;
 
     static final String USER_NOT_FOUND = "User not found with userId: ";
 
@@ -108,6 +110,13 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
             daoAppUser.setName(appUser.getName());
         }
 
+        if (appUser.getUserId() != null) {
+            if (appUser.getUserId().isBlank()) {
+                throw new InvalidReqPayloadException("'userId' must not be blank.");
+            }
+            daoAppUser.setUserId(appUser.getUserId());
+        }
+
         if (appUser.getMobileNumber() != null) {
             if (!Util.validateMobileNumber(appUser.getMobileNumber())) {
                 throw new InvalidReqPayloadException("Malformed mobile number.");
@@ -124,16 +133,17 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         if (appUser.getIsRegionHead() != null) {
             // allow only one region head
             if (Boolean.TRUE.equals(appUser.getIsRegionHead())) {
-                checkIfRegionHeadAlreadyExist(daoAppUser);
+                checkIfRegionHeadAlreadyExist(daoAppUser, appUser.getRegionId());
                 daoAppUser.setIsRegionHead(true);
             } else {
                 daoAppUser.setIsRegionHead(false);
+                daoAppUser.setRegionId(null);
             }
         }
         if (appUser.getRegionId() != null) {
             // allow only one region head
             if (Boolean.TRUE.equals(daoAppUser.getIsRegionHead())) {
-                checkIfRegionHeadAlreadyExist(daoAppUser);
+                checkIfRegionHeadAlreadyExist(daoAppUser, appUser.getRegionId());
             }
             daoAppUser.setRegionId(appUser.getRegionId());
         }
@@ -166,7 +176,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
             if (appUser.getRegionId() == null) {
                 throw new InvalidReqPayloadException("'regionId' cannot be null.");
             }
-            checkIfRegionHeadAlreadyExist(appUser);
+            checkIfRegionHeadAlreadyExist(appUser, appUser.getRegionId());
         } else {
             appUser.setIsRegionHead(false);
         }
@@ -180,8 +190,8 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
         }
     }
 
-    private void checkIfRegionHeadAlreadyExist(AppUser appUser) {
-        Region daoRegion = regionDao.findById(appUser.getRegionId());
+    private void checkIfRegionHeadAlreadyExist(AppUser appUser, Long regionId) {
+        Region daoRegion = regionDao.findById(regionId);
         if (daoRegion == null) {
             throw new EntityNotFoundException("Region with id: " + appUser.getRegionId() + " not found");
         }
@@ -283,6 +293,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
     @Override
     public AppUser save(AppUserReqDto appUserReqDto) {
         AppUser appUser = new AppUser();
+        appUser.setId(appUserReqDto.id());
         appUser.setUserId(appUserReqDto.userId());
         appUser.setName(appUserReqDto.name());
         appUser.setEmail(appUserReqDto.email());
@@ -297,7 +308,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
 
     @Override
     public PageResDto<List<AppUserResDto>> getAllByPage(Pageable pageable) {
-        Page<AppUser> page = appUserDao.getAllByPage(pageable, List.of(userCode));
+        Page<AppUser> page = appUserDao.getAllByPage(pageable, List.of(userCode, adminCode));
         return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), convertAppUsersToAppUserResDto(page.getContent()));
     }
 
