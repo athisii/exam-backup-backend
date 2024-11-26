@@ -13,6 +13,7 @@ import com.cdac.exambackup.exception.GenericException;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.AppUserService;
 import com.cdac.exambackup.service.EmailService;
+import com.cdac.exambackup.util.CsvUtil;
 import com.cdac.exambackup.util.NullAndBlankUtil;
 import com.cdac.exambackup.util.Util;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,8 +29,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -49,6 +53,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
     String adminCode;
 
     static final String USER_NOT_FOUND = "User not found with userId: ";
+    static final String[] HEADER = {"Employee_Id", "Name", "Mobile", "Email", "Is_Region_Head", "Region", "Role"};
 
     static final char[] ALPHANUMERIC = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -186,7 +191,7 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
             return appUserDao.save(appUser);
         } catch (Exception ex) {
             log.info("Error occurred while creating a new AppUser: {}", ex.getMessage());
-            throw new InvalidReqPayloadException("Same 'userId' already exists.");
+            throw new InvalidReqPayloadException("User Id: '" + appUser.getUserId() + "' already exists in the system.");
         }
     }
 
@@ -310,6 +315,56 @@ public class AppUserServiceImpl extends AbstractBaseService<AppUser, Long> imple
     public PageResDto<List<AppUserResDto>> getAllByPage(Pageable pageable) {
         Page<AppUser> page = appUserDao.getAllByPage(pageable, List.of(userCode, adminCode));
         return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), convertAppUsersToAppUserResDto(page.getContent()));
+    }
+
+    @Transactional
+    @Override
+    public void bulkUpload(MultipartFile file) {
+        if (file == null || !CsvUtil.hasCsvFormat(file)) {
+            throw new InvalidReqPayloadException("Empty or invalid CSV format.");
+        }
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (Exception ex) {
+            log.info(ex.getMessage(), ex);
+            throw new InvalidReqPayloadException("Invalid csv payload.");
+        }
+        String completeData = new String(bytes, StandardCharsets.UTF_8);
+        String[] rows = completeData.split("\n");
+        String[] header = rows[0].split(",");
+        if (HEADER.length != header.length) {
+            throw new InvalidReqPayloadException("Invalid csv header; Should be- " + Arrays.toString(HEADER));
+        }
+
+        var appUserService = applicationContext.getBean(AppUserService.class);
+
+        for (int i = 1; i < rows.length; i++) {
+            if (!rows[i].isBlank()) {
+                String[] row = rows[i].split(",");
+                if (HEADER.length != row.length) {
+                    throw new InvalidReqPayloadException("Invalid csv row at index " + i + "; Should be- " + Arrays.toString(HEADER));
+                }
+                // remove double quotes in the ends
+                for (int j = 0; j < row.length; j++) {
+                    if (row[j].startsWith("\"") && row[j].endsWith("\"")) {
+                        row[j] = row[j].substring(1, row[j].length() - 1);
+                    }
+                }
+                boolean isRegionHead = "yes".equalsIgnoreCase(row[4].trim());
+                Region daoRegion = regionDao.findByName(row[5].trim());
+                if (daoRegion == null) {
+                    throw new InvalidReqPayloadException("Region with name " + row[5] + " not found.");
+                }
+                Role daoRole = roleDao.findByName(row[6].trim());
+                if (daoRole == null) {
+                    throw new InvalidReqPayloadException("Role with name " + row[6] + " not found.");
+                }
+                // "Employee_Id", "Name", "Mobile", "Email", "Is_Region_Head", "Region", "Role"
+                var appUserReqDto = new AppUserReqDto(null, row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim(), isRegionHead, daoRegion.getId(), daoRole.getId());
+                appUserService.save(appUserReqDto);
+            }
+        }
     }
 
     private List<AppUserResDto> convertAppUsersToAppUserResDto(List<AppUser> appUsers) {

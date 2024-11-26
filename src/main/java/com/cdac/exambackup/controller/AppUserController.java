@@ -22,7 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author athisii
@@ -99,5 +101,12 @@ public class AppUserController extends AbstractBaseController<AppUser, Long> {
         log.info("getAllByPage Request for the AppUser entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.appUserService.getAllByPage(pageable)));
+    }
+
+    @PostMapping(value = {"/create-from-csv-file"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseDto<?> createFromCsvFile(MultipartFile file) {
+        log.info("createFromCsvFile Request for the AppUser entity in the controller.");
+        this.appUserService.bulkUpload(file);
+        return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
     }
 }
