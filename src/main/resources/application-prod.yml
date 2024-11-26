@@ -48,7 +48,7 @@ jwt:
   refresh:
     token:
       validity: 10
-      
+
 role:
   admin:
     code: ${ADMIN_CODE:1}
@@ -56,3 +56,5 @@ role:
     code: ${STAFF_CODE:2}
   user:
     code: ${USER_CODE:3}
+  other:
+    code: ${OTHER_CODE:4}
