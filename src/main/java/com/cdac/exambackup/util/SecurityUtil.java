@@ -23,8 +23,6 @@ public class SecurityUtil {
     Long staffCode;
     @Value("${role.user.code}")
     Long userCode;
-    @Value("${role.other.code}")
-    Long otherCode;
 
     @Autowired
     IdentityContext identityContext;

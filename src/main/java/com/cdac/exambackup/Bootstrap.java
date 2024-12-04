@@ -38,9 +38,6 @@ public class Bootstrap implements CommandLineRunner {
     @Value("${role.user.code}")
     String userCode;
 
-    @Value("${role.other.code}")
-    String otherCode;
-
     @Autowired
     SearchConfigService searchConfigService;
 
@@ -86,7 +83,6 @@ public class Bootstrap implements CommandLineRunner {
         roleCodeNameMap.put(adminCode, "ADMIN");
         roleCodeNameMap.put(staffCode, "STAFF");
         roleCodeNameMap.put(userCode, "USER");
-        roleCodeNameMap.put(otherCode, "OTHER");
 
         regionCodeNameMap = new TreeMap<>();
         regionCodeNameMap.put("1", "NORTH");

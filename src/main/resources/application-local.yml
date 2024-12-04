@@ -76,5 +76,3 @@ role:
     code: ${STAFF_CODE:2}
   user:
     code: ${USER_CODE:3}
-  other:
-    code: ${OTHER_CODE:4}
