@@ -21,8 +21,8 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
 
     Role findFirstByNameIgnoreCaseAndDeletedFalse(String name);
 
-    @Query("SELECT r FROM Role r WHERE r.deleted = false ORDER BY CAST(r.code AS INTEGER) ASC")
-    Page<Role> findByDeletedFalse(Pageable pageable);
+    @Query("SELECT r FROM Role r WHERE r.deleted = false AND r.code != :adminCode ORDER BY CAST(r.code AS INTEGER) ASC")
+    Page<Role> findByDeletedFalseAndNotAdmin(Pageable pageable, String adminCode);
 
     Role findFirstByCodeIgnoreCaseAndDeletedFalse(String code);
 }

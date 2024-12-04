@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,6 +30,9 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao {
+    @Value("${role.admin.code}")
+    String adminCode;
+
     private static final String ERROR_MSG = "Invalid sorting field name or sorting direction. Must be sort:['fieldName,asc','fieldName,desc']";
 
     @Autowired
@@ -87,7 +91,7 @@ public class RoleDaoImpl extends AbstractBaseDao<Role, Long> implements RoleDao 
     @Override
     public Page<Role> getAllByPage(Pageable pageable) {
         try {
-            return this.roleRepository.findByDeletedFalse(pageable);
+            return this.roleRepository.findByDeletedFalseAndNotAdmin(pageable, adminCode);
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
