@@ -264,7 +264,30 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         } else {
             examCentrePage = examCentreDao.search(searchTerm, pageable);
         }
-        return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getNumberOfElements(), examCentrePage.getTotalElements(), examCentrePage.getTotalPages(), convertExamCentresToExamCentreResDto(examCentrePage.getContent()));
+        return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getNumberOfElements(), examCentrePage.getTotalElements(), examCentrePage.getTotalPages(), getExamCentreWithExamDateSlots(examCentrePage));
+    }
+
+    @Override
+    public PageResDto<List<ExamCentreResDto>> getAllByPage(Pageable pageable) {
+        Page<ExamCentre> examCentrePage = examCentreDao.getAllByPage(pageable);
+        return new PageResDto<>(pageable.getPageNumber(), examCentrePage.getNumberOfElements(), examCentrePage.getTotalElements(), examCentrePage.getTotalPages(), getExamCentreWithExamDateSlots(examCentrePage));
+    }
+
+    private List<ExamCentreResDto> getExamCentreWithExamDateSlots(Page<ExamCentre> examCentrePage) {
+        return examCentrePage.getContent().stream().map(examCentre -> {
+            AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
+            if (appUser == null) {
+                throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + NOT_FOUND);
+            }
+            Set<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
+                    .stream()
+                    .map(exam -> new ExamDateSlot(exam.getExamDate().getId(), examSlotDao.findByExamId(exam.getId())
+                            .stream()
+                            .map(examSlot -> examSlot.getSlot().getId())
+                            .collect(Collectors.toSet()))
+                    ).collect(Collectors.toSet());
+            return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), appUser.getMobileNumber(), appUser.getEmail(), null, null, examDateSlots, examCentre.getCreatedDate(), examCentre.getModifiedDate());
+        }).toList();
     }
 
     @Transactional(readOnly = true)
@@ -320,26 +343,6 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                 examCentreResDtos.size(),
                 totalPages,
                 examCentreResDtoContent);
-    }
-
-    @Override
-    public PageResDto<List<ExamCentreResDto>> getAllByPage(Pageable pageable) {
-        Page<ExamCentre> page = examCentreDao.getAllByPage(pageable);
-        List<ExamCentreResDto> examCentreResDto = page.getContent().stream().map(examCentre -> {
-            AppUser appUser = appUserDao.findByUserId(examCentre.getCode());
-            if (appUser == null) {
-                throw new EntityNotFoundException("AppUser with userId: " + examCentre.getCode() + NOT_FOUND);
-            }
-            Set<ExamDateSlot> examDateSlots = examDao.findByExamCentreId(examCentre.getId())
-                    .stream()
-                    .map(exam -> new ExamDateSlot(exam.getExamDate().getId(), examSlotDao.findByExamId(exam.getId())
-                            .stream()
-                            .map(examSlot -> examSlot.getSlot().getId())
-                            .collect(Collectors.toSet()))
-                    ).collect(Collectors.toSet());
-            return new ExamCentreResDto(examCentre.getId(), examCentre.getCode(), examCentre.getName(), examCentre.getRegion().getName(), appUser.getMobileNumber(), appUser.getEmail(), null, null, examDateSlots, examCentre.getCreatedDate(), examCentre.getModifiedDate());
-        }).toList();
-        return new PageResDto<>(pageable.getPageNumber(), page.getNumberOfElements(), page.getTotalElements(), page.getTotalPages(), examCentreResDto);
     }
 
     private static boolean isUploadCompleted(ExamCentreResDto examCentreResDto) {
