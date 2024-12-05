@@ -93,39 +93,23 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     }
 
 
-    @GetMapping(value = {"/query"}, produces = {"application/json"})
+    @GetMapping(value = {"/upload-details/search"}, produces = {"application/json"})
     @Operation(
-            summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to requested code, name, exam date, and/or region",
+            summary = "Get list of entities with upload status details by page",
+            description = "Loads a list of entities with upload status details by page from Database corresponds to requested query, code, name, exam date, and/or region",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getByCodeOrNameOrRegionId(@RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
-        log.info("Query Request for the ExamCentre entity in the controller for code, name, exam date, and/or region");
+    public ResponseDto<?> searchForQueryOrCodeOrNameOrRegion(@RequestParam(required = false) String query, @RequestParam(required = false) String code, @RequestParam(required = false) String name, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+        log.info("Query Request for the ExamCentre entity in the controller for query, code, name, and/or region");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByCodeOrNameOrRegionId(code, name, regionId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getByQueryOrCodeOrNameOrRegionId(query, code, name, regionId, pageable)));
     }
 
-    @GetMapping(value = {"/search"}, produces = {"application/json"})
-    @Operation(
-            summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database corresponds to search parameters",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
-                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
-                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
-            }
-    )
-    public ResponseDto<?> search(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
-        log.info("Search Request for the ExamCentre entity in the controller");
-        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.search(searchTerm, regionId, pageable)));
-    }
-
-    @GetMapping(value = {"/upload-status-filter-page"}, produces = {"application/json"})
+    @GetMapping(value = {"/upload-details/filter"}, produces = {"application/json"})
     @Operation(
             summary = "Get filtered list of entities by page based on upload status",
             description = "Loads a filtered list of entities by page from Database corresponds to search parameters",
@@ -135,16 +119,32 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getExamCentresOnUploadStatusByPage(@RequestParam(required = false) String searchTerm, @RequestParam(required = false) String filterType, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
-        log.info("Filter By Page Request for the ExamCentre entity in the controller");
+    public ResponseDto<?> getExamCentresFilterWithOrWithQueryByPage(@RequestParam(required = false) String query, @RequestParam(required = false) String filterType, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+        log.info("Filter on upload status By Page Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(searchTerm, filterType, regionId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(query, filterType, regionId, pageable)));
     }
 
-    @GetMapping(value = {"/page"}, produces = {"application/json"})
+    @GetMapping(value = {"/exam-date-slot-details/search"}, produces = {"application/json"})
     @Operation(
-            summary = "Get list of entities by page",
-            description = "Loads a list of entities by page from Database",
+            summary = "Get list of entities with exam date, and slot details by page",
+            description = "Loads a list of entities with exam date, and slot details by page from Database corresponds to search parameters",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
+                    @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
+            }
+    )
+    public ResponseDto<?> searchByQueryAndRegionId(@RequestParam(required = false) String query, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+        log.info("Search Request for the ExamCentre entity in the controller");
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.searchByQueryAndRegionId(query, regionId, pageable)));
+    }
+
+    @GetMapping(value = {"/exam-date-slot-details/page"}, produces = {"application/json"})
+    @Operation(
+            summary = "Get list of entities with exam date, and slot details by page",
+            description = "Loads a list of entities with exam date, and slot details by page from Database",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched Successfully.\", \"status\": true, \"data\": {}}"))),
                     @ApiResponse(description = "Invalid entity code", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Entity with code: 7 not found.\", \"status\": false, \"data\": null}"))),

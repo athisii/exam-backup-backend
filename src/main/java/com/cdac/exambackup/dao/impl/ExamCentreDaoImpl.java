@@ -101,23 +101,32 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     }
 
     @Override
-    public ExamCentre findByCodeAndName(String code, String name) {
-        return this.examCentreRepository.findFirstByCodeAndNameIgnoreCaseAndDeletedFalse(code, name);
-    }
-
-    @Override
-    public Page<ExamCentre> findByCodeOrName(String code, String name, Pageable pageable) {
+    public Page<ExamCentre> findByCode(String code, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByCodeOrNameIgnoreCaseAndDeletedFalse(code, name, pageable);
+            return this.examCentreRepository.findByCodeIgnoreCaseAndDeletedFalse(code, pageable);
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
     }
 
     @Override
-    public Page<ExamCentre> findByRegionIdAndCodeOrName(Long regionId, String code, String name, Pageable pageable) {
+    public ExamCentre findByCodeAndName(String code, String name) {
+        return this.examCentreRepository.findFirstByCodeAndNameIgnoreCaseAndDeletedFalse(code, name);
+    }
+
+    @Override
+    public Page<ExamCentre> findByCodeAndName(String code, String name, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndCodeOrNameIgnoreCaseAndDeletedFalse(regionId, code, name, pageable);
+            return this.examCentreRepository.findByCodeAndNameIgnoreCaseAndDeletedFalse(code, name, pageable);
+        } catch (Exception ex) {
+            throw new InvalidReqPayloadException(ERROR_MSG);
+        }
+    }
+
+    @Override
+    public Page<ExamCentre> findByRegionIdAndCodeAndName(Long regionId, String code, String name, Pageable pageable) {
+        try {
+            return this.examCentreRepository.findByRegionIdAndCodeAndNameIgnoreCaseAndDeletedFalse(regionId, code, name, pageable);
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
@@ -142,18 +151,18 @@ public class ExamCentreDaoImpl extends AbstractBaseDao<ExamCentre, Long> impleme
     }
 
     @Override
-    public Page<ExamCentre> searchWithRegionId(String searchTerm, Long regionId, Pageable pageable) {
+    public Page<ExamCentre> searchWithRegionId(String query, Long regionId, Pageable pageable) {
         try {
-            return this.examCentreRepository.findByRegionIdAndSearchTermAndDeletedFalse(regionId, searchTerm, pageable);
+            return this.examCentreRepository.findByRegionIdAndSearchTermAndDeletedFalse(regionId, query, pageable);
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }
     }
 
     @Override
-    public Page<ExamCentre> search(String searchTerm, Pageable pageable) {
+    public Page<ExamCentre> search(String query, Pageable pageable) {
         try {
-            return this.examCentreRepository.findBySearchTermAndDeletedFalse(searchTerm, pageable);
+            return this.examCentreRepository.findBySearchTermAndDeletedFalse(query, pageable);
         } catch (Exception ex) {
             throw new InvalidReqPayloadException(ERROR_MSG);
         }

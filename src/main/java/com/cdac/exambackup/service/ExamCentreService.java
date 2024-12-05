@@ -17,11 +17,11 @@ import java.util.List;
  */
 
 public interface ExamCentreService extends BaseService<ExamCentre, Long> {
-    PageResDto<List<ExamCentreResDto>> getByCodeOrNameOrRegionId(String code, String name, Long regionId, Pageable pageable);
+    PageResDto<List<ExamCentreResDto>> getByQueryOrCodeOrNameOrRegionId(String query, String code, String name, Long regionId, Pageable pageable);
 
-    PageResDto<List<ExamCentreResDto>> search(String searchTerm, Long regionId, Pageable pageable);
+    PageResDto<List<ExamCentreResDto>> searchByQueryAndRegionId(String query, Long regionId, Pageable pageable);
 
-    PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String searchTerm, String filterType, Long regionId, Pageable pageable);
+    PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String query, String filterType, Long regionId, Pageable pageable);
 
     PageResDto<List<ExamCentreResDto>> getAllByPage(Pageable pageable);
 

@@ -16,19 +16,21 @@ import java.util.List;
 public interface ExamCentreDao extends BaseDao<ExamCentre, Long> {
     ExamCentre findByCode(String code);
 
+    Page<ExamCentre> findByCode(String code, Pageable pageable);
+
     Page<ExamCentre> findByName(String name, Pageable pageable);
 
     ExamCentre findByCodeAndName(String code, String name);
 
-    Page<ExamCentre> findByCodeOrName(String code, String name, Pageable pageable);
+    Page<ExamCentre> findByCodeAndName(String code, String name, Pageable pageable);
 
-    Page<ExamCentre> findByRegionIdAndCodeOrName(Long regionId, String code, String name, Pageable pageable);
+    Page<ExamCentre> findByRegionIdAndCodeAndName(Long regionId, String code, String name, Pageable pageable);
 
     Page<ExamCentre> findByRegionId(Long regionId, Pageable pageable);
 
-    Page<ExamCentre> searchWithRegionId(String searchTerm, Long regionId, Pageable pageable);
+    Page<ExamCentre> searchWithRegionId(String query, Long regionId, Pageable pageable);
 
-    Page<ExamCentre> search(String searchTerm, Pageable pageable);
+    Page<ExamCentre> search(String query, Pageable pageable);
 
     Page<ExamCentre> findByRegionIdAndCode(Long regionId, String code, Pageable pageable);
 
