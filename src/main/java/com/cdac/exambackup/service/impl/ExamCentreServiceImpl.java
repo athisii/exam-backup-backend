@@ -3,6 +3,7 @@ package com.cdac.exambackup.service.impl;
 import com.cdac.exambackup.dao.*;
 import com.cdac.exambackup.dto.*;
 import com.cdac.exambackup.entity.*;
+import com.cdac.exambackup.enums.UploadFilterType;
 import com.cdac.exambackup.exception.InvalidReqPayloadException;
 import com.cdac.exambackup.service.ExamCentreService;
 import com.cdac.exambackup.util.CsvUtil;
@@ -298,9 +299,9 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
 
     @Transactional(readOnly = true)
     @Override
-    public PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String query, String filterType, Long regionId, Pageable pageable) {
+    public PageResDto<List<ExamCentreResDto>> getExamCentresOnUploadStatusByPage(String query, UploadFilterType filterType, Long regionId, Pageable pageable) {
         List<ExamCentreResDto> examCentreResDtos;
-        if ("UPLOADED".equalsIgnoreCase(filterType)) {
+        if (UploadFilterType.UPLOADED == filterType) {
             examCentreResDtos = convertExamCentresToExamCentreResDto(examCentreDao.findByRegionId(regionId))
                     .stream()
                     .filter(examCentreResDto -> {
@@ -313,7 +314,7 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
                     .toList();
 
 
-        } else if ("NOT_UPLOADED".equalsIgnoreCase(filterType)) {
+        } else if (UploadFilterType.NOT_UPLOADED == filterType) {
             examCentreResDtos = convertExamCentresToExamCentreResDto(examCentreDao.findByRegionId(regionId))
                     .stream()
                     .filter(examCentreResDto -> {
@@ -327,6 +328,12 @@ public class ExamCentreServiceImpl extends AbstractBaseService<ExamCentre, Long>
         } else {
             examCentreResDtos = convertExamCentresToExamCentreResDto(examCentreDao.findByRegionId(regionId))
                     .stream()
+                    .filter(examCentreResDto -> {
+                        if (query == null || query.isBlank()) {
+                            return true;
+                        }
+                        return examCentreResDto.code().toLowerCase().contains(query.trim().toLowerCase()) || examCentreResDto.name().toLowerCase().contains(query.trim().toLowerCase());
+                    })
                     .sorted((a, b) -> sort(pageable, a, b))
                     .toList();
         }

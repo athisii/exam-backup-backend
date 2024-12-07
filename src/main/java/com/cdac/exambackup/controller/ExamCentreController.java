@@ -5,6 +5,7 @@ import com.cdac.exambackup.dto.ExamCentreSlotUpdateReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
+import com.cdac.exambackup.enums.UploadFilterType;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamCentreService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -119,10 +120,10 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
             }
     )
-    public ResponseDto<?> getExamCentresFilterWithOrWithQueryByPage(@RequestParam(required = false) String query, @RequestParam(required = false) String filterType, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
+    public ResponseDto<?> getExamCentresFilterWithOrWithQueryByPage(@RequestParam(required = false) String query, @RequestParam(required = false, name = "filterType") UploadFilterType uploadFilterType, @RequestParam(required = false) Long regionId, @PageableDefault Pageable pageable) {
         log.info("Filter on upload status By Page Request for the ExamCentre entity in the controller");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAll();
-        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(query, filterType, regionId, pageable)));
+        return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.getExamCentresOnUploadStatusByPage(query, uploadFilterType, regionId, pageable)));
     }
 
     @GetMapping(value = {"/exam-date-slot-details/search"}, produces = {"application/json"})
