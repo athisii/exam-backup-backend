@@ -16,13 +16,23 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author athisii
@@ -79,15 +89,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
 
 
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @Operation(
-            summary = "Create/Update entity with MultipartFile",
-            description = "Create or Update (if Id passed) the entity in Database",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Your data has been saved successfully.\", \"status\": true, \"data\": {\"id\":1}}"))),
-                    @ApiResponse(description = "Validation failure / invalid request payload", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Invalid request/validation error message.\", \"status\": false, \"data\": null}"))),
-                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
-            }
-    )
+    @Operation(summary = "Create/Update entity with MultipartFile", description = "Create or Update (if Id passed) the entity in Database", responses = {@ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Your data has been saved successfully.\", \"status\": true, \"data\": {\"id\":1}}"))), @ApiResponse(description = "Validation failure / invalid request payload", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Invalid request/validation error message.\", \"status\": false, \"data\": null}"))), @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),})
     public ResponseDto<?> create(ExamFileReqDto examFileReqDto) {
         log.info("Create Request for the ExamFile entity in the controller.");
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
@@ -95,17 +97,30 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
     }
 
     @GetMapping(value = {"/query"}, produces = {"application/json"})
-    @Operation(
-            summary = "Returns list of ExamFiles matching centre Id, exam date and slot",
-            description = "Loads all the active available entities based on requested centre code, exam date and slot",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched successfully.\", \"status\": true, \"data\": [{}]}"))),
-                    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Bad request.\", \"status\": false, \"data\": null}"))),
-                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),
-            }
-    )
+    @Operation(summary = "Returns list of ExamFiles matching centre Id, exam date and slot", description = "Loads all the active available entities based on requested centre code, exam date and slot", responses = {@ApiResponse(description = "Success", responseCode = "200", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Data fetched successfully.\", \"status\": true, \"data\": [{}]}"))), @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Bad request.\", \"status\": false, \"data\": null}"))), @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content(schema = @Schema(name = "ResponseDto", example = "{\"message\":\"Internal server error occurred.\", \"status\": false, \"data\": null}"))),})
     public ResponseDto<?> getByCentreCentreExamDateAndSlot(@RequestParam Long examCentreId, @RequestParam Long examDateId, @RequestParam Long slotId) {
         log.info("Query request for the ExamFile entity in the controller.");
         return new ResponseDto<>(FETCH_SUCCESS_MSG, JsonNodeUtil.getJsonNode(commonPropertyFilter, this.examFileService.findByCentreCentreIdExamDateIdAndSlotId(examCentreId, examDateId, slotId)));
+    }
+
+    @GetMapping(value = "/download/{id}", produces = "application/octet-stream")
+    public ResponseEntity<Resource> downloadFile(@PathVariable("id") @Valid Long id) {
+        log.info("Download Request for the file with id: {}", id);
+        try {
+            ExamFile dbExamFile = this.examFileService.getById(id);
+            Path filePath = Paths.get(dbExamFile.getFilePath()).toAbsolutePath();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + dbExamFile.getUserUploadedFilename());
+            headers.add(HttpHeaders.CONTENT_TYPE, dbExamFile.getContentType());
+            return ResponseEntity.ok().headers(headers).body(resource);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
