@@ -5,6 +5,7 @@ import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamSlot;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamSlotService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -37,6 +38,8 @@ public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
 
     @Autowired
     ExamSlotService examSlotService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public ExamSlotController(BaseService<ExamSlot, Long> baseService) {
         super(baseService);
@@ -69,6 +72,7 @@ public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
     @PostMapping(value = {"/new"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamSlot entity) {
         log.info("Create Request for the entity in abstract controller.");
+        securityUtil.hasWritePermission();
         return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examSlotService.save(entity).getId()));
     }
 
@@ -76,6 +80,7 @@ public class ExamSlotController extends AbstractBaseController<ExamSlot, Long> {
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamSlotReqDto examSlotReqDto) {
         log.info("Create Request for the ExamSlot entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examSlotService.save(examSlotReqDto)));
     }

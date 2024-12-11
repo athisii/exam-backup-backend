@@ -6,6 +6,7 @@ import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamCentre;
 import com.cdac.exambackup.enums.UploadFilterType;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamCentreService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -50,7 +51,8 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
 
     @Autowired
     ExamCentreService examCentreService;
-
+    @Autowired
+    SecurityUtil securityUtil;
 
     public ExamCentreController(BaseService<ExamCentre, Long> baseService) {
         super(baseService);
@@ -82,6 +84,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @PostMapping(value = {"/hidden-create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamCentre examCentre) {
         log.info("Simple Create Request for the ExamCentre entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>(SAVE_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentre)));
     }
@@ -89,6 +92,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamCentreReqDto examCentreReqDto) {
         log.info("Create Request for the ExamCentre entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>(SAVE_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examCentreService.save(examCentreReqDto)));
     }
@@ -161,6 +165,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @PostMapping(value = {"/create-from-csv-file"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseDto<?> createFromCsvFile(MultipartFile file) {
         log.info("createFromCsvFile Request for the ExamCentre entity in the controller.");
+        securityUtil.hasWritePermission();
         this.examCentreService.bulkUpload(file);
         return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
     }
@@ -168,6 +173,7 @@ public class ExamCentreController extends AbstractBaseController<ExamCentre, Lon
     @PostMapping(value = {"/update-only-slot"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseDto<?> updateOnlySlot(@RequestBody ExamCentreSlotUpdateReqDto examCentreSlotUpdateReqDto) {
         log.info("updateOnlySlot Request for the ExamCentre entity in the controller.");
+        securityUtil.hasWritePermission();
         this.examCentreService.updateOnlySlot(examCentreSlotUpdateReqDto);
         return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
     }

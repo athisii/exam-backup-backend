@@ -4,6 +4,7 @@ import com.cdac.exambackup.dto.AppUserReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.AppUser;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.AppUserService;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -45,6 +46,8 @@ public class AppUserController extends AbstractBaseController<AppUser, Long> {
 
     @Autowired
     AppUserService appUserService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public AppUserController(BaseService<AppUser, Long> baseService) {
         super(baseService);
@@ -76,6 +79,7 @@ public class AppUserController extends AbstractBaseController<AppUser, Long> {
     @PostMapping(value = {"/hidden-create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody AppUser appUser) {
         log.info("Simple Create Request for the AppUser entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>(SAVE_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.appUserService.save(appUser)));
     }
@@ -83,6 +87,7 @@ public class AppUserController extends AbstractBaseController<AppUser, Long> {
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody AppUserReqDto appUserReqDto) {
         log.info("Create Request for the AppUser entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>(SAVE_SUCCESS_MSG, JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.appUserService.save(appUserReqDto)));
     }
@@ -106,6 +111,7 @@ public class AppUserController extends AbstractBaseController<AppUser, Long> {
     @PostMapping(value = {"/create-from-csv-file"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseDto<?> createFromCsvFile(MultipartFile file) {
         log.info("createFromCsvFile Request for the AppUser entity in the controller.");
+        securityUtil.hasWritePermission();
         this.appUserService.bulkUpload(file);
         return new ResponseDto<>(SAVE_SUCCESS_MSG, true);
     }

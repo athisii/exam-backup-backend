@@ -5,6 +5,7 @@ import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamDate;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamDateService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -43,6 +44,8 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
 
     @Autowired
     ExamDateService examDateService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public ExamDateController(BaseService<ExamDate, Long> baseService) {
         super(baseService);
@@ -75,6 +78,7 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
     @PostMapping(value = {"/new"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamDate entity) {
         log.info("Create Request for the entity in abstract controller.");
+        securityUtil.hasWritePermission();
         return new ResponseDto<>("Your data has been saved successfully.", new ResIdDto<>(this.examDateService.save(entity).getId()));
     }
 
@@ -82,6 +86,7 @@ public class ExamDateController extends AbstractBaseController<ExamDate, Long> {
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody ExamDateReqDto examDateReqDto) {
         log.info("Create Request for the ExamDate entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.examDateService.save(examDateReqDto)));
     }

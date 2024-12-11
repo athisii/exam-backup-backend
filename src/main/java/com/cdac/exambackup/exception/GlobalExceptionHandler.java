@@ -115,6 +115,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseDto<>(ex.getMessage(), false);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseDto<?> handleForbiddenException(ForbiddenException ex) {
+        log.info("**Forbidden exception occurred: ", ex);
+        return new ResponseDto<>(ex.getMessage(), false);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseDto<?> handleUncaughtException(Exception ex) {

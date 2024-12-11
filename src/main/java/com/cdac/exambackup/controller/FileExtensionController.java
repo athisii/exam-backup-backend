@@ -3,6 +3,7 @@ package com.cdac.exambackup.controller;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.FileExtension;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.FileExtensionService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
@@ -38,10 +40,12 @@ public class FileExtensionController extends AbstractBaseController<FileExtensio
     static final SimpleBeanPropertyFilter commonPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "code", "name", "active", "createdDate", "modifiedDate");
 
     final FileExtensionService fileExtensionService;
+    final SecurityUtil securityUtil;
 
-    public FileExtensionController(BaseService<FileExtension, Long> baseService, FileExtensionService fileExtensionService) {
+    public FileExtensionController(BaseService<FileExtension, Long> baseService, FileExtensionService fileExtensionService, SecurityUtil securityUtil) {
         super(baseService);
         this.fileExtensionService = fileExtensionService;
+        this.securityUtil = securityUtil;
     }
 
     @Override
@@ -69,6 +73,7 @@ public class FileExtensionController extends AbstractBaseController<FileExtensio
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody FileExtension entity) {
         log.info("Create Request for the FileExtension entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileExtensionService.save(entity)));
     }

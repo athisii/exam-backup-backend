@@ -3,6 +3,7 @@ package com.cdac.exambackup.controller;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.Slot;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.SlotService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -40,6 +41,8 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
 
     @Autowired
     SlotService slotService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public SlotController(BaseService<Slot, Long> baseService) {
         super(baseService);
@@ -70,6 +73,7 @@ public class SlotController extends AbstractBaseController<Slot, Long> {
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody Slot entity) {
         log.info("Create Request for the Slot entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.slotService.save(entity)));
     }

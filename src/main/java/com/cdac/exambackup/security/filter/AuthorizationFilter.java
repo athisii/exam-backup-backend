@@ -2,6 +2,7 @@ package com.cdac.exambackup.security.filter;
 
 import com.cdac.exambackup.dto.IdentityContext;
 import com.cdac.exambackup.dto.ResponseDto;
+import com.cdac.exambackup.exception.ForbiddenException;
 import com.cdac.exambackup.util.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -65,7 +66,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             objectMapper.writeValue(response.getOutputStream(), responseDto);
             return;
         }
-        //removes Bearer and  whitespace from authorization
+        //removes Bearer and whitespace from authorization
         String token = authorizationHeader.substring(TOKEN_PREFIX.length());
         try {
             jwtProvider.checkTokenValidity(token);
@@ -79,7 +80,12 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             log.error("Invalid Token. {}", ex.getMessage());
             response.setContentType(APPLICATION_JSON_VALUE);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            var responseDto = new ResponseDto<>("Invalid token. Some error occurred while parsing token.", false, null);
+            ResponseDto<?> responseDto;
+            if (ex.getCause().getClass() == ForbiddenException.class) {
+                responseDto = new ResponseDto<>(ex.getMessage().split(":")[2], false, null);
+            } else {
+                responseDto = new ResponseDto<>("Invalid token. Some error occurred while parsing token.", false, null);
+            }
             objectMapper.writeValue(response.getOutputStream(), responseDto);
         }
     }

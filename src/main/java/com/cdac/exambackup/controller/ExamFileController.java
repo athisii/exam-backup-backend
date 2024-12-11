@@ -5,6 +5,7 @@ import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResIdDto;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.ExamFile;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.ExamFileService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -52,6 +53,8 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
 
     @Autowired
     ExamFileService examFileService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public ExamFileController(BaseService<ExamFile, Long> baseService) {
         super(baseService);
@@ -105,6 +108,7 @@ public class ExamFileController extends AbstractBaseController<ExamFile, Long> {
 
     @GetMapping(value = "/download/{id}", produces = "application/octet-stream")
     public ResponseEntity<Resource> downloadFile(@PathVariable("id") @Valid Long id) {
+        securityUtil.isAdminOrStaff();
         log.info("Download Request for the file with id: {}", id);
         try {
             ExamFile dbExamFile = this.examFileService.getById(id);

@@ -4,6 +4,7 @@ import com.cdac.exambackup.dto.FileTypeReqDto;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.FileType;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.FileTypeService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -42,6 +43,8 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
 
     @Autowired
     FileTypeService fileTypeService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public FileTypeController(BaseService<FileType, Long> baseService) {
         super(baseService);
@@ -74,6 +77,7 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
     @PostMapping(value = {"/hidden-create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody FileType fileType) {
         log.info("Simple Create Request for the  FileType entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileType)));
     }
@@ -81,6 +85,7 @@ public class FileTypeController extends AbstractBaseController<FileType, Long> {
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody FileTypeReqDto fileTypeReqDto) {
         log.info("Create Request for the FileType entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.fileTypeService.save(fileTypeReqDto)));
     }

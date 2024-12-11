@@ -3,6 +3,7 @@ package com.cdac.exambackup.controller;
 import com.cdac.exambackup.dto.ListRequest;
 import com.cdac.exambackup.dto.ResponseDto;
 import com.cdac.exambackup.entity.Role;
+import com.cdac.exambackup.security.SecurityUtil;
 import com.cdac.exambackup.service.BaseService;
 import com.cdac.exambackup.service.RoleService;
 import com.cdac.exambackup.util.JsonNodeUtil;
@@ -40,6 +41,8 @@ public class RoleController extends AbstractBaseController<Role, Long> {
 
     @Autowired
     RoleService roleService;
+    @Autowired
+    SecurityUtil securityUtil;
 
     public RoleController(BaseService<Role, Long> baseService) {
         super(baseService);
@@ -70,6 +73,7 @@ public class RoleController extends AbstractBaseController<Role, Long> {
     @PostMapping(value = {"/create"}, produces = {"application/json"}, consumes = {"application/json"})
     public ResponseDto<?> create(@RequestBody Role role) {
         log.info("Create Request for the Role entity in the controller.");
+        securityUtil.hasWritePermission();
         SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id");
         return new ResponseDto<>("Your data has been saved successfully.", JsonNodeUtil.getJsonNode(simpleBeanPropertyFilter, this.roleService.save(role)));
     }
