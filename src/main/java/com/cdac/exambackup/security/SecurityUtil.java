@@ -29,7 +29,7 @@ public class SecurityUtil {
     IdentityContext identityContext;
 
     public void hasWritePermission() {
-        if (identityContext.getPermissions().contains(adminCode)) {
+        if (!identityContext.getPermissions().contains(adminCode)) {
             throw new ForbiddenException(UNAUTHORIZED_MSG);
         }
     }
